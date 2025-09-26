@@ -23,17 +23,19 @@ const LandingHeader = () => {
 
       <div className="p-[1.5px] rounded-xl bg-gradient-to-r from-[#ffffffad] to-[#ffffff3d] shadow-[0_0_70px_40px_rgba(12,75,246,0.4)] mb-10">
         <div className="w-full h-[880px] bg-black rounded-xl px-5 py-8">
-          <div className="w-full h-full">
-            <video
-              className="w-full h-full rounded-3xl object-cover"
-              poster="https://res.cloudinary.com/dganx8kmn/image/upload/v1756799516/Academy/landing/36222312187e1cd1b399589c1791d320058ad40d_aemygq.jpg"
-            >
-              <source
-                src="https://res.cloudinary.com/dganx8kmn/video/upload/q_auto,f_mp4/v1753636272/videos/Story_of_Hello_Dreams_epiphg.mov"
-                type="video/mp4"
-              />
-            </video>
-          </div>
+          <video
+            className="w-full h-full rounded-3xl object-cover"
+            autoPlay
+            loop
+            muted
+            controls
+            playsInline
+          >
+            <source
+              src="https://res.cloudinary.com/dganx8kmn/video/upload/v1758920900/Hello%20dreams%20%20AI/0802_qpwdws.mov"
+              type="video/mp4"
+            />
+          </video>
         </div>
       </div>
     </div>
