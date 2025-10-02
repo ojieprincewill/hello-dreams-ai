@@ -6,7 +6,7 @@ const LandingHeader = () => {
       <div className="my-5 py-10 flex flex-col justify-center items-center ">
         <button
           className="w-[476px] text-center py-3 border border-[#eaecf0] bg-[linear-gradient(to_bottom,_#8aa1ff_0%,_#8aa1ff_60%,_#becbff_85%,_#ffffff_100%)]
- text-[#fff] text-[24px] font-bold rounded-xl tracking-tighter shadow-[0_30px_80px_-10px_rgba(255,215,0,0.5),_0_-30px_80px_-10px_rgba(255,215,0,0.5)] mt-12 mb-6"
+ text-[#fff] text-[24px] font-bold rounded-xl tracking-tighter shadow-[0_30px_80px_-10px_rgba(255,215,0,0.5),_0_-30px_80px_-10px_rgba(255,215,0,0.5)] mt-12 mb-6 cursor-pointer"
         >
           AI Powered career tool
         </button>

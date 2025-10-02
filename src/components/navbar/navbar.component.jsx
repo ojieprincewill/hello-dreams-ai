@@ -12,7 +12,7 @@ const Navbar = () => {
         </div>
 
         <div className="relative p-[0.8px] rounded-4xl bg-gradient-to-r from-[#1342ff] to-[#ffffff]">
-          <span className="w-[50px] md:w-[65px] xl:w-[81px] flex justify-center items-center bg-gradient-to-b from-[#060328] to-[#030b33] text-[16px] md:text-[20px] xl:text-[24px] rounded-4xl shadow-[inset_0px_-4px_12px] shadow-[#eddb7250]">
+          <span className="w-[50px] md:w-[65px] xl:w-[81px] flex justify-center items-center bg-gradient-to-b from-[#060328] to-[#030b33] text-[16px] md:text-[20px] xl:text-[24px] rounded-4xl shadow-[inset_0px_-4px_12px] shadow-[#eddb7250] cursor-pointer">
             A<span className="text-[#1342ff]">I</span>
           </span>
         </div>
