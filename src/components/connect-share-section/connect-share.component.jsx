@@ -54,14 +54,19 @@ const ConnectAndShare = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setIsSliding(true);
-      setTimeout(() => {
+    }, 5000);
+
+    if (isSliding) {
+      const timeout = setTimeout(() => {
         setCurrentCardIndex((prev) => (prev + 1) % cards.length);
         setIsSliding(false);
       }, 600);
-    }, 5000);
+
+      return () => clearTimeout(timeout);
+    }
 
     return () => clearInterval(interval);
-  }, [cards.length]);
+  }, [isSliding, cards.length]);
 
   return (
     <div className="py-10">
@@ -91,13 +96,16 @@ const ConnectAndShare = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 h-[900px] ">
+      <div className="grid grid-cols-1 md:grid-cols-2 h-[900px] ">
         {/* Left Side - Featured Card Display */}
-        <div className="relative h-full border-t-[1.5px] border-[#a554f1] bg-black flex items-center justify-center p-6  overflow-hidden">
+        <div
+          aria-live="polite"
+          className="relative h-full border-t-[1.5px] border-[#a554f1] shadow-[0_-10px_20px_-5px_rgba(165,84,241,0.6),_10px_0_20px_-5px_rgba(165,84,241,0.6)] bg-black flex items-center justify-center p-6  overflow-hidden "
+        >
           {/* Featured Card with slide-in animation from bottom-right */}
           <div
             key={currentCardIndex}
-            className={`w-[508px] h-[508.28px] rounded-3xl p-8 flex items-center justify-center text-center slide-in-animation ${cards[currentCardIndex].gradient}`}
+            className={`max-w-[508px] h-auto md:h-[508px] rounded-3xl p-8 flex items-center justify-center text-center slide-in-animation ${cards[currentCardIndex].gradient}`}
           >
             <p
               className={`text-[24px] font-semibold leading-relaxed ${cards[currentCardIndex].textColor}`}
@@ -108,7 +116,10 @@ const ConnectAndShare = () => {
         </div>
 
         {/* Right Side - Overlapping Card Stack */}
-        <div className="h-full flex items-center justify-center p-6 bg-gradient-to-br from-gray-900 via-gray-800 to-slate-700 border-l-[1.5px] border-b-[1.5px] border-[#a554f1] overflow-hidden">
+        <div
+          className="h-full flex items-center justify-center p-6 bg-gradient-to-br from-gray-900 via-gray-800 to-slate-700 border-l-[1.5px] border-b-[1.5px] border-[#a554f1] shadow-[0_10px_40px_-10px_rgba(165,84,241,0.6)]
+ overflow-hidden"
+        >
           <div className="relative w-[508px]">
             {cards.map((card, index) => {
               const totalStackHeight = (cards.length - 1) * 80 + 120; // Total height of the stack
@@ -128,6 +139,13 @@ const ConnectAndShare = () => {
               return (
                 <div
                   key={card.id}
+                  onClick={() => {
+                    setIsSliding(true);
+                    setTimeout(() => {
+                      setCurrentCardIndex(index);
+                      setIsSliding(false);
+                    }, 600);
+                  }}
                   className={`absolute w-full h-[120px] rounded-xl p-4 flex items-center justify-center text-center transition-all duration-600 ${card.gradient}`}
                   style={{
                     top: `${centerOffset + stackPosition * 80}px`,
