@@ -1,6 +1,8 @@
 import React from "react";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
+import SelectableCard from "./components/selectable-card.component";
+import GradientIcon from "./components/gradient-icon.component";
 
 const SidebarNavigation = ({ modules, activeModule, onModuleClick }) => {
   return (
@@ -17,33 +19,22 @@ const SidebarNavigation = ({ modules, activeModule, onModuleClick }) => {
 
       <div className="space-y-3">
         {modules.map((module) => (
-          <div
+          <SelectableCard
             key={module.id}
+            isSelected={activeModule === module.id}
             onClick={() => onModuleClick(module.id)}
-            className={`relative cursor-pointer transition-all duration-300 ${
-              activeModule === module.id
-                ? "bg-gradient-to-br from-[#1342ff] to-[#ff00e6] p-[2px] rounded-md"
-                : "border border-[#2d2d2d] rounded-md"
-            }`}
           >
-            <div className="bg-[#181818] rounded-md p-4 hover:bg-[#151515] transition-all duration-200">
-              <div className="flex items-start space-x-3">
-                {/* Module Icon */}
-                <div className="w-[38px] h-[38px] rounded-sm bg-gradient-to-br from-[#1342ff] to-[#ff00e6]"></div>
-
-                {/* Module Content */}
-                <div className="flex-1">
-                  <h4 className="text-[16px] font-extrabold">{module.title}</h4>
-                  <p className="text-[#f7f7f7] text-[16px] mt-1">
-                    {module.description}
-                  </p>
-                </div>
-
-                {/* Arrow Icon */}
-                <ArrowRight size={16} strokeWidth={1.5} />
+            <div className="flex items-start space-x-3">
+              <GradientIcon />
+              <div className="flex-1">
+                <h4 className="text-[16px] font-extrabold">{module.title}</h4>
+                <p className="text-[#f7f7f7] text-[16px] mt-1">
+                  {module.description}
+                </p>
               </div>
+              <ArrowRight size={16} strokeWidth={1.5} />
             </div>
-          </div>
+          </SelectableCard>
         ))}
       </div>
     </div>

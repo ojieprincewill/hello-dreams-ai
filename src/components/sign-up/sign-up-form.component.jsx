@@ -80,7 +80,7 @@ const SignUpForm = ({ onContinue, formData, setFormData }) => {
                 value={formData.firstName}
                 onChange={handleChange}
                 placeholder="Enter your first name"
-                className="w-full px-4 py-3 rounded-lg border border-[#eaecf0] bg-[#f7f7f7] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1342ff]"
+                className="global-input w-full px-4 py-3 rounded-lg border border-[#eaecf0] bg-[#f7f7f7] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1342ff]"
                 required
               />
             </div>
@@ -94,7 +94,7 @@ const SignUpForm = ({ onContinue, formData, setFormData }) => {
                 value={formData.lastName}
                 onChange={handleChange}
                 placeholder="Enter your last name"
-                className="w-full px-4 py-3 rounded-lg border border-[#eaecf0] bg-[#f7f7f7] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1342ff]"
+                className="global-input w-full px-4 py-3 rounded-lg border border-[#eaecf0] bg-[#f7f7f7] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1342ff]"
                 required
               />
             </div>
@@ -109,7 +109,7 @@ const SignUpForm = ({ onContinue, formData, setFormData }) => {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="Enter your email address"
-                  className="w-full px-4 py-3 rounded-lg border border-[#eaecf0] bg-[#f7f7f7] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1342ff]"
+                  className="global-input w-full px-4 py-3 rounded-lg border border-[#eaecf0] bg-[#f7f7f7] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1342ff]"
                   required
                 />
               </div>
@@ -124,7 +124,7 @@ const SignUpForm = ({ onContinue, formData, setFormData }) => {
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder="Enter your phone number"
-                className="w-full px-4 py-3 rounded-lg border border-[#eaecf0] bg-[#f7f7f7] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1342ff]"
+                className="global-input w-full px-4 py-3 rounded-lg border border-[#eaecf0] bg-[#f7f7f7] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1342ff]"
                 required
               />
             </div>
@@ -136,7 +136,7 @@ const SignUpForm = ({ onContinue, formData, setFormData }) => {
                 name="country"
                 value={formData.country}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-lg border border-[#eaecf0] bg-[#f7f7f7] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1342ff]"
+                className="global-select w-full px-4 py-3 rounded-lg border border-[#eaecf0] bg-[#f7f7f7] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1342ff]"
                 required
               >
                 <option value="">Choose your country of residence</option>

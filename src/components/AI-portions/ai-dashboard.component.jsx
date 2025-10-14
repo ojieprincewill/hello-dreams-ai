@@ -1,10 +1,15 @@
 import React, { useState } from "react";
 import SidebarNavigation from "./sidebar-navigation.component";
 import WelcomeContent from "./welcome-content.component";
+import GetToKnowYou from "./get-to-know-you.component";
+import BuildPersona from "./build-persona.component";
+import CvBuilder from "./cv-builder.component";
+import CoverLetter from "./cover-letter.component";
+import ProfessionalHeadshot from "./professional-headshot.component";
 
 const AIDashboard = () => {
   const [activeModule, setActiveModule] = useState(null);
-  const [progress, setProgress] = useState(0);
+  // const [progress, setProgress] = useState(0);
 
   const careerModules = [
     {
@@ -56,6 +61,13 @@ const AIDashboard = () => {
       isActive: false,
       isCompleted: false,
     },
+    {
+      id: "job-application",
+      title: "Job Application",
+      description: "Find relevant jobs and get application assistance",
+      isActive: false,
+      isCompleted: false,
+    },
   ];
 
   const handleModuleClick = (moduleId) => {
@@ -84,9 +96,7 @@ const AIDashboard = () => {
         <div className="ml-80 flex flex-col w-full">
           {/* Top Bar */}
           <div className="flex justify-end items-center space-x-15 px-10 py-4 border-b border-[#2d2d2d]">
-            <div className="text-[20px] font-extrabold">
-              Progress: {progress}%
-            </div>
+            <div className="text-[20px] font-extrabold">Progress: 0%</div>
             <div className="flex items-center space-x-3">
               <div className="w-[40px] h-[40px] bg-gray-700 rounded-full overflow-hidden">
                 <img
@@ -108,6 +118,16 @@ const AIDashboard = () => {
           <div className="flex-1">
             {!activeModule ? (
               <WelcomeContent onStartAssessment={handleStartAssessment} />
+            ) : activeModule === "get-to-know" ? (
+              <GetToKnowYou />
+            ) : activeModule === "build-persona" ? (
+              <BuildPersona />
+            ) : activeModule === "cv-builder" ? (
+              <CvBuilder />
+            ) : activeModule === "cover-letter" ? (
+              <CoverLetter />
+            ) : activeModule === "professional-headshot" ? (
+              <ProfessionalHeadshot />
             ) : (
               <div className="min-h-screen p-6">
                 <h2 className="text-2xl font-bold mb-4">

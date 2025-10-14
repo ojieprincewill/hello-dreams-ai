@@ -94,7 +94,7 @@ const CreatePassword = ({ onContinue, onBack, formData, setFormData }) => {
                   value={password}
                   onChange={handleChange}
                   placeholder="Create password"
-                  className="w-full px-4 py-3 rounded-lg border border-[#eaecf0] bg-[#f7f7f7] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1342ff] pr-12 disabled:opacity-60"
+                  className="global-input w-full px-4 py-3 rounded-lg border border-[#eaecf0] bg-[#f7f7f7] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1342ff] pr-12 disabled:opacity-60"
                   required
                 />
                 <button
@@ -146,7 +146,7 @@ const CreatePassword = ({ onContinue, onBack, formData, setFormData }) => {
                   value={confirmPassword}
                   onChange={handleChange}
                   placeholder="Confirm password"
-                  className="w-full px-4 py-3 rounded-lg border border-[#eaecf0] bg-[#f7f7f7] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1342ff] pr-12 disabled:opacity-60"
+                  className="global-input w-full px-4 py-3 rounded-lg border border-[#eaecf0] bg-[#f7f7f7] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1342ff] pr-12 disabled:opacity-60"
                   required
                 />
                 <button

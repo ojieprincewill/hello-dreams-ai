@@ -17,20 +17,20 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-input {
+input.global-input {
   color: #101828;
-
-  &::placeholder {
-    color: #667085;
-  }
 }
 
-select {
-  color: #101828;
+input.global-input::placeholder {
+  color: #667085;
+}
 
-  &::placeholder {
-    color: #667085;
-  }
+select.global-select {
+  color: #101828;
+}
+
+select.global-select::placeholder {
+  color: #667085;
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
