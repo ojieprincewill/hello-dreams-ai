@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
-import SelectableCard from "./components/selectable-card.component";
+import SelectableCard from "./reusable-customs/selectable-card.component";
 import { UserIcon } from "@heroicons/react/24/outline";
 import { ArrowRight } from "lucide-react";
-import GradientIcon from "./components/gradient-icon.component";
+import GradientIcon from "./reusable-customs/gradient-icon.component";
 
 const STEPS = [
   {

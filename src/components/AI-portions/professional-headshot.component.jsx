@@ -1,8 +1,8 @@
 import React, { useRef, useState } from "react";
 import { UserIcon } from "@heroicons/react/24/outline";
 import { Download, Loader2, RefreshCcw } from "lucide-react";
-import SelectableCard from "./components/selectable-card.component";
-import GradientIcon from "./components/gradient-icon.component";
+import SelectableCard from "./reusable-customs/selectable-card.component";
+import GradientIcon from "./reusable-customs/gradient-icon.component";
 
 const STYLES = [
   {

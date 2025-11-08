@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { UserIcon } from "@heroicons/react/24/outline";
-import MessageInputField from "./components/message-input.component";
+import MessageInputField from "./reusable-customs/message-input.component";
 
 const CoverLetter = () => {
   const [userInput, setUserInput] = useState("");
