@@ -6,6 +6,7 @@ import BuildPersona from "./build-persona.component";
 import CvBuilder from "./cv-builder.component";
 import CoverLetter from "./cover-letter.component";
 import ProfessionalHeadshot from "./professional-headshot.component";
+import UserIconDropdown from "../user-icon-dropdown/user-icon-dropdown.component";
 
 const AIDashboard = () => {
   const [activeModule, setActiveModule] = useState(null);
@@ -97,21 +98,7 @@ const AIDashboard = () => {
           {/* Top Bar */}
           <div className="flex justify-end items-center space-x-15 px-10 py-4 border-b border-[#2d2d2d]">
             <div className="text-[20px] font-extrabold">Progress: 0%</div>
-            <div className="flex items-center space-x-3">
-              <div className="w-[40px] h-[40px] bg-gray-700 rounded-full overflow-hidden">
-                <img
-                  src="https://res.cloudinary.com/dganx8kmn/image/upload/v1759449140/Hello%20dreams%20%20AI/26d3a9db798a4cc8725cb83dcbf5cf7966ae74dc_jifjis.png"
-                  alt="user-image"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <span
-                className="text-sm font-medium"
-                style={{ fontFamily: "Inter, sans-serif" }}
-              >
-                Michael
-              </span>
-            </div>
+            <UserIconDropdown />
           </div>
 
           {/* Main Content Area */}
