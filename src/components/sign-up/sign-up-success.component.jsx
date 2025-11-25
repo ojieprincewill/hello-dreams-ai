@@ -2,8 +2,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 
 const SignUpSuccess = ({ formData }) => {
-  const handleOrigins = () => {};
-
   return (
     <div className="relative min-h-screen w-full p-[5%] flex items-center justify-center bg-[url('https://res.cloudinary.com/dganx8kmn/image/upload/v1752984140/Academy/sign%20up/3f66b694a8196a4df5f2b870dc9901b56806d575_pntsis.png')] bg-cover bg-center">
       <div className="absolute inset-0 bg-white/70"></div>
@@ -34,7 +32,6 @@ const SignUpSuccess = ({ formData }) => {
 
         <Link
           to="/signin"
-          onClick={handleOrigins}
           className="block w-full py-3 rounded-lg bg-[#1342ff] text-white text-[16px] md:text-[18px] font-bold text-center hover:bg-[#2313ff] transition-colors duration-200 "
         >
           Login

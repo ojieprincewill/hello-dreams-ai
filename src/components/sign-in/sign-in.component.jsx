@@ -1,7 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import LoadingSpinner from "../loading-spinner/loading-spinner.component";
+import { AuthContext } from "../../auth/authContext";
 const SigninForm = () => {
+  const navigate = useNavigate();
+  const { login, loading, error } = useContext(AuthContext); // 👈 use context
   const [showPassword, setShowPassword] = useState(false);
   const [activeTab, setActiveTab] = useState("email");
   const [formData, setFormData] = useState({
@@ -9,8 +13,6 @@ const SigninForm = () => {
     password: "",
     phone: "",
   });
-  const [loginError, setLoginError] = useState("");
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   // Forgot password states
   const [showForgotPassword, setShowForgotPassword] = useState(false);
@@ -21,32 +23,21 @@ const SigninForm = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear error when user starts typing
-    if (loginError) setLoginError("");
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsLoggingIn(true);
-    setLoginError("");
 
-    try {
-      // For now, we'll use email login since phone login requires additional setup
-      if (activeTab === "phone") {
-        setLoginError(
-          "Phone login is not yet supported. Please use email login."
-        );
-        setIsLoggingIn(false);
-        return;
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-      setLoginError(
-        error.message || "Failed to login. Please check your credentials."
-      );
-    } finally {
-      setIsLoggingIn(false);
+    if (activeTab === "phone") {
+      // phone login not supported yet
+      // you can show a toast here if you want
+      return;
     }
+
+    await login(
+      { email: formData.email, password: formData.password },
+      navigate
+    ); // 👈 context handles API, tokens, toast, redirect
   };
 
   const closeForgotPassword = () => {
@@ -58,10 +49,9 @@ const SigninForm = () => {
 
   const currentYear = new Date().getFullYear();
 
-  const handleOrigins = () => {};
-
   return (
     <>
+      {loading && <LoadingSpinner />}
       <div className="w-full h-screen px-[5%] xl:px-0 flex items-center justify-center">
         <div className="w-full grid xl:grid-cols-[45%_55%] bg-white shadow-lg overflow-hidden">
           {/* Left: Image and text */}
@@ -118,7 +108,7 @@ const SigninForm = () => {
                     : "bg-transparent border-[#eaecf0] text-[#667085]"
                 }`}
                 onClick={() => setActiveTab("email")}
-                disabled={isLoggingIn}
+                disabled={loading}
               >
                 Email address
               </button>
@@ -130,16 +120,16 @@ const SigninForm = () => {
                     : "bg-transparent border-[#eaecf0] text-[#667085] hover:bg-[#f7f7f7]"
                 }`}
                 onClick={() => setActiveTab("phone")}
-                disabled={isLoggingIn}
+                disabled={loading}
               >
                 Phone number
               </button>
             </div>
 
             {/* Error display */}
-            {loginError && (
+            {error && (
               <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-600 text-sm">{loginError}</p>
+                <p className="text-red-600 text-sm">{error}</p>
               </div>
             )}
 
@@ -158,7 +148,7 @@ const SigninForm = () => {
                       placeholder="Enter your email"
                       className="w-full px-4 py-3 rounded-lg border border-[#eaecf0] bg-[#f7f7f7] text-[#101828] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1342ff] disabled:opacity-60"
                       required={activeTab === "email"}
-                      disabled={isLoggingIn}
+                      disabled={loading}
                     />
                   </div>
                   <div>
@@ -174,14 +164,14 @@ const SigninForm = () => {
                         placeholder="Enter password"
                         className="w-full px-4 py-3 rounded-lg border border-[#eaecf0] bg-[#f7f7f7] text-[#101828] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1342ff] pr-12 disabled:opacity-60"
                         required
-                        disabled={isLoggingIn}
+                        disabled={loading}
                       />
                       <button
                         type="button"
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-[#667085] disabled:opacity-60"
                         onClick={() => setShowPassword((v) => !v)}
                         tabIndex={-1}
-                        disabled={isLoggingIn}
+                        disabled={loading}
                       >
                         {showPassword ? (
                           <span role="img" aria-label="Hide">
@@ -210,7 +200,7 @@ const SigninForm = () => {
                       placeholder="Enter your phone number"
                       className="w-full px-4 py-3 rounded-lg border border-[#eaecf0] bg-[#f7f7f7] text-[#101828] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1342ff] disabled:opacity-60"
                       required={activeTab === "phone"}
-                      disabled={isLoggingIn}
+                      disabled={loading}
                     />
                   </div>
                   <div>
@@ -226,14 +216,14 @@ const SigninForm = () => {
                         placeholder="Enter password"
                         className="w-full px-4 py-3 rounded-lg border border-[#eaecf0] text-[#101828] bg-[#f7f7f7] text-[15px] focus:outline-none focus:ring-2 focus:ring-[#1342ff] pr-12 disabled:opacity-60"
                         required
-                        disabled={isLoggingIn}
+                        disabled={loading}
                       />
                       <button
                         type="button"
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-[#667085] disabled:opacity-60"
                         onClick={() => setShowPassword((v) => !v)}
                         tabIndex={-1}
-                        disabled={isLoggingIn}
+                        disabled={loading}
                       >
                         {showPassword ? (
                           <span role="img" aria-label="Hide">
@@ -254,7 +244,7 @@ const SigninForm = () => {
                 type="button"
                 onClick={() => setShowForgotPassword(true)}
                 className="text-[#1342ff] text-[14px] md:text-[16px] w-max mr-0.5 ml-auto font-medium cursor-pointer hover:underline disabled:opacity-50"
-                disabled={isLoggingIn}
+                disabled={loading}
               >
                 Forgot Password?
               </button>
@@ -263,7 +253,7 @@ const SigninForm = () => {
                 type="submit"
                 className="w-full mt-4 py-3 rounded-lg bg-[#1342ff] text-[#fff] text-[18px] font-bold hover:bg-[#2313ff] disabled:opacity-60 transition-colors duration-200 cursor-pointer"
                 disabled={
-                  isLoggingIn ||
+                  loading ||
                   !(
                     (activeTab === "email" &&
                       formData.email &&
@@ -274,7 +264,7 @@ const SigninForm = () => {
                   )
                 }
               >
-                {isLoggingIn ? "Logging in..." : "Login"}
+                {loading ? "Logging in..." : "Login"}
               </button>
             </form>
 
@@ -284,7 +274,6 @@ const SigninForm = () => {
                 Don't have an account?{" "}
                 <Link
                   to="/signup"
-                  onClick={handleOrigins}
                   className="text-[#1342ff] font-bold hover:underline"
                 >
                   Sign up now

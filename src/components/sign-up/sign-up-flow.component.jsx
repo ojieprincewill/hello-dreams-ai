@@ -17,7 +17,13 @@ const SignUpFlow = () => {
     confirmPassword: "",
   });
 
-  const handleContinue = () => setStep((s) => s + 1);
+  const handleContinue = (options = {}) => {
+    setStep((s) => s + 1);
+    if (options.justRegistered) {
+      setFormData((prev) => ({ ...prev, justRegistered: true }));
+    }
+  };
+
   const handleBack = () => setStep((s) => s - 1);
 
   return (

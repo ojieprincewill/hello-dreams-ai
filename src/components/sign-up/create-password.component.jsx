@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
+import LoadingSpinner from "../loading-spinner/loading-spinner.component";
 
 const CreatePassword = ({ onContinue, onBack, formData, setFormData }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   // Password requirements
   const requirements = [
@@ -48,8 +51,52 @@ const CreatePassword = ({ onContinue, onBack, formData, setFormData }) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!canContinue) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const payload = {
+        email: formData.email,
+        password: formData.password,
+        name: `${formData.firstName} ${formData.lastName}`,
+      };
+
+      const response = await fetch(
+        "https://hello-dreams-ai.onrender.com/auth/register",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.message || "Registration failed");
+      } else {
+        // Save tokens
+        localStorage.setItem("accessToken", data.access_token);
+        localStorage.setItem("refreshToken", data.refresh_token);
+
+        // Move to next step (VerifyAccount)
+        onContinue({ justRegistered: true });
+      }
+    } catch (err) {
+      setError("Error during sign up, please try again.");
+      console.error("Error during sign up:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen w-full p-[5%] flex items-center justify-center">
+      {loading && <LoadingSpinner />}
       <div className="w-full md:w-[635px] bg-white rounded-3xl shadow-lg p-4">
         {/* Back arrow */}
         <button
@@ -78,10 +125,7 @@ const CreatePassword = ({ onContinue, onBack, formData, setFormData }) => {
 
           <form
             className="w-full flex flex-col items-center mt-5"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (canContinue) onContinue();
-            }}
+            onSubmit={handleSubmit}
           >
             <div className="w-full mb-4">
               <label className="block text-[#101828] text-[14px] md:text-[15px] mb-1">
@@ -202,11 +246,13 @@ const CreatePassword = ({ onContinue, onBack, formData, setFormData }) => {
                 </span>
               </div>
             </div>
+            {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
             <button
               type="submit"
+              disabled={!canContinue || loading}
               className="w-full py-3 rounded-lg bg-[#1342ff] text-white text-[16px] md:text-[18px] font-bold hover:bg-[#2313ff] disabled:opacity-60 transition-colors duration-200 cursor-pointer"
             >
-              Create Account
+              {loading ? "Registering..." : "Create Account"}
             </button>
           </form>
         </div>

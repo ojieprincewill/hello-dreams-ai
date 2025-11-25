@@ -8,7 +8,7 @@ import CoverLetter from "./cover-letter.component";
 import ProfessionalHeadshot from "./professional-headshot.component";
 import UserIconDropdown from "../user-icon-dropdown/user-icon-dropdown.component";
 
-const AIDashboard = () => {
+const AiDashboard = () => {
   const [activeModule, setActiveModule] = useState(null);
   // const [progress, setProgress] = useState(0);
 
@@ -86,7 +86,7 @@ const AIDashboard = () => {
     >
       <div className="flex ">
         {/* Left Sidebar */}
-        <div className="fixed top-0 left-0 h-screen w-80 overflow-auto sidebar bg-[#181818] z-50">
+        <div className="fixed top-0 left-0 h-screen w-[25%] overflow-auto sidebar bg-[#181818] z-50">
           <SidebarNavigation
             modules={careerModules}
             activeModule={activeModule}
@@ -94,7 +94,7 @@ const AIDashboard = () => {
           />
         </div>
 
-        <div className="ml-80 flex flex-col w-full">
+        <div className="ml-[25%] flex flex-col w-full">
           {/* Top Bar */}
           <div className="flex justify-end items-center space-x-15 px-10 py-4 border-b border-[#2d2d2d]">
             <div className="text-[20px] font-extrabold">Progress: 0%</div>
@@ -132,4 +132,4 @@ const AIDashboard = () => {
   );
 };
 
-export default AIDashboard;
+export default AiDashboard;

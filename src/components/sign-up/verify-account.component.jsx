@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
+import LoadingSpinner from "../loading-spinner/loading-spinner.component";
 
 const VerifyAccount = ({ onContinue, onBack, formData }) => {
   const [timer, setTimer] = useState(30);
+  const [loading, setLoading] = useState(formData.justRegistered || false);
 
   // Timer countdown
   useEffect(() => {
@@ -11,6 +13,13 @@ const VerifyAccount = ({ onContinue, onBack, formData }) => {
       return () => clearInterval(interval);
     }
   }, [timer]);
+
+  useEffect(() => {
+    if (loading) {
+      const timer = setTimeout(() => setLoading(false), 2000); // simulate transition
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
 
   const maskEmail = (email) => {
     if (!email) return "";
@@ -21,6 +30,20 @@ const VerifyAccount = ({ onContinue, onBack, formData }) => {
   const handleContinue = () => {
     onContinue();
   };
+
+  const handleResend = () => {
+    console.log("Resend verification email clicked");
+    // later: call backend /auth/resend-verification
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner />
+        <p className="ml-2">Setting up your account...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen w-full p-[5%] flex items-center justify-center">
@@ -113,7 +136,7 @@ const VerifyAccount = ({ onContinue, onBack, formData }) => {
               {/* Resend Verification Button */}
               <div className="w-full">
                 <button
-                  onClick
+                  onClick={handleResend}
                   className="w-full py-3 rounded-lg text-[16px] md:text-[18px] font-bold transition-colors duration-200 bg-[#1342ff] text-white hover:bg-[#2313ff] cursor-pointer"
                 >
                   Resend Verification Email

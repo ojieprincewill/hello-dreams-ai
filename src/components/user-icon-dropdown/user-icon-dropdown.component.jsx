@@ -1,10 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "motion/react";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../auth/authContext";
+import LoadingSpinner from "../loading-spinner/loading-spinner.component";
 const UserIconDropdown = ({ active }) => {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const { logout, loading, user } = useContext(AuthContext);
 
   const menuItems = [
     { key: "settings", label: "Settings" },
@@ -15,6 +18,7 @@ const UserIconDropdown = ({ active }) => {
 
   return (
     <div className="relative">
+      {loading && <LoadingSpinner />}
       <div
         className="flex items-center space-x-3 cursor-pointer"
         onClick={() => setOpen(!open)}
@@ -30,7 +34,7 @@ const UserIconDropdown = ({ active }) => {
           className="text-sm font-medium"
           style={{ fontFamily: "Inter, sans-serif" }}
         >
-          Michael
+          {user ? user.name : "Guest"}
         </span>
       </div>
       <AnimatePresence>
@@ -91,9 +95,9 @@ const UserIconDropdown = ({ active }) => {
                       item.key === "logout" &&
                       "text-[#ff0000] mt-2 border-t border-t-[#272725]"
                     } hover:bg-[#212121]`}
-                    onClick={() => {
+                    onClick={async () => {
                       if (item.key === "logout") {
-                        // handleLogout();
+                        await logout(navigate);
                       } else {
                         navigate("/userprofile", {
                           state: { active: item.key },
@@ -101,8 +105,11 @@ const UserIconDropdown = ({ active }) => {
                       }
                       setOpen(false);
                     }}
+                    disabled={item.key === "logout" && loading} // 👈 disable while logging out
                   >
-                    {item.label}
+                    {item.key === "logout" && loading
+                      ? "Signing out..."
+                      : item.label}
                   </button>
                 </li>
               ))}
