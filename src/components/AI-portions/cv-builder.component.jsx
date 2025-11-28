@@ -22,29 +22,53 @@ const CvBuilder = () => {
   const [conversations, setConversations] = useState([]);
   const [conversationId, setConversationId] = useState(null);
 
-  // Create conversation once when component mounts
+  // Save conversationId whenever it changes
+  useEffect(() => {
+    if (conversationId) {
+      localStorage.setItem("cvConversationId", conversationId);
+    }
+  }, [conversationId]);
+
+  // Save messages whenever they change
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem("cvMessages", JSON.stringify(messages));
+    }
+  }, [messages]);
+
+  // Restore from localStorage first
+  useEffect(() => {
+    const savedId = localStorage.getItem("cvConversationId");
+    const savedMessages = localStorage.getItem("cvMessages");
+
+    if (savedId) {
+      setConversationId(savedId);
+      loadMessages(savedId); // reload from backend for freshness
+    } else if (savedMessages) {
+      setMessages(JSON.parse(savedMessages));
+    }
+  }, []);
+
+  // Create or restore conversation once when component mounts
   useEffect(() => {
     const init = async () => {
       try {
         const res = await apiFetch(
           "https://hello-dreams-ai.onrender.com/resume-builder/conversations",
-          {
-            method: "GET",
-          }
+          { method: "GET" }
         );
-
-        if (res.status === 401) {
-          console.error("Unauthorized. Please log in again.");
-          return;
-        }
-
         const data = await res.json();
 
         if (data.length > 0) {
-          // User has existing conversations
-          setConversations(data);
-          // Optionally auto-load the most recent one
-          const latest = data[0];
+          // Sort conversations by updatedAt (descending)
+          const sorted = data.sort(
+            (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
+          );
+
+          setConversations(sorted);
+
+          // Pick the most recent conversation
+          const latest = sorted[0];
           await loadMessages(latest.id);
         } else {
           // No conversations → create one
@@ -61,6 +85,7 @@ const CvBuilder = () => {
           );
           const newConv = await createRes.json();
           setConversationId(newConv.id);
+
           if (newConv.messages?.length) {
             setMessages(
               newConv.messages.map((m, i) => ({
@@ -89,32 +114,38 @@ const CvBuilder = () => {
   const loadMessages = async (id) => {
     try {
       const res = await apiFetch(
-        `https://hello-dreams-ai.onrender.com/resume-builder/conversations/${id}/messages`,
+        `https://hello-dreams-ai.onrender.com/resume-builder/conversations/${id}`,
         { method: "GET" }
       );
       const data = await res.json();
-      setConversationId(id);
-      setMessages(
-        data.map((m, i) => ({
-          id: i + 1,
-          sender: m.role === "user" ? "user" : "ai",
-          content: m.content,
-          timestamp: new Date(m.createdAt).toLocaleTimeString("en-GB", {
-            hour12: false,
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-          }),
-        }))
-      );
+      console.log("Conversation from backend:", data);
+
+      if (data.messages && Array.isArray(data.messages)) {
+        setConversationId(id);
+        setMessages(
+          data.messages.map((m, i) => ({
+            id: i + 1,
+            sender: m.role === "user" ? "user" : "ai",
+            content: m.content,
+            timestamp: new Date(m.createdAt).toLocaleTimeString("en-GB", {
+              hour12: false,
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            }),
+          }))
+        );
+      } else {
+        console.warn("No messages array found in conversation:", data);
+      }
     } catch (err) {
-      console.error("Error loading messages:", err);
+      console.error("Error loading conversation:", err);
     }
   };
 
   // Send message (same as before, but using apiFetch)
   const handleSendMessage = async () => {
-    if (!userInput.trim() && !conversationId) return;
+    if (!userInput.trim() || !conversationId) return;
 
     const newMessage = {
       id: messages.length + 1,
@@ -152,6 +183,7 @@ const CvBuilder = () => {
           : data.messages[data.messages.length - 1].content;
       }
 
+      // Append AI response
       setMessages((prev) => [
         ...prev,
         {
@@ -166,6 +198,18 @@ const CvBuilder = () => {
           }),
         },
       ]);
+
+      // Update conversations list with new updatedAt
+      setConversations((prev) => {
+        const updated = prev.map((conv) =>
+          conv.id === conversationId
+            ? { ...conv, updatedAt: new Date().toISOString() }
+            : conv
+        );
+        return updated.sort(
+          (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
+        );
+      });
     } catch (err) {
       console.error("Error sending message:", err);
     }

@@ -4,18 +4,18 @@ import { AuthContext } from "./authContext";
 import LoadingSpinner from "../components/loading-spinner/loading-spinner.component";
 
 const ProtectedRoute = ({ children }) => {
-  const { token, loading } = useContext(AuthContext);
+  const { token, user, loading } = useContext(AuthContext);
 
-  let content;
   if (loading) {
-    content = <LoadingSpinner />;
-  } else if (!token) {
-    content = <Navigate to="/signin" replace />;
-  } else {
-    content = children;
+    return <LoadingSpinner />;
   }
 
-  return content;
+  // Block access if either token or user is missing
+  if (!token || !user) {
+    return <Navigate to="/signin" replace />;
+  }
+
+  return children;
 };
 
 export default ProtectedRoute;

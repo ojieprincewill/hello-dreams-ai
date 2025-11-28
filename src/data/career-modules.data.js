@@ -1,0 +1,58 @@
+export const careerModules = [
+  {
+    id: "get-to-know",
+    title: "Let's get to know you",
+    description: "Tell us about your background, skills, and career goals.",
+    isActive: true,
+    isCompleted: false,
+  },
+  {
+    id: "build-persona",
+    title: "Build your Persona",
+    description: "Discover your professional persona & communication style",
+    isActive: false,
+    isCompleted: false,
+  },
+  {
+    id: "cv-builder",
+    title: "CV & Resume Builder",
+    description: "Create a professional ATS friendly resume",
+    isActive: false,
+    isCompleted: false,
+  },
+  {
+    id: "cover-letter",
+    title: "Cover letter & Personal Statement",
+    description: "Generate a compelling cover letter or statement",
+    isActive: false,
+    isCompleted: false,
+  },
+  {
+    id: "linkedin-optimizer",
+    title: "LinkedIn Optimiser",
+    description: "Optimise your LinkedIn profile for maximum visibility",
+    isActive: false,
+    isCompleted: false,
+  },
+  {
+    id: "professional-headshot",
+    title: "Professional Headshot",
+    description: "Generative AI-powered professional photos",
+    isActive: false,
+    isCompleted: false,
+  },
+  {
+    id: "portfolio-creation",
+    title: "Portfolio Creation",
+    description: "Build a stunning portfolio to showcase your work",
+    isActive: false,
+    isCompleted: false,
+  },
+  {
+    id: "job-application",
+    title: "Job Application",
+    description: "Find relevant jobs and get application assistance",
+    isActive: false,
+    isCompleted: false,
+  },
+];
