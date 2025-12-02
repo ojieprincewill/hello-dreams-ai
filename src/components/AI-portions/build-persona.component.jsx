@@ -3,6 +3,7 @@ import SelectableCard from "./reusable-customs/selectable-card.component";
 import { UserIcon } from "@heroicons/react/24/outline";
 import { ArrowRight } from "lucide-react";
 import GradientIcon from "./reusable-customs/gradient-icon.component";
+import { apiFetch } from "../../auth/apiClient";
 
 const STEPS = [
   {
@@ -92,6 +93,72 @@ const BuildPersona = () => {
   const [started, setStarted] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [selections, setSelections] = useState({});
+  const [persona, setPersona] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleFinish = async () => {
+    try {
+      setLoading(true);
+
+      // Format answers into array with questionId, question, and answer
+      const formattedAnswers = STEPS.map((step, index) => {
+        const answer = selections[step.id];
+        return {
+          questionId: String(index + 1), // or use step.id if backend accepts it
+          question: step.question,
+          answer,
+        };
+      }).filter((ans) => ans.answer); // only include answered questions
+
+      // Step 1: Submit answers
+      const answersRes = await apiFetch(
+        "https://hello-dreams-ai.onrender.com/persona-builder/answers",
+        {
+          method: "POST",
+          body: JSON.stringify({ answers: formattedAnswers }),
+        }
+      );
+
+      if (!answersRes.ok) {
+        console.error("Failed to submit answers:", answersRes.status);
+        setLoading(false);
+        return;
+      }
+
+      // Step 2: Trigger persona generation
+      const genRes = await apiFetch(
+        "https://hello-dreams-ai.onrender.com/persona-builder/generate",
+        {
+          method: "POST",
+        }
+      );
+
+      if (!genRes.ok) {
+        console.error("Failed to generate persona:", genRes.status);
+        setLoading(false);
+        return;
+      }
+
+      // Step 3: Fetch persona
+      const personaRes = await apiFetch(
+        "https://hello-dreams-ai.onrender.com/persona-builder/persona",
+        {
+          method: "GET",
+        }
+      );
+
+      if (personaRes.ok) {
+        const data = await personaRes.json();
+        setPersona(data.persona);
+      } else {
+        console.error("Failed to fetch persona:", personaRes.status);
+      }
+    } catch (err) {
+      console.error("Error generating persona:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // load persisted
   useEffect(() => {
@@ -210,6 +277,64 @@ const BuildPersona = () => {
     );
   }
 
+  if (loading) {
+    return (
+      <div className="fixed inset-0 bg-[#00000030] flex justify-center items-center h-screen z-60">
+        <p className="ml-4 text-[20px] font-medium">
+          Generating your persona...
+        </p>
+      </div>
+    );
+  }
+
+  if (persona) {
+    return (
+      <div className="min-h-screen px-[5%] py-10">
+        <div className="flex items-center gap-3 mb-8 p-5 border-b border-[#2d2d2d]">
+          <UserIcon className="h-6 w-6" />
+          <p className="text-[24px] font-extrabold">
+            Your Professional Persona
+          </p>
+        </div>
+
+        <div className="bg-[#181818] border border-[#2d2d2d] rounded-xl p-6 md:p-10">
+          <h3 className="text-[22px] font-bold mb-4">Persona Summary</h3>
+          <p className="text-[18px] mb-2">
+            <strong>Communication Style:</strong> {persona.communicationStyle}
+          </p>
+          <p className="text-[18px] mb-2">
+            <strong>Tone:</strong> {persona.tone}
+          </p>
+          <p className="text-[18px] mb-2">
+            <strong>Professional Voice:</strong> {persona.professionalVoice}
+          </p>
+          <p className="text-[18px] mb-2">
+            <strong>Writing Style:</strong> {persona.writingStyle}
+          </p>
+          <p className="text-[18px] mb-2">
+            <strong>Personality Traits:</strong>{" "}
+            {persona.personalityTraits.join(", ")}
+          </p>
+        </div>
+
+        {/* Restart Button */}
+        <div className="flex justify-center mt-10">
+          <button
+            onClick={() => {
+              setPersona(null);
+              setStarted(false);
+              setSelections({});
+              setStepIndex(0);
+            }}
+            className="px-6 py-3 text-[18px] font-bold rounded-lg bg-gradient-to-b from-[#748ffc] to-[#1342ff] text-white hover:opacity-90"
+          >
+            Restart Questionnaire
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen px-[5%] py-10">
       {/* Header */}
@@ -250,7 +375,7 @@ const BuildPersona = () => {
             Back
           </button>
           <button
-            onClick={goNext}
+            onClick={isLast ? handleFinish : goNext}
             disabled={!selections[current.id]}
             className="px-5 py-2 text-[16px] font-medium rounded-md bg-gradient-to-b from-[#748ffc] to-[#1342ff] disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed "
           >

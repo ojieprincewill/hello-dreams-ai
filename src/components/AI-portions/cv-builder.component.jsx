@@ -145,7 +145,7 @@ const CvBuilder = () => {
 
   // Send message (same as before, but using apiFetch)
   const handleSendMessage = async () => {
-    if (!userInput.trim() || !conversationId) return;
+    if (!userInput.trim()) return;
 
     const newMessage = {
       id: messages.length + 1,

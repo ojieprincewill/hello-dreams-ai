@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ArrowRight } from "lucide-react";
 import { UserIcon } from "@heroicons/react/24/outline";
 import MessageInputField from "./reusable-customs/message-input.component";
+import { apiFetch } from "../../auth/apiClient";
 
 const GetToKnowYou = () => {
   const [userInput, setUserInput] = useState("");
@@ -14,40 +15,194 @@ const GetToKnowYou = () => {
       timestamp: "13:02:07",
     },
   ]);
+  const [conversations, setConversations] = useState([]);
+  const [conversationId, setConversationId] = useState(null);
 
-  const handleSendMessage = () => {
-    if (userInput.trim()) {
-      const newMessage = {
-        id: messages.length + 1,
-        sender: "user",
-        content: userInput,
-        timestamp: new Date().toLocaleTimeString("en-GB", {
-          hour12: false,
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        }),
-      };
+  // Save conversationId whenever it changes
+  useEffect(() => {
+    if (conversationId) {
+      localStorage.setItem("careerConversationId", conversationId);
+    }
+  }, [conversationId]);
 
-      setMessages([...messages, newMessage]);
-      setUserInput("");
+  // Save messages whenever they change
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem("careerMessages", JSON.stringify(messages));
+    }
+  }, [messages]);
 
-      // Simulate AI response after a delay
-      setTimeout(() => {
-        const aiResponse = {
-          id: messages.length + 2,
+  // Restore from localStorage first
+  useEffect(() => {
+    const savedId = localStorage.getItem("careerConversationId");
+    const savedMessages = localStorage.getItem("careerMessages");
+
+    if (savedId) {
+      setConversationId(savedId);
+      loadMessages(savedId); // reload from backend for freshness
+    } else if (savedMessages) {
+      setMessages(JSON.parse(savedMessages));
+    }
+  }, []);
+
+  // Create or restore conversation once when component mounts
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const res = await apiFetch(
+          "https://hello-dreams-ai.onrender.com/career-profile/conversations",
+          { method: "GET" }
+        );
+        const data = await res.json();
+
+        if (data.length > 0) {
+          // Sort conversations by updatedAt (descending)
+          const sorted = data.sort(
+            (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
+          );
+
+          setConversations(sorted);
+
+          // Pick the most recent conversation
+          const latest = sorted[0];
+          await loadMessages(latest.id);
+        } else {
+          // No conversations → create one
+          const createRes = await apiFetch(
+            "https://hello-dreams-ai.onrender.com/career-profile/conversations",
+            {
+              method: "POST",
+              body: JSON.stringify({ title: "Career Discovery" }),
+            }
+          );
+          const newConv = await createRes.json();
+          setConversationId(newConv.id);
+
+          if (newConv.messages?.length) {
+            setMessages(
+              newConv.messages.map((m, i) => ({
+                id: i + 1,
+                sender: m.role === "user" ? "user" : "ai",
+                content: m.content,
+                timestamp: new Date(m.createdAt).toLocaleTimeString("en-GB", {
+                  hour12: false,
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+                }),
+              }))
+            );
+          }
+        }
+      } catch (err) {
+        console.error("Error initializing Career Profile:", err);
+      }
+    };
+
+    init();
+  }, []);
+
+  // Load messages for a selected conversation
+  const loadMessages = async (id) => {
+    try {
+      const res = await apiFetch(
+        `https://hello-dreams-ai.onrender.com/career-profile/conversations/${id}`,
+        { method: "GET" }
+      );
+      const data = await res.json();
+      console.log("Conversation from backend:", data);
+
+      if (data.messages && Array.isArray(data.messages)) {
+        setConversationId(id);
+        setMessages(
+          data.messages.map((m, i) => ({
+            id: i + 1,
+            sender: m.role === "user" ? "user" : "ai",
+            content: m.content,
+            timestamp: new Date(m.createdAt).toLocaleTimeString("en-GB", {
+              hour12: false,
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            }),
+          }))
+        );
+      } else {
+        console.warn("No messages array found in conversation:", data);
+      }
+    } catch (err) {
+      console.error("Error loading conversation:", err);
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (!userInput.trim()) return;
+
+    const newMessage = {
+      id: messages.length + 1,
+      sender: "user",
+      content: userInput,
+      timestamp: new Date().toLocaleTimeString("en-GB", {
+        hour12: false,
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      }),
+    };
+
+    setMessages((prev) => [...prev, newMessage]);
+    setUserInput("");
+
+    try {
+      const res = await apiFetch(
+        `https://hello-dreams-ai.onrender.com/career-profile/conversations/${conversationId}/messages`,
+        {
+          method: "POST",
+          body: JSON.stringify({ content: newMessage.content }),
+        }
+      );
+
+      const data = await res.json();
+      let aiContent = "AI response not available";
+
+      if (data.content) {
+        aiContent = data.content;
+      } else if (data.messages?.length) {
+        const aiMsg = data.messages.find((m) => m.role !== "user");
+        aiContent = aiMsg
+          ? aiMsg.content
+          : data.messages[data.messages.length - 1].content;
+      }
+
+      // Append AI response
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: newMessage.id + 1,
           sender: "ai",
-          content:
-            "That's great! I can see you have valuable experience. Can you tell me more about your career goals and what kind of role you're looking for?",
+          content: aiContent,
           timestamp: new Date().toLocaleTimeString("en-GB", {
             hour12: false,
             hour: "2-digit",
             minute: "2-digit",
             second: "2-digit",
           }),
-        };
-        setMessages((prev) => [...prev, aiResponse]);
-      }, 2000);
+        },
+      ]);
+
+      // Update conversations list with new updatedAt
+      setConversations((prev) => {
+        const updated = prev.map((conv) =>
+          conv.id === conversationId
+            ? { ...conv, updatedAt: new Date().toISOString() }
+            : conv
+        );
+        return updated.sort(
+          (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
+        );
+      });
+    } catch (err) {
+      console.error("Error sending message:", err);
     }
   };
 
@@ -107,6 +262,25 @@ const GetToKnowYou = () => {
           <h2 className="text-[24px] font-semibold ">Getting to know you</h2>
         </div>
 
+        {/* Conversation selector */}
+        {conversations.length > 0 && (
+          <div className="mb-10">
+            <h3 className="text-lg font-bold">Your Conversations</h3>
+            <ul>
+              {conversations.map((conv) => (
+                <li key={conv.id}>
+                  <button
+                    onClick={() => loadMessages(conv.id)}
+                    className="text-blue-600 hover:underline"
+                  >
+                    {conv.title}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {/* Chat Messages */}
         <div className="mb-15">
           {messages.map((message) => (
@@ -123,7 +297,7 @@ const GetToKnowYou = () => {
               ) : (
                 <div className="flex justify-end my-5">
                   <div className="w-max bg-[#151515] border border-[#2d2d2d] rounded-lg p-4">
-                    <p className="w-[453px] text-white text-[16px] leading-relaxed">
+                    <p className="w-[453px] text-white text-[20px] leading-relaxed">
                       {message.content}
                     </p>
                     <p className="text-[#bfb5b5] text-[16px] mt-2 text-right">
