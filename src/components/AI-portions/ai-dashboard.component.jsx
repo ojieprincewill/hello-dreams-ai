@@ -51,7 +51,7 @@ const AiDashboard = () => {
           />
         </div>
 
-        <div className="ml-[25%] flex flex-col w-full">
+        <div className="relative ml-[25%] flex flex-col w-full">
           {/* Top Bar */}
           <div className="flex justify-end items-center space-x-15 px-10 py-4 border-b border-[#2d2d2d]">
             <div className="text-[20px] font-extrabold">Progress: 0%</div>

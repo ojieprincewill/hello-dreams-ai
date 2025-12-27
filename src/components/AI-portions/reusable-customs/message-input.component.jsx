@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import { Mic, Send } from "lucide-react";
 
 const MessageInputField = ({
@@ -8,17 +8,29 @@ const MessageInputField = ({
   onSend,
   placeholder = "Type your response",
 }) => {
+  const textareaRef = useRef(null);
+
+  // Auto-resize textarea height with max cap
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height =
+        Math.min(textareaRef.current.scrollHeight, 200) + "px"; // cap at 200px
+    }
+  }, [value]);
+
   return (
     <div className="bg-[#303030] border border-[#2d2d2d] rounded-lg p-5">
       <div className="flex items-center space-x-4">
         <div className="flex-1">
-          <input
-            type="text"
+          <textarea
+            ref={textareaRef}
             value={value}
             onChange={onChange}
             onKeyDown={onKeyDown}
             placeholder={placeholder}
-            className="w-full bg-transparent text-white text-[20px] font-medium placeholder:text-white focus:outline-none"
+            rows={1}
+            className="w-full resize-none bg-transparent text-white text-[20px] font-medium placeholder:text-white focus:outline-none overflow-y-auto max-h-[200px] transition-all duration-200 ease-in-out custom-scrollbar"
           />
         </div>
         <div className="flex items-center space-x-3">

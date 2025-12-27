@@ -42,13 +42,6 @@ export const careerModules = [
     isCompleted: false,
   },
   {
-    id: "portfolio-creation",
-    title: "Portfolio Creation",
-    description: "Build a stunning portfolio to showcase your work",
-    isActive: false,
-    isCompleted: false,
-  },
-  {
     id: "job-application",
     title: "Job Application",
     description: "Find relevant jobs and get application assistance",

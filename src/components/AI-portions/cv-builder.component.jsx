@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { UserIcon } from "@heroicons/react/24/outline";
 import MessageInputField from "./reusable-customs/message-input.component";
 import { apiFetch } from "../../auth/apiClient";
+import ChatLayout from "./reusable-customs/chat-layout.component";
+import AnimatedMessage from "./reusable-customs/animated-message.component";
 
 const CvBuilder = () => {
   const [userInput, setUserInput] = useState("");
@@ -19,7 +21,7 @@ const CvBuilder = () => {
       }),
     },
   ]);
-  const [conversations, setConversations] = useState([]);
+  // const [conversations, setConversations] = useState([]);
   const [conversationId, setConversationId] = useState(null);
 
   // Save conversationId whenever it changes
@@ -65,7 +67,7 @@ const CvBuilder = () => {
             (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
           );
 
-          setConversations(sorted);
+          // setConversations(sorted);
 
           // Pick the most recent conversation
           const latest = sorted[0];
@@ -199,17 +201,17 @@ const CvBuilder = () => {
         },
       ]);
 
-      // Update conversations list with new updatedAt
-      setConversations((prev) => {
-        const updated = prev.map((conv) =>
-          conv.id === conversationId
-            ? { ...conv, updatedAt: new Date().toISOString() }
-            : conv
-        );
-        return updated.sort(
-          (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
-        );
-      });
+      // // Update conversations list with new updatedAt
+      // setConversations((prev) => {
+      //   const updated = prev.map((conv) =>
+      //     conv.id === conversationId
+      //       ? { ...conv, updatedAt: new Date().toISOString() }
+      //       : conv
+      //   );
+      //   return updated.sort(
+      //     (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
+      //   );
+      // });
     } catch (err) {
       console.error("Error sending message:", err);
     }
@@ -226,8 +228,32 @@ const CvBuilder = () => {
     setUserInput(e.target.value);
   };
 
+  const renderMessage = (message) => (
+    <AnimatedMessage key={message.id}>
+      {message.sender === "ai" ? (
+        <div className="w-max bg-[#2d2d2d] border border-[#2d2d2d] rounded-lg p-4">
+          <p className="w-[453px] text-[20px] leading-relaxed">
+            {message.content}
+          </p>
+          <p className="text-[#bfb5b5] text-[16px] mt-2">{message.timestamp}</p>
+        </div>
+      ) : (
+        <div className="flex justify-end my-5">
+          <div className="w-max bg-[#151515] border border-[#2d2d2d] rounded-lg p-4">
+            <p className="w-[453px] text-white text-[20px] leading-relaxed">
+              {message.content}
+            </p>
+            <p className="text-[#bfb5b5] text-[16px] mt-2 text-right">
+              {message.timestamp}
+            </p>
+          </div>
+        </div>
+      )}
+    </AnimatedMessage>
+  );
+
   return (
-    <div className="min-h-screen px-[5%] py-10">
+    <div className="px-[5%] pt-10 pb-5">
       <div className="flex items-center space-x-3 mb-10 p-5 border-b border-[#2d2d2d]">
         <UserIcon className="h-6 w-6" />
         <div>
@@ -239,7 +265,7 @@ const CvBuilder = () => {
       </div>
 
       {/* Conversation selector */}
-      {conversations.length > 0 && (
+      {/* {conversations.length > 0 && (
         <div className="mb-10">
           <h3 className="text-lg font-bold">Your Conversations</h3>
           <ul>
@@ -255,41 +281,17 @@ const CvBuilder = () => {
             ))}
           </ul>
         </div>
-      )}
+      )} */}
 
-      <div className="mb-25">
-        {messages.map((message) => (
-          <div key={message.id}>
-            {message.sender === "ai" ? (
-              <div className="w-max bg-[#2d2d2d] border border-[#2d2d2d] rounded-lg p-4">
-                <p className="w-[453px] text-[20px] leading-relaxed">
-                  {message.content}
-                </p>
-                <p className="text-[#bfb5b5] text-[16px] mt-2">
-                  {message.timestamp}
-                </p>
-              </div>
-            ) : (
-              <div className="flex justify-end my-5">
-                <div className="w-max bg-[#151515] border border-[#2d2d2d] rounded-lg p-4">
-                  <p className="w-[453px] text-white text-[20px] leading-relaxed">
-                    {message.content}
-                  </p>
-                  <p className="text-[#bfb5b5] text-[16px] mt-2 text-right">
-                    {message.timestamp}
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-
-      <MessageInputField
-        value={userInput}
-        onChange={handleChange}
-        onKeyDown={handleKeyPress}
-        onSend={handleSendMessage}
+      <ChatLayout
+        messages={messages}
+        renderMessage={renderMessage}
+        inputProps={{
+          value: userInput,
+          onChange: handleChange,
+          onKeyDown: handleKeyPress,
+          onSend: handleSendMessage,
+        }}
       />
     </div>
   );
