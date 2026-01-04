@@ -1,87 +1,78 @@
 import React, { useEffect, useMemo, useState } from "react";
-import SelectableCard from "./reusable-customs/selectable-card.component";
+import SelectableCard from "../reusable-customs/selectable-card.component";
 import { UserIcon } from "@heroicons/react/24/outline";
 import { ArrowRight } from "lucide-react";
-import GradientIcon from "./reusable-customs/gradient-icon.component";
-import { apiFetch } from "../../auth/apiClient";
+import GradientIcon from "../reusable-customs/gradient-icon.component";
+import { apiFetch } from "../../../auth/apiClient";
+import CurrentPersona from "./current-persona.component";
+import IdealPersona from "./ideal-persona.component";
+import TransformationPlan from "./transformation-plan.component";
 
 const STEPS = [
   {
-    id: "how-seen-1",
-    title: "How You're Seen • 1 of 4",
-    question: "When your colleagues describe you, they say you're...",
+    id: "question-1",
+    title: "Question 1 of 6",
+    question: "When presenting ideas in meetings, you typically...",
     options: [
-      "Calm and dependable",
-      "Creative and bold",
-      "Precise and detailed focus",
-      "Friendly and approachable",
+      "Wait to be asked your opinion",
+      "Build on others ideas supportively",
+      "Present your ideas clearly and concisely",
+      "Challenge assumptions and build for better solutions",
     ],
   },
   {
-    id: "how-seen-2",
-    title: "How You're Seen • 2 of 4",
-    question: "In meetings, you tend to...",
+    id: "question-2",
+    title: "Question 2 of 6",
+    question: "Your colleagues would describe your work approach as...",
     options: [
-      "Take the lead in discussions",
-      "Share when you have something valuable",
-      "Listen, process and give input after",
-      "Ask questions and support others' ideas",
+      "Steady, reliable and detail-oriented",
+      "Creative, innovative and flexible",
+      "Results-driven and goal-focused",
+      "People-focused and relationship-building",
     ],
   },
   {
-    id: "how-seen-3",
-    title: "How You're Seen • 3 of 4",
-    question: "Your boss often says you should...",
+    id: "question-3",
+    title: "Question 3 of 6",
+    question: "Your colleagues would describe your work approach as...",
     options: [
-      "Speak up more",
-      "Stay more focused",
-      "Take more initiative",
-      "Collaborate more",
+      "Focus on executing tasks efficiently",
+      "Bring people together to find solutions",
+      "Step back and develop a strategic approach",
+      "Look for creative, unconventional solutions",
     ],
   },
   {
-    id: "how-seen-4",
-    title: "How You're Seen • 4 of 4",
-    question: "People come to you when they need...",
+    id: "question-4",
+    title: "Question 4 of 6",
+    question: "At work, you prefer to...",
     options: [
-      "Creative solutions to tough problems",
-      "Someone to organise and execute plans",
-      "Help resolve team conflicts",
-      "Deep expertise in your area",
-      "They rarely come to you",
+      "Work behind the scenes and let results speak",
+      "Share credit with the team and celebrate together",
+      "Present your work to stakeholders when appropriate",
+      "Take the spotlight and lead high-profile initiatives",
     ],
   },
   {
-    id: "where-to-be-1",
-    title: "Where You Want to Be • 1 of 3",
-    question: "What's your next career goal?",
+    id: "question-5",
+    title: "Question 5 of 6",
+    question: "Your primary career aspiration is...",
     options: [
-      "Getting promoted to leadership position",
-      "Landing new role in my field",
-      "Switching to a different career path",
-      "Become recognised as a subject matter expert",
+      "Become a recognized expert in your field",
+      "Lead teams and drive organizational change",
+      "Create innovative solutions and lead projects",
+      "Build influence and shape strategic decisions",
     ],
   },
   {
-    id: "where-to-be-2",
-    title: "Where You Want to Be • 2 of 3",
-    question: "How do you want people to see you at work?",
+    id: "question-6",
+    title: "Question 6 of 6",
+    question: "The area you most want to develop is...",
     options: [
-      "Confident leader who inspires others",
-      "As the go to problem-solver for complex challenges",
-      "As an innovator who brings fresh ideas",
-      "As a connector who builds strong relationship",
-    ],
-  },
-  {
-    id: "where-to-be-3",
-    title: "Where You Want to Be • 3 of 3",
-    question: "One thing you wish people noticed more about you is...",
-    options: [
-      "My strategic thinking and long term vision",
-      "How well i collaborate and support others",
-      "The consistent result i deliver",
-      "My creative approach to solving problems",
+      "Speaking up with more confidence and authority",
+      "Building stronger professional relationships",
+      "Thinking and communicating more strategically",
+      "Commanding more respect and executive presence",
     ],
   },
 ];
@@ -233,24 +224,27 @@ const BuildPersona = () => {
 
           <div className="pl-5 my-5">
             <p className="text-[20px] md:text-[32px] font-extrabold mb-4">
-              Here's how it works:
+              Here's your transformation journey:
             </p>
-            <ul className="list-disc pl-5 space-y-6 text-[14px] md:text-[20px]">
+            <ul className="list-disc pl-5 space-y-6 text-[14px] md:text-[20px] marker:text-sm">
               <li>
-                <span className="font-bold">How You're Seen at Work</span>
-                <br />4 quick questions about your current workplace reputation
+                <span className="font-bold">
+                  Mirror: See Your Curent Persona
+                </span>
+                <br />
+                Understand how you're perceived at work right now
               </li>
               <li>
-                <span className="font-bold">Where You Want to Be</span>
-                <br />3 questions about your career target and desired
-                perception
+                <span className="font-bold">Target: Your Ideal Persona</span>
+                <br />
+                Discover the persona that will accelerate your career
               </li>
               <li>
                 <span className="font-bold">
-                  Get your personalized career persona
+                  Transform: Practical Action Plan
                 </span>
                 <br />
-                plus a detailed playbook to embody it
+                Get specific guidance on how to embody your new persona
               </li>
             </ul>
           </div>
@@ -262,7 +256,7 @@ const BuildPersona = () => {
  text-[#fff] text-[24px] font-bold rounded-xl tracking-tighter shadow-[0_30px_80px_-10px_rgba(255,215,0,0.5),_0_-30px_80px_-10px_rgba(255,215,0,0.5)] mt-6 mb-12 cursor-pointer"
               style={{ fontFamily: "Poppins, sans-serif" }}
             >
-              Let's discover your persona
+              Start your persona journey
               <span>
                 <ArrowRight
                   size={24}
@@ -273,16 +267,26 @@ const BuildPersona = () => {
             </button>
           </div>
         </div>
+        <CurrentPersona />
+        <IdealPersona />
+        <TransformationPlan />
       </div>
     );
   }
 
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-[#00000030] flex justify-center items-center h-screen z-60">
-        <p className="ml-4 text-[20px] font-medium">
-          Generating your persona...
-        </p>
+      <div className="min-h-screen px-[5%] py-10 flex justify-center items-center">
+        <div className="bg-[#181818] border border-[#2d2d2d] rounded-xl p-6 md:p-10 flex flex-col justify-center items-center space-y-3">
+          <GradientIcon />
+          <p className="text-[18px] md:text-[24px] font-bold">
+            Analysing your persona
+          </p>
+          <p className="text-[18px] md:text-[24px]">
+            Identifying your current workplace persona and career transformation
+            path
+          </p>
+        </div>
       </div>
     );
   }

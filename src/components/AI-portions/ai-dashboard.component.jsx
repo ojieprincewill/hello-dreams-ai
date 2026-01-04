@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import SidebarNavigation from "./sidebar-navigation.component";
 import WelcomeContent from "./welcome-content.component";
 import GetToKnowYou from "./get-to-know-you.component";
-import BuildPersona from "./build-persona.component";
+import BuildPersona from "./build-persona-section/build-persona.component";
 import CvBuilder from "./cv-builder.component";
 import CoverLetter from "./cover-letter.component";
 import ProfessionalHeadshot from "./professional-headshot.component";
