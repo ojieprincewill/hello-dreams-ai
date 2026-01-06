@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ArrowRight } from "lucide-react";
 import { UserIcon } from "@heroicons/react/24/outline";
-import MessageInputField from "./reusable-customs/message-input.component";
 import ChatLayout from "./reusable-customs/chat-layout.component";
 import { apiFetch } from "../../auth/apiClient";
 import AnimatedMessage from "./reusable-customs/animated-message.component";
