@@ -52,14 +52,14 @@ const GetToKnowYou = () => {
       try {
         const res = await apiFetch(
           "https://hello-dreams-ai.onrender.com/career-profile/conversations",
-          { method: "GET" }
+          { method: "GET" },
         );
         const data = await res.json();
 
         if (data.length > 0) {
           // Sort conversations by updatedAt (descending)
           const sorted = data.sort(
-            (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
+            (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt),
           );
 
           // setConversations(sorted);
@@ -74,7 +74,7 @@ const GetToKnowYou = () => {
             {
               method: "POST",
               body: JSON.stringify({ title: "Career Discovery" }),
-            }
+            },
           );
           const newConv = await createRes.json();
           setConversationId(newConv.id);
@@ -91,7 +91,7 @@ const GetToKnowYou = () => {
                   minute: "2-digit",
                   second: "2-digit",
                 }),
-              }))
+              })),
             );
           }
         }
@@ -108,7 +108,7 @@ const GetToKnowYou = () => {
     try {
       const res = await apiFetch(
         `https://hello-dreams-ai.onrender.com/career-profile/conversations/${id}`,
-        { method: "GET" }
+        { method: "GET" },
       );
       const data = await res.json();
       console.log("Conversation from backend:", data);
@@ -126,7 +126,7 @@ const GetToKnowYou = () => {
               minute: "2-digit",
               second: "2-digit",
             }),
-          }))
+          })),
         );
       } else {
         console.warn("No messages array found in conversation:", data);
@@ -160,7 +160,7 @@ const GetToKnowYou = () => {
         {
           method: "POST",
           body: JSON.stringify({ content: newMessage.content }),
-        }
+        },
       );
 
       const data = await res.json();
@@ -221,19 +221,21 @@ const GetToKnowYou = () => {
   const renderMessage = (message) => (
     <AnimatedMessage key={message.id}>
       {message.sender === "ai" ? (
-        <div className="w-max bg-[#2d2d2d] border border-[#2d2d2d] rounded-lg p-4">
+        <div className="w-max bg-[#efefef] dark:bg-[#2d2d2d] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-lg p-4">
           <p className="w-[453px] text-[20px] leading-relaxed">
             {message.content}
           </p>
-          <p className="text-[#bfb5b5] text-[16px] mt-2">{message.timestamp}</p>
+          <p className="text-[#444] dark:text-[#bfb5b5] text-[16px] mt-2">
+            {message.timestamp}
+          </p>
         </div>
       ) : (
         <div className="flex justify-end my-5">
-          <div className="w-max bg-[#151515] border border-[#2d2d2d] rounded-lg p-4">
-            <p className="w-[453px] text-white text-[20px] leading-relaxed">
+          <div className="w-max bg-[#e2e2e2] dark:bg-[#151515] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-lg p-4">
+            <p className="w-[453px] text-[20px] leading-relaxed">
               {message.content}
             </p>
-            <p className="text-[#bfb5b5] text-[16px] mt-2 text-right">
+            <p className="text-[#444] dark:text-[#bfb5b5] text-[16px] mt-2 text-right">
               {message.timestamp}
             </p>
           </div>
@@ -252,7 +254,7 @@ const GetToKnowYou = () => {
         </p>
 
         {/* Journey Steps */}
-        <div className="flex justify-between items-center p-10 my-12 border-b border-[#2d2d2d]">
+        <div className="flex justify-between items-center p-10 my-12 border-b-[1.5px] dark:border-b border-[#eaecf0] dark:border-[#2d2d2d]">
           <div className="flex items-center space-x-3">
             <UserIcon className="h-6 w-6" />
             <span className="text-[24px] font-semibold">Discover you</span>

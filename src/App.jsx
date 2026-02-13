@@ -17,9 +17,9 @@ function App() {
         <Route
           path="/ai-dashboard"
           element={
-            <ProtectedRoute>
-              <AiDashboard />
-            </ProtectedRoute>
+            // <ProtectedRoute>
+            <AiDashboard />
+            // </ProtectedRoute>
           }
         />
       </Routes>

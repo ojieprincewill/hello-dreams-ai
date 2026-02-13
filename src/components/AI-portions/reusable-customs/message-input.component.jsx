@@ -20,7 +20,7 @@ const MessageInputField = ({
   }, [value]);
 
   return (
-    <div className="bg-[#303030] border border-[#2d2d2d] rounded-lg p-5">
+    <div className="bg-[#efefef] dark:bg-[#303030] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-lg p-5">
       <div className="flex items-center space-x-4">
         <div className="flex-1">
           <textarea
@@ -30,18 +30,18 @@ const MessageInputField = ({
             onKeyDown={onKeyDown}
             placeholder={placeholder}
             rows={1}
-            className="w-full resize-none bg-transparent text-white text-[20px] font-medium placeholder:text-white focus:outline-none overflow-y-auto max-h-[200px] transition-all duration-200 ease-in-out custom-scrollbar"
+            className="w-full resize-none bg-transparent text-[#010413] dark:text-white text-[20px] font-medium placeholder:text-[#333] dark:placeholder:text-white focus:outline-none overflow-y-auto max-h-[200px] transition-all duration-200 ease-in-out custom-scrollbar"
           />
         </div>
         <div className="flex items-center space-x-3">
-          <button className="p-2 hover:bg-[#2d2d2d] rounded-lg transition-colors cursor-pointer">
-            <Mic size={24} className="text-[#eaecf0]" />
+          <button className="p-2 hover:bg-[#dfdfdf] dark:hover:bg-[#2d2d2d] rounded-lg transition-colors cursor-pointer">
+            <Mic size={24} className="text-[#333] dark:text-[#eaecf0]" />
           </button>
           <button
             onClick={onSend}
-            className="w-12 h-12 flex justify-center items-center bg-white hover:bg-[#eaecf0] rounded-full transition-colors cursor-pointer"
+            className="w-12 h-12 flex justify-center items-center bg-[#dfdfdf] dark:bg-white dark:hover:bg-[#eaecf0] rounded-full transition-colors cursor-pointer"
           >
-            <Send size={20} className="text-[#303030]" />
+            <Send size={20} className=" dark:text-[#303030]" />
           </button>
         </div>
       </div>

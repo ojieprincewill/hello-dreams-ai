@@ -57,8 +57,8 @@ const transformData = [
 const TransformationPlan = () => {
   return (
     <div className="min-h-screen px-[5%] py-10 ">
-      <div className="bg-[#181818] border border-[#2d2d2d] rounded-xl p-6 md:p-10 ">
-        <div className="bg-gradient-to-r from-[#8a2be2] to-[#ff00e6] py-1 px-2 w-max rounded-2xl text-[12px] font-bold mb-1 ">
+      <div className="bg-[#e6e6e6] dark:bg-[#181818] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-6 md:p-10 ">
+        <div className="bg-gradient-to-r from-[#8a2be2] to-[#ff00e6] py-1 px-2 w-max rounded-2xl text-[12px] text-[#fff] font-bold mb-1 ">
           Your Transformation Playbook
         </div>
         <p className="text-[18px] md:text-[24px] mb-5 ">
@@ -70,7 +70,7 @@ const TransformationPlan = () => {
           {transformData.map((data, index) => (
             <div
               key={data.id}
-              className={`border border-[#494848] rounded-md p-2 ${
+              className={`border border-[#ccc] dark:border-[#494848] rounded-md p-2 ${
                 index === transformData.length - 1 ? "col-span-2" : ""
               }`}
             >

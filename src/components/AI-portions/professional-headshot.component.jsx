@@ -105,7 +105,7 @@ const ProfessionalHeadshot = () => {
   return (
     <div className="px-[5%] py-10">
       {/* Header */}
-      <div className="flex items-center space-x-3 mb-6 p-5 border-b border-[#2d2d2d]">
+      <div className="flex items-center space-x-3 mb-6 p-5 border-b-[1.5px] dark:border-b border-[#eaecf0] dark:border-[#2d2d2d]">
         <UserIcon className="h-6 w-6" />
         <div>
           <h2 className="text-[24px] font-extrabold ">
@@ -119,7 +119,7 @@ const ProfessionalHeadshot = () => {
 
       {/* If generated result */}
       {resultUrl && !isGenerating && styleId && personaId ? (
-        <div className="bg-[#181818] border border-[#2d2d2d] rounded-xl p-6">
+        <div className="bg-[#f6f6f6] dark:bg-[#181818] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-[20px] font-bold">
@@ -148,7 +148,7 @@ const ProfessionalHeadshot = () => {
           </div>
 
           <div className="w-full flex items-center justify-center">
-            <div className="border border-[#2d2d2d] rounded-md p-2 bg-black">
+            <div className="border border-[#ccc] dark:border-[#2d2d2d] rounded-md p-2 bg-[#ececec] dark:bg-black">
               <img
                 src={resultUrl}
                 alt="Generated headshot"
@@ -160,12 +160,12 @@ const ProfessionalHeadshot = () => {
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-4">
           {/* Upload */}
-          <div className="bg-[#181818] border border-[#2d2d2d] rounded-xl p-6">
+          <div className="bg-[#f6f6f6] dark:bg-[#181818] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-6">
             <p className="font-semibold mb-4">1. Upload Your Photo</p>
             <div
               role="button"
               onClick={handlePick}
-              className="h-[500px] rounded-md border border-dashed border-[#2d2d2d] flex items-center justify-center text-center hover:bg-[#151515] cursor-pointer"
+              className="h-[500px] rounded-md border border-dashed border-[#ccc] dark:border-[#2d2d2d] flex items-center justify-center text-center hover:bg-[#d2d2d2] dark:hover:bg-[#151515] transition-all ease-in-out cursor-pointer"
             >
               {previewUrl ? (
                 <img
@@ -192,7 +192,7 @@ const ProfessionalHeadshot = () => {
           </div>
 
           {/* Choose Style */}
-          <div className="bg-[#181818] border border-[#2d2d2d] rounded-xl p-6">
+          <div className="bg-[#f6f6f6] dark:bg-[#181818] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-6">
             <p className="font-semibold mb-4">2. Choose Style</p>
             <div className="space-y-3">
               {STYLES.map((s) => (
@@ -217,7 +217,7 @@ const ProfessionalHeadshot = () => {
 
       {/* Personas and CTA */}
       {!hasGenerated && (
-        <div className="mt-6 bg-[#181818] border border-[#2d2d2d] rounded-xl p-6">
+        <div className="mt-6 bg-[#f6f6f6] dark:bg-[#181818] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-6">
           <p className="font-semibold mb-4">3. Select Persona</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {PERSONAS.map((p) => (

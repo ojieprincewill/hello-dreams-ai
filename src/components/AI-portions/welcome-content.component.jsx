@@ -17,7 +17,7 @@ const WelcomeContent = ({ onStartAssessment }) => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
         {/* What We'll Help You With */}
-        <div className="border border-[#2d2d2d] p-6 rounded-lg">
+        <div className="border border-[#ccc] dark:border-[#2d2d2d] p-6 rounded-lg">
           <h3 className="text-[32px] font-extrabold mb-3 leading-[1.3]">
             What We'll Help You With:
           </h3>
@@ -45,7 +45,7 @@ const WelcomeContent = ({ onStartAssessment }) => {
         </div>
 
         {/* Quick Video Section */}
-        <div className="border border-[#2d2d2d] p-6 rounded-lg">
+        <div className="border border-[#ccc] dark:border-[#2d2d2d] p-6 rounded-lg">
           <h3 className="text-[32px] font-extrabold mb-3 leading-[1.3]">
             Quick video to help you understand how it works
           </h3>
@@ -82,8 +82,8 @@ const WelcomeContent = ({ onStartAssessment }) => {
       <div className="flex justify-center items-center">
         <button
           onClick={onStartAssessment}
-          className="w-[476px] text-center py-3 border border-[#eaecf0] bg-[#1342ff]
- text-[#fff] text-[24px] font-bold rounded-xl tracking-tighter shadow-[0_30px_80px_-10px_rgba(255,215,0,0.5),_0_-30px_80px_-10px_rgba(255,215,0,0.5)] mt-6 mb-12 cursor-pointer"
+          className="w-[476px] text-center py-3 border border-[#eaecf0] bg-gradient-to-b from-[#748ffc] to-[#1342ff]
+ text-[#fff] text-[24px] font-bold rounded-xl tracking-tighter dark:shadow-[0_30px_80px_-10px_rgba(255,215,0,0.5),_0_-30px_80px_-10px_rgba(255,215,0,0.5)] mt-6 mb-12 cursor-pointer"
           style={{ fontFamily: "Poppins, sans-serif" }}
         >
           Start Assessment{" "}

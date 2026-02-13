@@ -4,8 +4,8 @@ import { ArrowRight } from "lucide-react";
 const CurrentPersona = () => {
   return (
     <div className="min-h-screen px-[5%] py-10 ">
-      <div className="bg-[#181818] border border-[#2d2d2d] rounded-xl p-6 md:p-10 ">
-        <div className="bg-gradient-to-r from-[#8a2be2] to-[#ff00e6] py-1 px-2 w-max rounded-2xl text-[12px] font-bold mb-1 ">
+      <div className="bg-[#e6e6e6] dark:bg-[#181818] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-6 md:p-10 ">
+        <div className="bg-gradient-to-r from-[#8a2be2] to-[#ff00e6] py-1 px-2 w-max rounded-2xl text-[12px] text-[#fff] font-bold mb-1 ">
           Your Current Persona
         </div>
         <p className="text-[18px] md:text-[24px] font-bold capitalize ">
@@ -30,7 +30,7 @@ const CurrentPersona = () => {
               </ul>
             </div>
           </div>
-          <div className="bg-[#6c5b16] border border-[#575757] rounded-md p-2 flex space-x-2 h-[250px]">
+          <div className="bg-[#fd8f6793] dark:bg-[#f3794d5e] border border-[#ff7f50] rounded-md p-2 flex space-x-2 h-[250px]">
             <div className="w-[38px] h-[38px] rounded-sm bg-[#ff7f50]"></div>
             <div className="w-max">
               <p className="text-[18px] md:text-[24px] font-bold capitalize mb-1 ">

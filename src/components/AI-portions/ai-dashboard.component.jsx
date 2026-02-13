@@ -8,6 +8,7 @@ import CoverLetter from "./cover-letter.component";
 import ProfessionalHeadshot from "./professional-headshot.component";
 import UserIconDropdown from "../user-icon-dropdown/user-icon-dropdown.component";
 import { careerModules } from "../../data/career-modules.data";
+import ThemeToggle from "./theme-toggle/theme-toggle.component";
 
 const AiDashboard = () => {
   const [activeModule, setActiveModule] = useState(null);
@@ -38,12 +39,12 @@ const AiDashboard = () => {
 
   return (
     <div
-      className="bg-[#212121] text-white"
+      className="bg-[#fff] text-[#010413] dark:bg-[#212121] dark:text-white transition-all ease-in-out"
       style={{ fontFamily: "Darker Grotesque, sans-serif" }}
     >
       <div className="flex ">
         {/* Left Sidebar */}
-        <div className="fixed top-0 left-0 h-screen w-[25%] overflow-auto sidebar bg-[#181818] z-50">
+        <div className="fixed top-0 left-0 h-screen w-[25%] overflow-auto sidebar border-r-2 border-r-[#eaecf0] dark:border-r-0 bg-[#f9f9f9] dark:bg-[#181818] z-50">
           <SidebarNavigation
             modules={careerModules}
             activeModule={activeModule}
@@ -53,8 +54,11 @@ const AiDashboard = () => {
 
         <div className="relative ml-[25%] flex flex-col w-full">
           {/* Top Bar */}
-          <div className="flex justify-end items-center space-x-15 px-10 py-4 border-b border-[#2d2d2d]">
-            <div className="text-[20px] font-extrabold">Progress: 0%</div>
+          <div className="flex justify-end items-center space-x-15 px-10 py-4 border-b-[1.5px] dark:border-b border-[#eaecf0] dark:border-[#2d2d2d]">
+            <ThemeToggle />
+            <div className="text-[20px] text-[#222] dark:text-[#fff] font-extrabold">
+              Progress: 0%
+            </div>
             <UserIconDropdown />
           </div>
 
