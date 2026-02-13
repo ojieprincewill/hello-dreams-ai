@@ -39,7 +39,7 @@ const AiDashboard = () => {
 
   return (
     <div
-      className="bg-[#fff] text-[#010413] dark:bg-[#212121] dark:text-white transition-all ease-in-out"
+      className="bg-white text-[#010413] dark:bg-[#212121] dark:text-white transition-all ease-in-out"
       style={{ fontFamily: "Darker Grotesque, sans-serif" }}
     >
       <div className="flex ">
@@ -56,7 +56,7 @@ const AiDashboard = () => {
           {/* Top Bar */}
           <div className="flex justify-end items-center space-x-15 px-10 py-4 border-b-[1.5px] dark:border-b border-[#eaecf0] dark:border-[#2d2d2d]">
             <ThemeToggle />
-            <div className="text-[20px] text-[#222] dark:text-[#fff] font-extrabold">
+            <div className="text-[20px] text-[#222] dark:text-white font-extrabold">
               Progress: 0%
             </div>
             <UserIconDropdown />
