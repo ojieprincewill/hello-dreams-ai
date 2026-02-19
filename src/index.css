@@ -6,6 +6,12 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@layer base {
+  * {
+    @apply transition-colors duration-500 ease-in-out;
+  }
+}
+
 :root {
   height: 100%;
   font-family: "Poppins", sans-serif;

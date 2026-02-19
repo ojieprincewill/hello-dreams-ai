@@ -30,7 +30,7 @@ const MessageInputField = ({
             onKeyDown={onKeyDown}
             placeholder={placeholder}
             rows={1}
-            className="w-full resize-none bg-transparent text-[#010413] dark:text-white text-[20px] font-medium placeholder:text-[#333] dark:placeholder:text-white focus:outline-none overflow-y-auto max-h-[200px] transition-all duration-200 ease-in-out custom-scrollbar"
+            className="w-full resize-none bg-transparent text-[#010413] dark:text-white text-[20px] font-medium placeholder:text-[#333] dark:placeholder:text-white focus:outline-none overflow-y-auto max-h-[200px] transition-colors duration-200 ease-in-out custom-scrollbar"
           />
         </div>
         <div className="flex items-center space-x-3">

@@ -39,7 +39,7 @@ const AiDashboard = () => {
 
   return (
     <div
-      className="bg-white text-[#010413] dark:bg-[#212121] dark:text-white transition-all ease-in-out"
+      className="bg-white text-[#010413] dark:bg-[#212121] dark:text-white transition-colors ease-in-out"
       style={{ fontFamily: "Darker Grotesque, sans-serif" }}
     >
       <div className="flex ">

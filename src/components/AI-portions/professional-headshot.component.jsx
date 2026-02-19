@@ -165,7 +165,7 @@ const ProfessionalHeadshot = () => {
             <div
               role="button"
               onClick={handlePick}
-              className="h-[500px] rounded-md border border-dashed border-[#ccc] dark:border-[#2d2d2d] flex items-center justify-center text-center hover:bg-[#d2d2d2] dark:hover:bg-[#151515] transition-all ease-in-out cursor-pointer"
+              className="h-[500px] rounded-md border border-dashed border-[#ccc] dark:border-[#2d2d2d] flex items-center justify-center text-center hover:bg-[#d2d2d2] dark:hover:bg-[#151515] transition-colors ease-in-out cursor-pointer"
             >
               {previewUrl ? (
                 <img
