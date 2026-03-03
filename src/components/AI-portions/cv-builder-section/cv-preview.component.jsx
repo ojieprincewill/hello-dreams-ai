@@ -3,7 +3,7 @@ import SeniorCVTemplate from "./senior-cv-template.component";
 import JuniorCVTemplate from "./junior-cv-template.component";
 import { useReactToPrint } from "react-to-print";
 
-const CVPreview = ({ type, data }) => {
+const CVPreview = ({ data }) => {
   const componentRef = useRef();
 
   // Frontend PDF export
@@ -18,12 +18,11 @@ const CVPreview = ({ type, data }) => {
       const response = await fetch("/api/export-docx", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type, data }),
+        body: JSON.stringify(data),
       });
 
       if (!response.ok) throw new Error("Failed to generate DOCX");
 
-      // Convert response to blob and trigger download
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -41,7 +40,7 @@ const CVPreview = ({ type, data }) => {
     <div className="p-6">
       {/* Preview */}
       <div ref={componentRef} className="border rounded-lg shadow bg-white p-6">
-        {type === "senior" ? (
+        {data.level === "senior" ? (
           <SeniorCVTemplate data={data} />
         ) : (
           <JuniorCVTemplate data={data} />
