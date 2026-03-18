@@ -4,9 +4,9 @@ import { AuthContext } from "./authContext";
 import LoadingSpinner from "../components/loading-spinner/loading-spinner.component";
 
 const ProtectedRoute = ({ children }) => {
-  const { token, user, loading } = useContext(AuthContext);
+  const { token, user, loading, initializing } = useContext(AuthContext);
 
-  if (loading) {
+  if (initializing || loading) {
     return <LoadingSpinner />;
   }
 
