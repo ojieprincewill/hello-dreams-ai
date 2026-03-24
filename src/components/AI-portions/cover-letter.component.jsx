@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { UserIcon } from "@heroicons/react/24/outline";
 import { apiFetch } from "../../auth/apiClient";
-import ChatLayout from "./reusable-customs/chat-layout.component";
-import AnimatedMessage from "./reusable-customs/animated-message.component";
+import ChatLayout from "./reusable-components/chat-layout.component";
+import AnimatedMessage from "./reusable-components/animated-message.component";
 
 const CoverLetter = () => {
   const [userInput, setUserInput] = useState("");

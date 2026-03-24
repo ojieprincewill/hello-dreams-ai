@@ -1,15 +1,16 @@
 import React from "react";
+import PropTypes from "prop-types";
 
 const JuniorCVTemplate = ({ data }) => {
   const {
     name,
     title,
-    contact,
-    summary,
-    experience,
-    education,
-    skills,
-    achievements,
+    contact = {},
+    summary = "",
+    experience = [],
+    education = [],
+    skills = [],
+    achievements = [],
   } = data;
 
   return (
@@ -20,12 +21,19 @@ const JuniorCVTemplate = ({ data }) => {
         <p className="text-base font-semibold">{title}</p>
         <div className="mt-2 text-sm space-y-1">
           <p>
-            {contact.phone} | {contact.email}
+            {contact.phone || "-"} | {contact.email || "-"}
           </p>
-          <p>{contact.location}</p>
+          <p>{contact.location || "-"}</p>
           {contact.linkedin && (
             <p>
-              <a href={contact.linkedin}>LinkedIn</a>
+              <a
+                href={contact.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline"
+              >
+                LinkedIn
+              </a>
             </p>
           )}
         </div>
@@ -40,51 +48,93 @@ const JuniorCVTemplate = ({ data }) => {
       {/* Experience */}
       <section className="mb-6">
         <h2 className="text-lg font-bold mb-2">Experience</h2>
-        {experience.map((role, idx) => (
-          <div key={idx} className="mb-4">
-            <p className="font-semibold">
-              {role.company} — {role.title} ({role.dates})
-            </p>
-            <ul className="list-disc pl-5 text-sm space-y-1">
-              {role.bullets.map((point, i) => (
-                <li key={i}>{point}</li>
-              ))}
-            </ul>
-          </div>
-        ))}
+        {experience.length > 0 ? (
+          experience.map((role, idx) => (
+            <div key={idx} className="mb-4">
+              <p className="font-semibold">
+                {role.company} — {role.title} ({role.dates})
+              </p>
+              <ul className="list-disc pl-5 text-sm space-y-1">
+                {role.bullets.map((point, i) => (
+                  <li key={i}>{point}</li>
+                ))}
+              </ul>
+            </div>
+          ))
+        ) : (
+          <p className="text-sm italic">No experience provided yet.</p>
+        )}
       </section>
 
       {/* Education */}
       <section className="mb-6">
         <h2 className="text-lg font-bold mb-2">Education</h2>
-        <ul className="list-disc pl-5 text-sm space-y-1">
-          {education.map((item, idx) => (
-            <li key={idx}>{item}</li>
-          ))}
-        </ul>
+        {education.length > 0 ? (
+          <ul className="list-disc pl-5 text-sm space-y-1">
+            {education.map((item, idx) => (
+              <li key={idx}>{item}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm italic">No education provided yet.</p>
+        )}
       </section>
 
       {/* Skills */}
       <section className="mb-6">
         <h2 className="text-lg font-bold mb-2">Skills</h2>
-        <ul className="list-disc pl-5 text-sm space-y-1">
-          {skills.map((skill, idx) => (
-            <li key={idx}>{skill}</li>
-          ))}
-        </ul>
+        {skills.length > 0 ? (
+          <ul className="list-disc pl-5 text-sm space-y-1">
+            {skills.map((skill, idx) => (
+              <li key={idx}>{skill}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm italic">No skills provided yet.</p>
+        )}
       </section>
 
       {/* Achievements */}
       <section>
         <h2 className="text-lg font-bold mb-2">Key Achievements</h2>
-        <ul className="list-disc pl-5 text-sm space-y-1">
-          {achievements.map((item, idx) => (
-            <li key={idx}>{item}</li>
-          ))}
-        </ul>
+        {achievements.length > 0 ? (
+          <ul className="list-disc pl-5 text-sm space-y-1">
+            {achievements.map((item, idx) => (
+              <li key={idx}>{item}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm italic">No achievements provided yet.</p>
+        )}
       </section>
     </div>
   );
+};
+
+// ✅ PropTypes validation
+JuniorCVTemplate.propTypes = {
+  data: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    title: PropTypes.string,
+    contact: PropTypes.shape({
+      phone: PropTypes.string,
+      email: PropTypes.string,
+      location: PropTypes.string,
+      linkedin: PropTypes.string,
+    }),
+    summary: PropTypes.string,
+    experience: PropTypes.arrayOf(
+      PropTypes.shape({
+        company: PropTypes.string,
+        title: PropTypes.string,
+        dates: PropTypes.string,
+        bullets: PropTypes.arrayOf(PropTypes.string),
+      }),
+    ),
+    education: PropTypes.arrayOf(PropTypes.string),
+    skills: PropTypes.arrayOf(PropTypes.string),
+    achievements: PropTypes.arrayOf(PropTypes.string),
+  }).isRequired,
 };
 
 export default JuniorCVTemplate;

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { ArrowRight } from "lucide-react";
 import { UserIcon } from "@heroicons/react/24/outline";
-import ChatLayout from "./reusable-customs/chat-layout.component";
+import ChatLayout from "./reusable-components/chat-layout.component";
 import { apiFetch } from "../../auth/apiClient";
-import AnimatedMessage from "./reusable-customs/animated-message.component";
+import AnimatedMessage from "./reusable-components/animated-message.component";
 
 const GetToKnowYou = () => {
   const [userInput, setUserInput] = useState("");

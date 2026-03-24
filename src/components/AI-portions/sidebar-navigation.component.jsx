@@ -1,8 +1,8 @@
 import React from "react";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
-import SelectableCard from "./reusable-customs/selectable-card.component";
-import GradientIcon from "./reusable-customs/gradient-icon.component";
+import SelectableCard from "./reusable-components/selectable-card.component";
+import GradientIcon from "./reusable-components/gradient-icon.component";
 
 const SidebarNavigation = ({ modules, activeModule, onModuleClick }) => {
   return (

@@ -1,4 +1,5 @@
 import React, { useRef } from "react";
+import PropTypes from "prop-types";
 import SeniorCVTemplate from "./senior-cv-template.component";
 import JuniorCVTemplate from "./junior-cv-template.component";
 import { useReactToPrint } from "react-to-print";
@@ -64,6 +65,18 @@ const CVPreview = ({ data }) => {
       </div>
     </div>
   );
+};
+
+// ✅ PropTypes
+CVPreview.propTypes = {
+  data: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    level: PropTypes.oneOf(["junior", "senior"]).isRequired,
+    summary: PropTypes.string,
+    skills: PropTypes.arrayOf(PropTypes.string),
+    experience: PropTypes.arrayOf(PropTypes.object),
+    education: PropTypes.arrayOf(PropTypes.object),
+  }).isRequired,
 };
 
 export default CVPreview;

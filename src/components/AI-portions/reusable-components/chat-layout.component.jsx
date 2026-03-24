@@ -1,17 +1,15 @@
 import React, { useRef, useEffect } from "react";
+import PropTypes from "prop-types";
 import MessageInputField from "./message-input.component";
 
 const ChatLayout = ({ messages, renderMessage, inputProps }) => {
   const messageRefs = useRef({});
 
   useEffect(() => {
-    if (messages.length > 0) {
-      const lastMsg = messages[messages.length - 1];
-      const node = messageRefs.current[lastMsg.id];
-      if (node) {
-        // Always scroll so the top of the new bubble is visible
-        node.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
+    const lastMsg = messages.length > 0 ? messages[messages.length - 1] : null;
+    const node = lastMsg ? messageRefs.current[lastMsg.id] : null;
+    if (node) {
+      node.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, [messages]);
 
@@ -32,6 +30,12 @@ const ChatLayout = ({ messages, renderMessage, inputProps }) => {
       </div>
     </div>
   );
+};
+
+ChatLayout.propTypes = {
+  messages: PropTypes.array.isRequired,
+  renderMessage: PropTypes.func.isRequired,
+  inputProps: PropTypes.object,
 };
 
 export default ChatLayout;

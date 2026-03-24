@@ -1,5 +1,13 @@
 import React, { useRef, useEffect } from "react";
+import PropTypes from "prop-types"; // ✅ Type checking
 import { Mic, Send } from "lucide-react";
+
+// ✅ Simple sanitization function to escape HTML
+const sanitizeInput = (input) => {
+  const div = document.createElement("div");
+  div.textContent = input; // safely encodes <, >, &, etc.
+  return div.innerHTML;
+};
 
 const MessageInputField = ({
   value,
@@ -15,9 +23,15 @@ const MessageInputField = ({
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
       textareaRef.current.style.height =
-        Math.min(textareaRef.current.scrollHeight, 200) + "px"; // cap at 200px
+        Math.min(textareaRef.current.scrollHeight, 200) + "px"; // max 200px
     }
   }, [value]);
+
+  // Handle change with sanitization
+  const handleChange = (e) => {
+    const sanitized = sanitizeInput(e.target.value);
+    onChange(sanitized);
+  };
 
   return (
     <div className="bg-[#efefef] dark:bg-[#303030] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-lg p-5">
@@ -26,7 +40,7 @@ const MessageInputField = ({
           <textarea
             ref={textareaRef}
             value={value}
-            onChange={onChange}
+            onChange={handleChange} // ✅ sanitized
             onKeyDown={onKeyDown}
             placeholder={placeholder}
             rows={1}
@@ -47,6 +61,15 @@ const MessageInputField = ({
       </div>
     </div>
   );
+};
+
+// ✅ PropTypes for type validation
+MessageInputField.propTypes = {
+  value: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+  onKeyDown: PropTypes.func,
+  onSend: PropTypes.func.isRequired,
+  placeholder: PropTypes.string,
 };
 
 export default MessageInputField;

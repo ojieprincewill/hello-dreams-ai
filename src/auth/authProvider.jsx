@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { getAccessToken, clearTokens, setTokens } from "./authStorage";
+import {
+  getAccessToken,
+  clearTokens,
+  setTokens,
+  getRefreshToken,
+  isAuthenticated,
+} from "./authStorage";
+import { apiFetch } from "./apiClient";
 import toast from "react-hot-toast";
 import { AuthContext } from "./authContext";
 
@@ -7,15 +14,16 @@ const API_BASE = "https://hello-dreams-ai.onrender.com";
 
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(getAccessToken());
-  const [user, setUser] = useState(null); // 🔹 no longer hydrate from localStorage
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // 🔹 Initialize auth state on app load
   useEffect(() => {
-    setToken(getAccessToken());
+    const existingToken = getAccessToken();
+    setToken(existingToken);
 
-    // 🔹 If we already have a token, fetch the profile on app load
-    if (getAccessToken()) {
+    if (existingToken) {
       fetchUserProfile();
     }
   }, []);
@@ -23,15 +31,7 @@ export const AuthProvider = ({ children }) => {
   // 🔹 Fetch current user profile
   const fetchUserProfile = async () => {
     try {
-      const res = await fetch(`${API_BASE}/users/profile`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getAccessToken()}`,
-        },
-      });
-      if (!res.ok) throw new Error("Failed to fetch profile");
-      const profile = await res.json();
+      const profile = await apiFetch(`${API_BASE}/users/profile`);
       setUser(profile);
     } catch (err) {
       console.error("Error fetching profile:", err);
@@ -46,28 +46,17 @@ export const AuthProvider = ({ children }) => {
 
       if (!user?.id) throw new Error("No user ID available");
 
-      const res = await fetch(`${API_BASE}/users/${user.id}`, {
+      const data = await apiFetch(`${API_BASE}/users/${user.id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${getAccessToken()}`,
-        },
         body: JSON.stringify(updates),
       });
 
-      const data = await res.json();
-      if (res.ok) {
-        setUser(data);
-        toast.success("Profile updated successfully");
-        return data;
-      } else {
-        setError(data.message || "Profile update failed");
-        toast.error(data.message || "Profile update failed");
-      }
+      setUser(data);
+      toast.success("Profile updated successfully");
+      return data;
     } catch (err) {
-      console.error("Error updating profile:", err);
-      setError("Error updating profile");
-      toast.error("Error updating profile");
+      setError(err.message || "Profile update failed");
+      toast.error(err.message || "Profile update failed");
     } finally {
       setLoading(false);
     }
@@ -79,63 +68,52 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
 
-      const res = await fetch(`${API_BASE}/auth/login`, {
+      const data = await apiFetch(`${API_BASE}/auth/login`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
       });
 
-      const data = await res.json();
-      if (res.ok) {
-        setTokens(data); // saves access + refresh
-        setToken(data.access_token);
-        toast.success("Logged in successfully");
+      // Save tokens
+      setTokens(data);
+      setToken(data.access_token);
 
-        // ✅ Only fetch profile from backend
-        await fetchUserProfile();
+      // Fetch user profile
+      await fetchUserProfile();
 
-        navigate("/ai-dashboard");
-      } else {
-        setError(data.message || "Login failed");
-        toast.error(data.message || "Login failed");
-      }
+      toast.success("Logged in successfully");
+      navigate("/ai-dashboard");
     } catch (err) {
-      console.log("Error", err);
-      setError("Error logging in");
-      toast.error("Error logging in");
+      setError(err.message || "Login failed");
+      toast.error(err.message || "Login failed");
     } finally {
       setLoading(false);
     }
   };
 
+  // 🔹 Logout flow (DO NOT use apiFetch here)
   const logout = async (navigate) => {
     try {
       setLoading(true);
       setError(null);
 
-      const refresh_token = localStorage.getItem("refreshToken");
-      const res = await fetch(`${API_BASE}/auth/logout`, {
+      const refresh_token = getRefreshToken();
+
+      await fetch(`${API_BASE}/auth/logout`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ refresh_token }),
       });
 
-      const data = await res.json();
-      if (res.ok) {
-        toast.success(data.message || "Logged out successfully");
-      } else {
-        setError(data.message || "Logout failed");
-        toast.error(data.message || "Logout failed");
-      }
+      toast.success("Logged out successfully");
     } catch (err) {
-      console.log("Error", err);
-      setError("Error logging out");
+      console.error("Logout error:", err);
       toast.error("Error logging out");
     } finally {
       clearTokens();
       setToken(null);
       setUser(null);
       setLoading(false);
+
       if (navigate) navigate("/signin");
     }
   };
@@ -152,6 +130,7 @@ export const AuthProvider = ({ children }) => {
         updateUserProfile,
         loading,
         error,
+        isAuthenticated: isAuthenticated(),
       }}
     >
       {children}

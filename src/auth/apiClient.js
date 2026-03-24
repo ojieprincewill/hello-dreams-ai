@@ -1,9 +1,13 @@
 import { getAccessToken, clearTokens } from "./authStorage";
 import { refreshAccessToken } from "./authApi";
 
-export const apiFetch = async (url, options = {}, navigate) => {
+let isRefreshing = false;
+let refreshPromise = null;
+
+export const apiFetch = async (url, options = {}) => {
   const token = getAccessToken();
-  const withAuth = {
+
+  const request = {
     ...options,
     headers: {
       ...(options.headers || {}),
@@ -12,23 +16,36 @@ export const apiFetch = async (url, options = {}, navigate) => {
     },
   };
 
-  let res;
   try {
-    res = await fetch(url, withAuth);
+    let res = await fetch(url, request);
 
-    // ✅ Handle non-401 errors gracefully
+    // Handle non-401 errors
     if (!res.ok && res.status !== 401) {
-      // Example: show toast or log structured error
       const errorData = await res.json().catch(() => ({}));
-      console.error("API error:", res.status, errorData);
-      throw new Error(errorData.message || `Request failed with ${res.status}`);
+      throw {
+        status: res.status,
+        message: errorData.message || `Request failed with ${res.status}`,
+      };
     }
 
-    if (res.status !== 401) return res;
+    // If not 401 → return parsed data directly
+    if (res.status !== 401) {
+      return await res.json().catch(() => null);
+    }
 
-    // 🔄 Handle expired token
-    const newToken = await refreshAccessToken();
-    const retry = {
+    // 🔄 Handle token refresh (with lock)
+    if (!isRefreshing) {
+      isRefreshing = true;
+      refreshPromise = refreshAccessToken()
+        .then((newToken) => newToken)
+        .finally(() => {
+          isRefreshing = false;
+        });
+    }
+
+    const newToken = await refreshPromise;
+
+    const retryRequest = {
       ...options,
       headers: {
         ...(options.headers || {}),
@@ -36,19 +53,23 @@ export const apiFetch = async (url, options = {}, navigate) => {
         Authorization: `Bearer ${newToken}`,
       },
     };
-    res = await fetch(url, retry);
+
+    res = await fetch(url, retryRequest);
 
     if (res.status === 401) {
       clearTokens();
-      if (navigate) navigate("/signin"); // 👈 auto redirect
-      throw new Error("Unauthorized after token refresh");
+      throw { status: 401, message: "Unauthorized" };
     }
 
-    return res;
-  } catch (e) {
-    console.error("Network/API error:", e);
-    clearTokens();
-    if (navigate) navigate("/signin");
-    throw e; // 👈 bubble up so caller can show toast
+    return await res.json().catch(() => null);
+  } catch (error) {
+    console.error("API Error:", error);
+
+    // 🚫 Only clear tokens on actual auth failure
+    if (error.status === 401) {
+      clearTokens();
+    }
+
+    throw error;
   }
 };
