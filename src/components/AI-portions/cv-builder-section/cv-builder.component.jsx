@@ -2,7 +2,7 @@ import React from "react";
 import { UserIcon } from "@heroicons/react/24/outline";
 import ChatLayout from "../reusable-components/chat-layout.component";
 import CVPreview from "./cv-preview.component";
-import AnimatedMessage from "../reusable-customs/animated-message.component";
+import AnimatedMessage from "../reusable-components/animated-message.component";
 import LoadingSpinner from "../../loading-spinner/loading-spinner.component";
 import { useCvBuilder } from "../custom-hooks/useCvBuilder";
 
