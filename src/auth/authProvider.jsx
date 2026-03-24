@@ -16,16 +16,27 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(getAccessToken());
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [initializing, setInitializing] = useState(true);
   const [error, setError] = useState(null);
 
   // 🔹 Initialize auth state on app load
   useEffect(() => {
-    const existingToken = getAccessToken();
-    setToken(existingToken);
+    const boot = async () => {
+      const existingToken = getAccessToken();
+      setToken(existingToken);
 
-    if (existingToken) {
-      fetchUserProfile();
-    }
+      // 🔹 If we already have a token, fetch the profile on app load
+      if (existingToken) {
+        await fetchUserProfile();
+      }
+
+      setInitializing(false);
+    };
+
+    boot().catch((err) => {
+      console.error("Auth boot error:", err);
+      setInitializing(false);
+    });
   }, []);
 
   // 🔹 Fetch current user profile
@@ -128,6 +139,7 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         updateUserProfile,
+        initializing,
         loading,
         error,
         isAuthenticated: isAuthenticated(),

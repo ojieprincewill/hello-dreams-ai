@@ -4,10 +4,9 @@ import { useAuth } from "./authContext";
 import LoadingSpinner from "../components/loading-spinner/loading-spinner.component";
 
 const ProtectedRoute = ({ children }) => {
-  const { token, user, loading, isAuthenticated } = useAuth();
+  const { token, user, loading, initializing, isAuthenticated } = useAuth();
 
-  // 🔄 Still loading (e.g., fetching user profile)
-  if (loading) {
+  if (initializing || loading) {
     return <LoadingSpinner />;
   }
 
