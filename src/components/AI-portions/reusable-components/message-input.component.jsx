@@ -2,19 +2,12 @@ import React, { useRef, useEffect } from "react";
 import PropTypes from "prop-types"; // ✅ Type checking
 import { Mic, Send } from "lucide-react";
 
-// ✅ Simple sanitization function to escape HTML
-const sanitizeInput = (input) => {
-  const div = document.createElement("div");
-  div.textContent = input; // safely encodes <, >, &, etc.
-  return div.innerHTML;
-};
-
 const MessageInputField = ({
   value,
   onChange,
   onKeyDown,
   onSend,
-  placeholder = "Type your response",
+  placeholder,
 }) => {
   const textareaRef = useRef(null);
 
@@ -27,12 +20,6 @@ const MessageInputField = ({
     }
   }, [value]);
 
-  // Handle change with sanitization
-  const handleChange = (e) => {
-    const sanitized = sanitizeInput(e.target.value);
-    onChange(sanitized);
-  };
-
   return (
     <div className="bg-[#efefef] dark:bg-[#303030] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-lg p-5">
       <div className="flex items-center space-x-4">
@@ -40,7 +27,7 @@ const MessageInputField = ({
           <textarea
             ref={textareaRef}
             value={value}
-            onChange={handleChange} // ✅ sanitized
+            onChange={onChange} // ✅ sanitized
             onKeyDown={onKeyDown}
             placeholder={placeholder}
             rows={1}

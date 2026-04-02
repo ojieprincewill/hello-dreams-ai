@@ -1,7 +1,6 @@
-// cvService.js
 import { apiFetch } from "../../../auth/apiClient";
 
-const BASE_URL = "https://hello-dreams-ai.onrender.com/resume-builder";
+const BASE_URL = "https://hello-dreams-ai.onrender.com/document-generator";
 
 // Get all conversations
 export const getConversations = async () => {
@@ -12,12 +11,12 @@ export const getConversations = async () => {
 
     return data || [];
   } catch (err) {
-    console.error("CV Service - getConversations error:", err);
-    return []; // graceful fallback
+    console.error("Document Service - getConversations error:", err);
+    return [];
   }
 };
 
-// Create conversation
+// Create new conversation (cover letter / personal statement)
 export const createConversation = async (payload) => {
   return await apiFetch(`${BASE_URL}/conversations`, {
     method: "POST",
@@ -25,7 +24,7 @@ export const createConversation = async (payload) => {
   });
 };
 
-// Load messages
+// Load messages for a conversation
 export const loadMessages = async (conversationId) => {
   return await apiFetch(`${BASE_URL}/conversations/${conversationId}`, {
     method: "GET",
@@ -61,11 +60,11 @@ export const deleteConversation = async (id) => {
 };
 
 // =====================
-// Resume Endpoints
+// Document Endpoints
 // =====================
 
-// Generate resume
-export const generateResume = async (conversationId) => {
+// Generate document (cover letter / personal statement)
+export const generateDocument = async (conversationId) => {
   return await apiFetch(
     `${BASE_URL}/conversations/${conversationId}/generate`,
     {
@@ -74,32 +73,41 @@ export const generateResume = async (conversationId) => {
   );
 };
 
-// Get resume
-export const getResume = async (conversationId) => {
-  return await apiFetch(`${BASE_URL}/conversations/${conversationId}/resume`, {
-    method: "GET",
-  });
+// Get document
+export const getDocument = async (conversationId) => {
+  return await apiFetch(
+    `${BASE_URL}/conversations/${conversationId}/document`,
+    {
+      method: "GET",
+    },
+  );
 };
 
-// Update resume (full replace)
-export const updateResume = async (conversationId, payload) => {
-  return await apiFetch(`${BASE_URL}/conversations/${conversationId}/resume`, {
-    method: "PUT",
-    body: JSON.stringify(payload),
-  });
+// Replace document (full update)
+export const updateDocument = async (conversationId, payload) => {
+  return await apiFetch(
+    `${BASE_URL}/conversations/${conversationId}/document`,
+    {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    },
+  );
 };
 
-// Patch resume (partial update)
-export const patchResume = async (conversationId, partialUpdates) => {
-  return await apiFetch(`${BASE_URL}/conversations/${conversationId}/resume`, {
-    method: "PATCH",
-    body: JSON.stringify(partialUpdates),
-  });
+// Patch document (partial update)
+export const patchDocument = async (conversationId, partialUpdates) => {
+  return await apiFetch(
+    `${BASE_URL}/conversations/${conversationId}/document`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(partialUpdates),
+    },
+  );
 };
 
-// Delete resume
-export const deleteResume = async (conversationId) => {
-  await apiFetch(`${BASE_URL}/conversations/${conversationId}/resume`, {
+// Delete document
+export const deleteDocument = async (conversationId) => {
+  await apiFetch(`${BASE_URL}/conversations/${conversationId}/document`, {
     method: "DELETE",
   });
 

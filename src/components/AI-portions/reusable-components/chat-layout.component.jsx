@@ -26,7 +26,13 @@ const ChatLayout = ({ messages, renderMessage, inputProps }) => {
 
       {/* Fixed input pinned at bottom */}
       <div className="absolute bottom-0 left-0 right-0 py-5">
-        <MessageInputField {...inputProps} />
+        <MessageInputField
+          value={inputProps.value} // explicitly pass value
+          onChange={inputProps.handleChange} // match naming
+          onKeyDown={inputProps.handleKeyPress}
+          onSend={inputProps.handleSendMessage}
+          placeholder={inputProps.placeholder || "Type your response"}
+        />
       </div>
     </div>
   );

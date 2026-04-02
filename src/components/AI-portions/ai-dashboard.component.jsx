@@ -4,7 +4,7 @@ import WelcomeContent from "./welcome-content.component";
 import GetToKnowYou from "./get-to-know-you.component";
 import BuildPersona from "./build-persona-section/build-persona.component";
 import CvBuilder from "./cv-builder-section/cv-builder.component";
-import CoverLetter from "./cover-letter.component";
+import CoverLetter from "./cover-letter-section/cover-letter.component";
 import ProfessionalHeadshot from "./professional-headshot.component";
 import UserIconDropdown from "../user-icon-dropdown/user-icon-dropdown.component";
 import { careerModules } from "../../data/career-modules.data";

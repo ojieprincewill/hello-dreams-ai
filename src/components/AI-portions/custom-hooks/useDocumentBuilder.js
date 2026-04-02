@@ -1,26 +1,24 @@
+// useDocumentBuilder.js
 import { useState, useEffect } from "react";
-import toast from "react-hot-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import * as cvService from "../module-services/cvService";
+import toast from "react-hot-toast";
+import * as documentService from "../module-services/documentService";
 import { sanitizeMessage } from "../utils/sanitize";
 
 const DEFAULT_MESSAGE = {
   id: 1,
   sender: "ai",
   content:
-    "Hello! 👋 I'm here to help you build a professional CV. Tell me about your experience, skills, or the job you're targeting.",
-  timestamp: new Date().toLocaleTimeString("en-GB", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  }),
+    "Hello! 👋 I'm here to help you create professional cover letters and personal statements. What would you like to create today?",
+  timestamp: new Date().toLocaleTimeString("en-GB"),
 };
-export const useCvBuilder = () => {
+
+export const useDocumentBuilder = () => {
   const queryClient = useQueryClient();
 
   const [messages, setMessages] = useState([]);
   const [conversationId, setConversationId] = useState(null);
-  const [resume, setResume] = useState(null);
+  const [document, setDocument] = useState(null);
   const [userInput, setUserInput] = useState("");
   const [editingConvId, setEditingConvId] = useState(null);
   const [newTitle, setNewTitle] = useState("");
@@ -31,30 +29,30 @@ export const useCvBuilder = () => {
     }
   }, [messages]);
 
-  /* =========================
-     QUERIES
-  ========================= */
+  // =====================
+  // Queries
+  // =====================
 
   const {
     data: conversations = [],
-    error: conversationsError,
     isLoading: conversationsLoading,
+    error: conversationsError,
   } = useQuery({
-    queryKey: ["cvConversations"],
-    queryFn: cvService.getConversations,
+    queryKey: ["documentConversations"],
+    queryFn: documentService.getConversations,
   });
 
-  /* =========================
-     MUTATIONS
-  ========================= */
+  // =====================
+  // Mutations
+  // =====================
 
   const createConversationMutation = useMutation({
-    mutationFn: cvService.createConversation,
+    mutationFn: documentService.createConversation,
     onSuccess: (data) => {
-      queryClient.invalidateQueries(["cvConversations"]);
+      queryClient.invalidateQueries(["documentConversations"]);
       setConversationId(data.id);
-      setMessages(data.messages || []);
-      toast.success("Starting a new CV conversation");
+      setMessages([]);
+      toast.success("New document conversation started");
     },
     onError: (err) => {
       toast.error(err.message || "Failed to create conversation");
@@ -62,7 +60,7 @@ export const useCvBuilder = () => {
   });
 
   const loadMessagesMutation = useMutation({
-    mutationFn: cvService.loadMessages,
+    mutationFn: documentService.loadMessages,
     onSuccess: (data, id) => {
       setConversationId(id);
 
@@ -92,10 +90,9 @@ export const useCvBuilder = () => {
 
   const sendMessageMutation = useMutation({
     mutationFn: ({ conversationId, content }) =>
-      cvService.sendMessage(conversationId, content),
-
+      documentService.sendMessage(conversationId, content),
     onSuccess: (data) => {
-      const aiContent =
+      let aiContent =
         data.content ||
         data.messages?.find((m) => m.role !== "user")?.content ||
         "AI response not available";
@@ -107,10 +104,10 @@ export const useCvBuilder = () => {
           sender: "ai",
           content: aiContent,
           timestamp: new Date().toLocaleTimeString("en-GB", {
-            hour12: false,
             hour: "2-digit",
             minute: "2-digit",
             second: "2-digit",
+            hour12: false,
           }),
         },
       ]);
@@ -121,55 +118,57 @@ export const useCvBuilder = () => {
     },
   });
 
-  const generateResumeMutation = useMutation({
-    mutationFn: cvService.generateResume,
+  const generateDocumentMutation = useMutation({
+    mutationFn: documentService.generateDocument,
     onSuccess: (data) => {
-      setResume(data);
-      toast.success("Resume generated successfully");
+      setDocument(data);
+      toast.success("Document generated successfully");
     },
     onError: (err) => {
-      toast.error(err.message || "Failed to generate resume");
+      toast.error(err.message || "Failed to generate document");
     },
   });
 
-  const getResumeMutation = useMutation({
-    mutationFn: cvService.getResume,
+  const getDocumentMutation = useMutation({
+    mutationFn: documentService.getDocument,
     onSuccess: (data) => {
-      setResume(data);
-      toast.success("Resume fetched successfully");
+      setDocument(data);
+      toast.success("Document fetched successfully");
     },
     onError: (err) => {
-      toast.error(err.message || "Failed to fetch resume");
+      toast.error(err.message || "Failed to fetch document");
     },
   });
 
-  const updateResumeMutation = useMutation({
-    mutationFn: ({ id, payload }) => cvService.updateResume(id, payload),
+  const updateDocumentMutation = useMutation({
+    mutationFn: ({ conversationId, payload }) =>
+      documentService.updateDocument(conversationId, payload),
     onSuccess: (data) => {
-      setResume(data);
-      toast.success("Resume updated successfully");
+      setDocument(data);
+      toast.success("Document updated successfully");
     },
     onError: (err) => {
-      toast.error(err.message || "Failed to update resume");
+      toast.error(err.message || "Failed to update document");
     },
   });
 
-  const patchResumeMutation = useMutation({
-    mutationFn: ({ id, payload }) => cvService.patchResume(id, payload),
+  const patchDocumentMutation = useMutation({
+    mutationFn: ({ conversationId, payload }) =>
+      documentService.patchDocument(conversationId, payload),
     onSuccess: (data) => {
-      setResume((prev) => ({ ...prev, ...data }));
-      toast.success("Resume updated successfully");
+      setDocument((prev) => ({ ...prev, ...data }));
+      toast.success("Document updated successfully");
     },
     onError: (err) => {
-      toast.error(err.message || "Failed to update resume");
+      toast.error(err.message || "Failed to update document");
     },
   });
 
-  const deleteResumeMutation = useMutation({
-    mutationFn: cvService.deleteResume,
+  const deleteDocumentMutation = useMutation({
+    mutationFn: documentService.deleteDocument,
     onSuccess: () => {
-      setResume(null);
-      toast.success("Resume deleted successfully");
+      setDocument(null);
+      toast.success("Document deleted successfully");
     },
   });
 
@@ -180,9 +179,9 @@ export const useCvBuilder = () => {
   const { mutate: createConversation } = createConversationMutation;
   const { mutate: loadMessages } = loadMessagesMutation;
 
-  /* =========================
-     INIT LOGIC
-  ========================= */
+  // =====================
+  // Init logic
+  // =====================
 
   useEffect(() => {
     if (conversationsError) {
@@ -193,9 +192,10 @@ export const useCvBuilder = () => {
 
     if (!conversations.length) {
       createConversation({
-        title: "My Resume",
+        title: "Cover Letter for Software Engineer",
+        documentType: "cover-letter",
         targetJobTitle: "Software Engineer",
-        targetIndustry: "Technology",
+        targetCompany: "Tech Corp",
       });
     } else {
       const sorted = [...conversations].sort(
@@ -206,24 +206,24 @@ export const useCvBuilder = () => {
     }
   }, [conversations, conversationsError, createConversation, loadMessages]);
 
-  /* =========================
-     HANDLERS
-  ========================= */
+  // =====================
+  // Handlers
+  // =====================
 
   const handleSendMessage = () => {
     if (!userInput.trim() || !conversationId) return;
 
-    const sanitizedMessage = sanitizeMessage(userInput);
+    const sanitized = sanitizeMessage(userInput);
 
     const newMessage = {
       id: messages.length + 1,
       sender: "user",
-      content: sanitizedMessage,
+      content: sanitized,
       timestamp: new Date().toLocaleTimeString("en-GB", {
-        hour12: false,
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
+        hour12: false,
       }),
     };
 
@@ -232,7 +232,7 @@ export const useCvBuilder = () => {
 
     sendMessageMutation.mutate({
       conversationId,
-      content: sanitizedMessage,
+      content: sanitized,
     });
   };
 
@@ -244,28 +244,42 @@ export const useCvBuilder = () => {
     setUserInput(e.target.value);
   };
 
-  /* =========================
-     RETURN
-  ========================= */
+  // =====================
+  // Return
+  // =====================
 
   return {
+    // state
     messages,
     conversations,
     conversationId,
-    resume,
+    userInput,
+    document,
+
+    // loading
     loading:
       conversationsLoading ||
       sendMessageMutation.isPending ||
-      loadMessagesMutation.isPending,
-    userInput,
+      createConversationMutation.isPending,
+
+    // setters
     setUserInput,
+    setConversationId,
     editingConvId,
     setEditingConvId,
     newTitle,
     setNewTitle,
 
+    // handlers
+    handleSendMessage,
+    handleLoadMessages,
+
+    updateConversation: documentService.updateConversation,
+    deleteConversation: documentService.deleteConversation,
+
     handleChange,
 
+    // keypress
     handleKeyPress: (e) => {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
@@ -273,22 +287,20 @@ export const useCvBuilder = () => {
       }
     },
 
-    handleSendMessage,
-    handleLoadMessages,
+    handleGenerateDocument: () =>
+      generateDocumentMutation.mutate(conversationId),
 
-    updateConversation: cvService.updateConversation,
-    deleteConversation: cvService.deleteConversation,
+    handleGetDocument: () => getDocumentMutation.mutate(conversationId),
 
-    handleGenerateResume: () => generateResumeMutation.mutate(conversationId),
+    handleUpdateDocument: (payload) =>
+      updateDocumentMutation.mutate({ id: conversationId, payload }),
 
-    handleGetResume: () => getResumeMutation.mutate(conversationId),
+    handlePatchDocument: (payload) =>
+      patchDocumentMutation.mutate({ id: conversationId, payload }),
 
-    handleUpdateResume: (payload) =>
-      updateResumeMutation.mutate({ id: conversationId, payload }),
+    handleDeleteDocument: () => deleteDocumentMutation.mutate(conversationId),
 
-    handlePatchResume: (payload) =>
-      patchResumeMutation.mutate({ id: conversationId, payload }),
-
-    handleDeleteResume: () => deleteResumeMutation.mutate(conversationId),
+    // expose error if needed
+    conversationsError,
   };
 };
