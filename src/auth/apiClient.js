@@ -140,9 +140,9 @@ export const apiFetch = async (url, options = {}, navigate) => {
     console.error("Network/API error:", e);
     const message = typeof e?.message === "string" ? e.message : "";
     const isAuthError =
+      e?.kind === "AUTH_EXPIRED" ||
       e?.status === 401 ||
       message.includes("Unauthorized") ||
-      message.includes("Refresh failed") ||
       message.includes("No refresh token available");
 
     if (isAuthError) {

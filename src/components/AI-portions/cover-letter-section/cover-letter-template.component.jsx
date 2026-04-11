@@ -4,7 +4,7 @@ import React from "react";
  * Replaces common placeholder strings with real user data.
  */
 const fillPlaceholders = (text, name, email) => {
-  if (!text) return text;
+  if (!text || typeof text !== "string") return "";
   return text
     .replace(/\[Your Name\]/gi, name || "")
     .replace(/\[Your Email\]/gi, email || "")

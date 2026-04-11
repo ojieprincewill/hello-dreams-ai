@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { getAccessToken, clearTokens } from "./authStorage";
+import { getAccessToken, clearTokens, getUser as getCachedUser, setUser as cacheUser } from "./authStorage";
 import toast from "react-hot-toast";
 import { AuthContext } from "./authContext";
 import {
@@ -11,7 +11,9 @@ import {
 
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(getAccessToken());
-  const [user, setUser] = useState(null);
+  // Initialize from localStorage cache so the dashboard is immediately visible on reload
+  // without waiting for a backend round-trip.
+  const [user, setUser] = useState(() => (getAccessToken() ? getCachedUser() : null));
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [error, setError] = useState(null);
@@ -30,6 +32,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const profile = await getUserProfile();
         setUser(profile);
+        cacheUser(profile); // persist so next reload is instant
         return;
       } catch (err) {
         const is429 = err?.status === 429;
@@ -57,14 +60,20 @@ export const AuthProvider = ({ children }) => {
       setToken(existingToken);
 
       if (existingToken) {
-        // Race the profile fetch against a 5-second timeout so the app never
-        // hangs on a slow network. The user can still see the dashboard; the
-        // profile will re-fetch on the next request that needs it.
-        const timeout = new Promise((resolve) => setTimeout(resolve, 5000));
-        await Promise.race([fetchUserProfile(), timeout]);
+        if (getCachedUser()) {
+          // Cached user means we can show the dashboard immediately.
+          // Refresh the profile in the background without blocking.
+          setInitializing(false);
+          fetchUserProfile().catch(() => {}); // errors handled inside fetchUserProfile
+        } else {
+          // No cache — must wait for the first profile fetch before showing the app.
+          const timeout = new Promise((resolve) => setTimeout(resolve, 8000));
+          await Promise.race([fetchUserProfile(), timeout]);
+          setInitializing(false);
+        }
+      } else {
+        setInitializing(false);
       }
-
-      setInitializing(false);
     };
 
     boot().catch((err) => {
@@ -82,6 +91,7 @@ export const AuthProvider = ({ children }) => {
       if (!user?.id) throw new Error("No user ID available");
       const data = await authUpdateUserProfile(user.id, updates);
       setUser(data);
+      cacheUser(data);
       toast.success("Profile updated successfully");
       return data;
     } catch (err) {

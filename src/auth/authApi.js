@@ -1,4 +1,4 @@
-import { getRefreshToken, setTokens } from "./authStorage";
+import { getRefreshToken, setTokens, clearTokens } from "./authStorage";
 import { API_BASE_URL } from "../config/apiConfig";
 
 export const refreshAccessToken = async () => {
@@ -18,7 +18,11 @@ export const refreshAccessToken = async () => {
   if (!res.ok) {
     const err = new Error("Refresh failed");
     err.status = res.status;
-    err.kind = "AUTH_EXPIRED";
+    // Only treat as a real auth failure when the server explicitly rejects the token.
+    // A 500 (e.g. Render cold-start) should NOT log the user out.
+    err.kind = (res.status === 401 || res.status === 403 || res.status === 400)
+      ? "AUTH_EXPIRED"
+      : "SERVER_ERROR";
     throw err;
   }
   try {
