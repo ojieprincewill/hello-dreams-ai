@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { UserIcon } from "@heroicons/react/24/outline";
 import ChatLayout from "../reusable-components/chat-layout.component";
 import AnimatedMessage from "../reusable-components/animated-message.component";
+import AiTypingIndicator from "../reusable-customs/ai-typing-indicator.component";
 import LoadingSpinner from "../../loading-spinner/loading-spinner.component";
 import { useCareerProfile } from "../custom-hooks/useCareerProfile";
 
@@ -13,6 +14,7 @@ const GetToKnowYou = () => {
     conversationId,
     userInput,
     loading,
+    isTyping,
     summary,
     isComplete,
     currentQuestion,
@@ -31,17 +33,25 @@ const GetToKnowYou = () => {
     handleChange,
   } = useCareerProfile();
 
+  const displayMessages = isTyping
+    ? [...messages, { id: "typing", sender: "ai", typing: true, content: "" }]
+    : messages;
+
   const renderMessage = (message) => (
     <AnimatedMessage key={message.id}>
       {message.sender === "ai" ? (
-        <div className="w-max bg-[#efefef] dark:bg-[#2d2d2d] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-lg p-4">
-          <p className="w-[453px] text-[20px] leading-relaxed">
-            {message.content}
-          </p>
-          <p className="text-[#444] dark:text-[#bfb5b5] text-[16px] mt-2">
-            {message.timestamp}
-          </p>
-        </div>
+        message.typing ? (
+          <AiTypingIndicator />
+        ) : (
+          <div className="w-max bg-[#efefef] dark:bg-[#2d2d2d] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-lg p-4">
+            <p className="w-[453px] text-[20px] leading-relaxed">
+              {message.content}
+            </p>
+            <p className="text-[#444] dark:text-[#bfb5b5] text-[16px] mt-2">
+              {message.timestamp}
+            </p>
+          </div>
+        )
       ) : (
         <div className="flex justify-end my-5">
           <div className="w-max bg-[#e2e2e2] dark:bg-[#151515] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-lg p-4">
@@ -59,7 +69,7 @@ const GetToKnowYou = () => {
 
   if (loading) return <LoadingSpinner />;
 
-  // ✅ If summary exists → show profile result (like CV preview pattern)
+  // ✅ If summary exists → show profile result
   if (summary) {
     return (
       <div className="mt-10 p-5 border rounded bg-gray-50 dark:bg-[#1a1a1a]">
@@ -140,8 +150,8 @@ const GetToKnowYou = () => {
         <div className="mb-6 max-w-4xl mx-auto">
           <h3 className="text-lg font-bold mb-2">Your Conversations</h3>
           <ul className="space-y-2">
-            {conversations.map((conv) => (
-              <li key={conv.id}>
+            {conversations.map((conv, i) => (
+              <li key={conv.id || i}>
                 <button
                   onClick={() => handleLoadMessages(conv.id)}
                   className={`text-left w-full px-4 py-2 rounded-lg border ${
@@ -166,7 +176,7 @@ const GetToKnowYou = () => {
         </div>
 
         <ChatLayout
-          messages={messages}
+          messages={displayMessages}
           renderMessage={renderMessage}
           inputProps={{
             value: userInput,

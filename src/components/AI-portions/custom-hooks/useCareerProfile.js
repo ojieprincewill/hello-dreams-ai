@@ -6,15 +6,16 @@ import * as service from "../module-services/careerProfileService";
 
 // =====================
 // QUESTIONS CONFIG
+// Used as fallback text if the backend AI doesn't return a response
 // =====================
 
 const QUESTIONS = [
-  { field: "name", question: "Hi Dreamer, what’s your full name?" },
+  { field: "name", question: "Hi Dreamer, what's your full name?" },
   {
     field: "email",
     question: "What email should I use for your career documents?",
   },
-  { field: "phone", question: "What’s your phone number?" },
+  { field: "phone", question: "What's your phone number?" },
   { field: "country", question: "Which country do you currently live in?" },
   { field: "location", question: "What state or city are you based in?" },
   {
@@ -24,7 +25,7 @@ const QUESTIONS = [
   {
     field: "careerGoal",
     question:
-      "What’s your next career goal? Promotion? Career switch? New field?",
+      "What's your next career goal? Promotion? Career switch? New field?",
   },
   {
     field: "salary",
@@ -54,6 +55,20 @@ const WELCOME_MESSAGE = {
   timestamp: new Date().toLocaleTimeString("en-GB"),
 };
 
+// =====================
+// HELPERS
+// =====================
+
+const extractAiContent = (res) => {
+  if (!res) return null;
+  if (typeof res.content === "string" && res.content) return res.content;
+  if (Array.isArray(res.messages)) {
+    const aiMsg = res.messages.find((m) => m.role !== "user");
+    return aiMsg?.content || res.messages[res.messages.length - 1]?.content || null;
+  }
+  return null;
+};
+
 export const useCareerProfile = () => {
   const [messages, setMessages] = useState([WELCOME_MESSAGE]);
   const [conversations, setConversations] = useState([]);
@@ -64,6 +79,7 @@ export const useCareerProfile = () => {
   const [profile, setProfile] = useState({});
   const [userInput, setUserInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
 
   const [summary, setSummary] = useState(null);
   const [confirmation, setConfirmation] = useState(null);
@@ -99,8 +115,6 @@ export const useCareerProfile = () => {
           setConversationId(newConv.id);
           setConversations([newConv]);
         }
-
-        // Start first question
       } catch (err) {
         console.error("Error: ", err);
         if (!isNetworkError(err)) toast.error("Failed to initialize profile");
@@ -140,12 +154,35 @@ export const useCareerProfile = () => {
     ]);
   };
 
+  const sendAndDisplay = async (answer, fallback) => {
+    if (!conversationId) {
+      pushAIMessage(fallback);
+      return;
+    }
+    setIsTyping(true);
+    try {
+      const res = await service.sendMessage(conversationId, answer);
+      const aiContent = extractAiContent(res) || fallback;
+      pushAIMessage(aiContent);
+    } catch (err) {
+      console.error(err);
+      pushAIMessage(fallback);
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
   // =====================
   // MAIN FLOW
   // =====================
 
   const handleSendMessage = async () => {
     if (!userInput.trim()) return;
+
+    if (!conversationId) {
+      toast.error("Please wait for the conversation to initialize.");
+      return;
+    }
 
     const answer = userInput;
     pushUserMessage(answer);
@@ -154,11 +191,7 @@ export const useCareerProfile = () => {
     // 🚀 FIRST MESSAGE → START FLOW
     if (!hasStarted) {
       setHasStarted(true);
-
-      setTimeout(() => {
-        pushAIMessage(QUESTIONS[0].question);
-      }, 400);
-
+      setTimeout(() => sendAndDisplay(answer, QUESTIONS[0].question), 400);
       return;
     }
 
@@ -168,22 +201,24 @@ export const useCareerProfile = () => {
       if (normalized.includes("no")) {
         const nextStep = currentStep + 1;
         setCurrentStep(nextStep);
-
-        setTimeout(() => {
-          pushAIMessage(QUESTIONS[nextStep].question);
-        }, 400);
-
+        setTimeout(
+          () => sendAndDisplay(answer, QUESTIONS[nextStep]?.question || ""),
+          400,
+        );
         return;
       }
 
-      // if yes → do nothing, wait for upload UI
       if (normalized.includes("yes")) {
-        pushAIMessage("Great — go ahead and upload your CV below 📄");
-
-        // Automatically show progress bar placeholder
         setUploading(true);
         setUploadProgress(0);
-
+        setTimeout(
+          () =>
+            sendAndDisplay(
+              answer,
+              "Great — go ahead and upload your CV below 📄",
+            ),
+          400,
+        );
         return;
       }
     }
@@ -193,22 +228,30 @@ export const useCareerProfile = () => {
       [currentQuestion.field]: answer,
     }));
 
-    try {
-      await service.sendMessage(conversationId, answer);
-    } catch (err) {
-      console.error(err);
-    }
-
     const nextStep = currentStep + 1;
 
     if (nextStep < QUESTIONS.length) {
       setCurrentStep(nextStep);
-
-      setTimeout(() => {
-        pushAIMessage(QUESTIONS[nextStep].question);
-      }, 400);
+      setTimeout(
+        () => sendAndDisplay(answer, QUESTIONS[nextStep].question),
+        400,
+      );
     } else {
-      pushAIMessage("Perfect. I’ve gathered everything I need 🎉");
+      // Last step — get AI response then fetch summary
+      setIsTyping(true);
+      try {
+        const res = conversationId
+          ? await service.sendMessage(conversationId, answer)
+          : null;
+        const aiContent =
+          extractAiContent(res) || "Perfect. I've gathered everything I need 🎉";
+        pushAIMessage(aiContent);
+      } catch (err) {
+        console.error(err);
+        pushAIMessage("Perfect. I've gathered everything I need 🎉");
+      } finally {
+        setIsTyping(false);
+      }
 
       try {
         const data = await service.getSummary(conversationId);
@@ -222,6 +265,42 @@ export const useCareerProfile = () => {
   // =====================
   // EXTRA ACTIONS
   // =====================
+
+  const handleLoadMessages = async (id) => {
+    try {
+      setLoading(true);
+      const data = await service.getConversation(id);
+      setConversationId(id);
+      if (data.messages?.length) {
+        setMessages(
+          data.messages.map((m, i) => ({
+            id: i + 1,
+            sender: m.role === "user" ? "user" : "ai",
+            content: m.content,
+            timestamp: new Date(m.createdAt).toLocaleTimeString("en-GB"),
+          })),
+        );
+      }
+    } catch (err) {
+      console.error(err);
+      if (!isNetworkError(err)) toast.error("Failed to load messages");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGenerateSummary = async () => {
+    try {
+      setLoading(true);
+      const data = await service.getSummary(conversationId);
+      setSummary(data);
+    } catch (err) {
+      console.error(err);
+      if (!isNetworkError(err)) toast.error("Failed to generate profile");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleGetConfirmation = async () => {
     try {
@@ -240,34 +319,31 @@ export const useCareerProfile = () => {
       setUploading(true);
       setUploadProgress(0);
 
-      // Fake progress
       let percent = 0;
       const interval = setInterval(() => {
         percent = Math.min(percent + Math.random() * 15, 90);
         setUploadProgress(Math.floor(percent));
       }, 200);
 
-      await service.uploadCV(conversationId, file); // your existing fetch
+      await service.uploadCV(conversationId, file);
 
       clearInterval(interval);
       setUploadProgress(100);
 
-      // Small delay so user sees 100%
       setTimeout(() => {
         setUploading(false);
 
         pushAIMessage(
-          "Nice, I’ve reviewed your CV and will tailor everything accordingly ✨",
+          "Nice, I've reviewed your CV and will tailor everything accordingly ✨",
         );
 
-        // Auto move to next question
         const nextStep = currentStep + 1;
         if (nextStep < QUESTIONS.length) {
           setCurrentStep(nextStep);
-          setTimeout(() => pushAIMessage(QUESTIONS[nextStep].question), 500);
+          setTimeout(() => sendAndDisplay("", QUESTIONS[nextStep].question), 500);
         }
       }, 500);
-    } catch {
+    } catch (err) {
       setUploading(false);
       if (!isNetworkError(err)) toast.error("CV upload failed");
     }
@@ -277,18 +353,15 @@ export const useCareerProfile = () => {
     try {
       const res = await service.sendVoiceMessage(conversationId, blob);
 
-      // assume backend returns transcription
       if (res?.transcription) {
         pushUserMessage(res.transcription);
-
-        // 👇 reuse same flow
         setUserInput(res.transcription);
 
         setTimeout(() => {
           handleSendMessage();
         }, 200);
       }
-    } catch {
+    } catch (err) {
       if (!isNetworkError(err)) toast.error("Voice message failed");
     }
   };
@@ -314,6 +387,7 @@ export const useCareerProfile = () => {
     conversationId,
     userInput,
     loading,
+    isTyping,
     profile,
     isComplete,
     currentQuestion,
@@ -328,6 +402,8 @@ export const useCareerProfile = () => {
     handleChange,
     handleKeyPress,
 
+    handleLoadMessages,
+    handleGenerateSummary,
     handleGetConfirmation,
     handleUploadCV,
     handleVoiceMessage,
