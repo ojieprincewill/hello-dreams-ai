@@ -78,8 +78,13 @@ const TransformationPlan = () => {
                 {data.title}
               </p>
               <ul className="list-disc pl-5 space-y-1 text-[16px] md:text-[20px]">
-                {data.actions.map((action) => (
-                  <li className="marker:text-sm">{action}</li>
+                {data.actions.map((action, actionIndex) => (
+                  <li
+                    key={`${data.id}-${actionIndex}`}
+                    className="marker:text-sm"
+                  >
+                    {action}
+                  </li>
                 ))}
               </ul>
             </div>

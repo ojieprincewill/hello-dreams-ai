@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import ProtectedRoute from "./auth/protectedRoute";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 import LandingPage from "./pages/landing-page/landing-page.component";
 import SigninForm from "./components/sign-in/sign-in.component";
@@ -18,7 +19,9 @@ function App() {
           path="/ai-dashboard"
           element={
             <ProtectedRoute>
-              <AiDashboard />
+              <ErrorBoundary>
+                <AiDashboard />
+              </ErrorBoundary>
             </ProtectedRoute>
           }
         />

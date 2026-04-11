@@ -1,17 +1,42 @@
 import React from "react";
 import PropTypes from "prop-types";
 
-const JuniorCVTemplate = ({ data }) => {
+function normalizeContact(data = {}) {
+  const c = data.contact && typeof data.contact === "object" ? data.contact : {};
+  return {
+    phone: c.phone ?? data.phone ?? "",
+    email: c.email ?? data.email ?? "",
+    location: c.location ?? data.location ?? "",
+    linkedin: c.linkedin ?? data.linkedin,
+  };
+}
+
+function asArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+const JuniorCVTemplate = ({ data = {} }) => {
+  const contact = normalizeContact(data);
   const {
-    name,
-    title,
-    contact = {},
+    name = "",
+    title = "",
     summary = "",
-    experience = [],
-    education = [],
-    skills = [],
-    achievements = [],
+    experience,
+    education,
+    skills,
+    toolsSkills,
+    achievements,
   } = data;
+
+  const experienceList = asArray(experience);
+  const educationList = asArray(education);
+  const skillsList = asArray(skills);
+  const achievementsList = asArray(achievements);
+  const toolsSkillsObj =
+    toolsSkills && typeof toolsSkills === "object" && !Array.isArray(toolsSkills)
+      ? toolsSkills
+      : {};
+  const hasGroupedSkills = Object.keys(toolsSkillsObj).length > 0;
 
   return (
     <div className="max-w-3xl mx-auto p-6 bg-white text-black font-sans">
@@ -20,10 +45,12 @@ const JuniorCVTemplate = ({ data }) => {
         <h1 className="text-2xl font-bold">{name}</h1>
         <p className="text-base font-semibold">{title}</p>
         <div className="mt-2 text-sm space-y-1">
-          <p>
-            {contact.phone || "-"} | {contact.email || "-"}
-          </p>
-          <p>{contact.location || "-"}</p>
+          {(contact.phone || contact.email) && (
+            <p>
+              {[contact.phone, contact.email].filter(Boolean).join(" | ")}
+            </p>
+          )}
+          {contact.location && <p>{contact.location}</p>}
           {contact.linkedin && (
             <p>
               <a
@@ -40,73 +67,73 @@ const JuniorCVTemplate = ({ data }) => {
       </div>
 
       {/* Summary */}
-      <section className="mb-6">
-        <h2 className="text-lg font-bold mb-2">Professional Summary</h2>
-        <p className="text-sm leading-relaxed">{summary}</p>
-      </section>
+      {summary && (
+        <section className="mb-6">
+          <h2 className="text-lg font-bold mb-2">Professional Summary</h2>
+          <p className="text-sm leading-relaxed">{summary}</p>
+        </section>
+      )}
+
+      {/* Skills */}
+      {(hasGroupedSkills || skillsList.length > 0) && (
+        <section className="mb-6">
+          <h2 className="text-lg font-bold mb-2">Skills</h2>
+          <ul className="list-disc pl-5 text-sm space-y-1">
+            {hasGroupedSkills
+              ? Object.entries(toolsSkillsObj).map(([category, items], idx) => (
+                  <li key={idx}>
+                    <strong>{category}:</strong> {asArray(items).join(", ")}
+                  </li>
+                ))
+              : skillsList.map((skill, idx) => (
+                  <li key={idx}>{skill}</li>
+                ))}
+          </ul>
+        </section>
+      )}
 
       {/* Experience */}
-      <section className="mb-6">
-        <h2 className="text-lg font-bold mb-2">Experience</h2>
-        {experience.length > 0 ? (
-          experience.map((role, idx) => (
+      {experienceList.length > 0 && (
+        <section className="mb-6">
+          <h2 className="text-lg font-bold mb-2">Experience</h2>
+          {experienceList.map((role, idx) => (
             <div key={idx} className="mb-4">
               <p className="font-semibold">
                 {role.company} — {role.title} ({role.dates})
               </p>
               <ul className="list-disc pl-5 text-sm space-y-1">
-                {role.bullets.map((point, i) => (
+                {asArray(role.bullets).map((point, i) => (
                   <li key={i}>{point}</li>
                 ))}
               </ul>
             </div>
-          ))
-        ) : (
-          <p className="text-sm italic">No experience provided yet.</p>
-        )}
-      </section>
+          ))}
+        </section>
+      )}
 
       {/* Education */}
-      <section className="mb-6">
-        <h2 className="text-lg font-bold mb-2">Education</h2>
-        {education.length > 0 ? (
+      {educationList.length > 0 && (
+        <section className="mb-6">
+          <h2 className="text-lg font-bold mb-2">Education</h2>
           <ul className="list-disc pl-5 text-sm space-y-1">
-            {education.map((item, idx) => (
+            {educationList.map((item, idx) => (
               <li key={idx}>{item}</li>
             ))}
           </ul>
-        ) : (
-          <p className="text-sm italic">No education provided yet.</p>
-        )}
-      </section>
-
-      {/* Skills */}
-      <section className="mb-6">
-        <h2 className="text-lg font-bold mb-2">Skills</h2>
-        {skills.length > 0 ? (
-          <ul className="list-disc pl-5 text-sm space-y-1">
-            {skills.map((skill, idx) => (
-              <li key={idx}>{skill}</li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm italic">No skills provided yet.</p>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* Achievements */}
-      <section>
-        <h2 className="text-lg font-bold mb-2">Key Achievements</h2>
-        {achievements.length > 0 ? (
+      {achievementsList.length > 0 && (
+        <section>
+          <h2 className="text-lg font-bold mb-2">Key Achievements</h2>
           <ul className="list-disc pl-5 text-sm space-y-1">
-            {achievements.map((item, idx) => (
+            {achievementsList.map((item, idx) => (
               <li key={idx}>{item}</li>
             ))}
           </ul>
-        ) : (
-          <p className="text-sm italic">No achievements provided yet.</p>
-        )}
-      </section>
+        </section>
+      )}
     </div>
   );
 };
@@ -133,6 +160,7 @@ JuniorCVTemplate.propTypes = {
     ),
     education: PropTypes.arrayOf(PropTypes.string),
     skills: PropTypes.arrayOf(PropTypes.string),
+    toolsSkills: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.string)),
     achievements: PropTypes.arrayOf(PropTypes.string),
   }).isRequired,
 };

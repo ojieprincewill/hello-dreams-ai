@@ -3,6 +3,7 @@ import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { Link, useNavigate } from "react-router-dom";
 import LoadingSpinner from "../loading-spinner/loading-spinner.component";
 import { AuthContext } from "../../auth/authContext";
+import toast from "react-hot-toast";
 const SigninForm = () => {
   const navigate = useNavigate();
   const { login, loading, error } = useContext(AuthContext); // 👈 use context
@@ -30,7 +31,7 @@ const SigninForm = () => {
 
     if (activeTab === "phone") {
       // phone login not supported yet
-      // you can show a toast here if you want
+      toast.error("Phone login is not supported yet. Please use email login.");
       return;
     }
 

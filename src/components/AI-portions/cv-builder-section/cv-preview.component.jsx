@@ -7,35 +7,10 @@ import { useReactToPrint } from "react-to-print";
 const CVPreview = ({ data }) => {
   const componentRef = useRef();
 
-  // Frontend PDF export
-  const handleDownloadPDF = useReactToPrint({
-    content: () => componentRef.current,
+  const handlePrint = useReactToPrint({
+    contentRef: componentRef,
     documentTitle: `${data.name}-CV`,
   });
-
-  // Backend DOCX export (placeholder API call)
-  const handleDownloadDOCX = async () => {
-    try {
-      const response = await fetch("/api/export-docx", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) throw new Error("Failed to generate DOCX");
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${data.name}-CV.docx`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error(error);
-      alert("Error generating DOCX. Please try again later.");
-    }
-  };
 
   return (
     <div className="p-6">
@@ -51,23 +26,16 @@ const CVPreview = ({ data }) => {
       {/* Download Buttons */}
       <div className="flex justify-center gap-4 mt-6">
         <button
-          onClick={handleDownloadPDF}
+          onClick={handlePrint}
           className="px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors"
         >
-          Download as PDF
-        </button>
-        <button
-          onClick={handleDownloadDOCX}
-          className="px-6 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors"
-        >
-          Download as DOCX
+          Download / Print PDF
         </button>
       </div>
     </div>
   );
 };
 
-// ✅ PropTypes
 CVPreview.propTypes = {
   data: PropTypes.shape({
     name: PropTypes.string.isRequired,

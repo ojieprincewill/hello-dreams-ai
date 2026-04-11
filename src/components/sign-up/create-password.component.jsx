@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import LoadingSpinner from "../loading-spinner/loading-spinner.component";
+import { register } from "../../api/authService";
 
 const CreatePassword = ({ onContinue, onBack, formData, setFormData }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -65,29 +66,12 @@ const CreatePassword = ({ onContinue, onBack, formData, setFormData }) => {
         name: `${formData.firstName} ${formData.lastName}`,
       };
 
-      const response = await fetch(
-        "https://hello-dreams-ai.onrender.com/auth/register",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        }
-      );
+      await register(payload);
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.message || "Registration failed");
-      } else {
-        // Save tokens
-        localStorage.setItem("accessToken", data.access_token);
-        localStorage.setItem("refreshToken", data.refresh_token);
-
-        // Move to next step (VerifyAccount)
-        onContinue({ justRegistered: true });
-      }
+      // Move to next step (VerifyAccount)
+      onContinue({ justRegistered: true });
     } catch (err) {
-      setError("Error during sign up, please try again.");
+      setError(err.message || "Error during sign up, please try again.");
       console.error("Error during sign up:", err);
     } finally {
       setLoading(false);

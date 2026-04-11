@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import LoadingSpinner from "../loading-spinner/loading-spinner.component";
+import toast from "react-hot-toast";
 
 const VerifyAccount = ({ onContinue, onBack, formData }) => {
   const [timer, setTimer] = useState(30);
@@ -32,8 +33,9 @@ const VerifyAccount = ({ onContinue, onBack, formData }) => {
   };
 
   const handleResend = () => {
-    console.log("Resend verification email clicked");
-    // later: call backend /auth/resend-verification
+    toast.error(
+      "Resending verification email is not available yet. Please try again later.",
+    );
   };
 
   if (loading) {

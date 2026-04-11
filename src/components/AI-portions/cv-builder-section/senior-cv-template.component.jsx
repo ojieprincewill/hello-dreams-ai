@@ -1,17 +1,41 @@
 import React from "react";
 import PropTypes from "prop-types";
 
-const SeniorCVTemplate = ({ data }) => {
+function normalizeSeniorContact(data = {}) {
+  const c = data.contact && typeof data.contact === "object" ? data.contact : {};
+  return {
+    phone: c.phone ?? data.phone ?? "",
+    email: c.email ?? data.email ?? "",
+    location: c.location ?? data.location ?? "",
+    linkedin: c.linkedin ?? data.linkedin ?? "#",
+    behance: c.behance ?? data.behance ?? "#",
+    portfolio: c.portfolio ?? data.portfolio ?? "#",
+  };
+}
+
+function asArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+const SeniorCVTemplate = ({ data = {} }) => {
+  const contact = normalizeSeniorContact(data);
   const {
-    name,
-    title,
-    contact = {},
+    name = "",
+    title = "",
     summary = "",
-    experience = [],
-    education = [],
-    toolsSkills = {},
-    achievements = [],
+    experience,
+    education,
+    toolsSkills,
+    achievements,
   } = data;
+
+  const experienceList = asArray(experience);
+  const educationList = asArray(education);
+  const achievementsList = asArray(achievements);
+  const toolsSkillsObj =
+    toolsSkills && typeof toolsSkills === "object" && !Array.isArray(toolsSkills)
+      ? toolsSkills
+      : {};
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white text-black font-sans">
@@ -20,10 +44,12 @@ const SeniorCVTemplate = ({ data }) => {
         <h1 className="text-3xl font-bold">{name}</h1>
         <p className="text-lg font-semibold">{title}</p>
         <div className="mt-2 text-sm space-y-1">
-          <p>
-            {contact.phone || "-"} | {contact.email || "-"}
-          </p>
-          <p>{contact.location || "-"}</p>
+          {(contact.phone || contact.email) && (
+            <p>
+              {[contact.phone, contact.email].filter(Boolean).join(" | ")}
+            </p>
+          )}
+          {contact.location && <p>{contact.location}</p>}
           <p className="space-x-2">
             {contact.linkedin && (
               <a
@@ -60,86 +86,69 @@ const SeniorCVTemplate = ({ data }) => {
       </div>
 
       {/* Summary */}
-      <section className="mb-6">
-        <h2 className="text-xl font-bold mb-2">Professional Summary</h2>
-        <p className="text-sm leading-relaxed">
-          {summary || "No summary provided."}
-        </p>
-      </section>
+      {summary && (
+        <section className="mb-6">
+          <h2 className="text-xl font-bold mb-2">Professional Summary</h2>
+          <p className="text-sm leading-relaxed">{summary}</p>
+        </section>
+      )}
+
+      {/* Tools & Skills */}
+      {Object.keys(toolsSkillsObj).length > 0 && (
+        <section className="mb-6">
+          <h2 className="text-xl font-bold mb-2">Tools & Skills</h2>
+          <ul className="list-disc pl-5 text-sm space-y-1">
+            {Object.entries(toolsSkillsObj).map(([category, items], idx) => (
+              <li key={idx}>
+                <strong>{category}:</strong> {asArray(items).join(", ")}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {/* Experience */}
-      <section className="mb-6">
-        <h2 className="text-xl font-bold mb-2">Experience</h2>
-        {experience.length > 0 ? (
-          experience.map((role, idx) => (
+      {experienceList.length > 0 && (
+        <section className="mb-6">
+          <h2 className="text-xl font-bold mb-2">Experience</h2>
+          {experienceList.map((role, idx) => (
             <div key={idx} className="mb-4">
               <p className="font-semibold">
                 {role.company} — {role.title} ({role.dates})
               </p>
               <ul className="list-disc pl-5 text-sm space-y-1">
-                {role.bullets?.length ? (
-                  role.bullets.map((point, i) => <li key={i}>{point}</li>)
-                ) : (
-                  <li>No details provided.</li>
-                )}
+                {asArray(role.bullets).map((point, i) => (
+                  <li key={i}>{point}</li>
+                ))}
               </ul>
             </div>
-          ))
-        ) : (
-          <p className="text-sm italic">No experience provided yet.</p>
-        )}
-      </section>
+          ))}
+        </section>
+      )}
 
       {/* Education & Certifications */}
-      <section className="mb-6">
-        <h2 className="text-xl font-bold mb-2">Education & Certifications</h2>
-        {education.length > 0 ? (
+      {educationList.length > 0 && (
+        <section className="mb-6">
+          <h2 className="text-xl font-bold mb-2">Education & Certifications</h2>
           <ul className="list-disc pl-5 text-sm space-y-1">
-            {education.map((item, idx) => (
+            {educationList.map((item, idx) => (
               <li key={idx}>{item}</li>
             ))}
           </ul>
-        ) : (
-          <p className="text-sm italic">No education provided yet.</p>
-        )}
-      </section>
-
-      {/* Tools & Skills */}
-      <section className="mb-6">
-        <h2 className="text-xl font-bold mb-2">Tools & Skills</h2>
-        {Object.keys(toolsSkills).length > 0 ? (
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            {Object.entries(toolsSkills).map(([category, items], idx) => (
-              <div key={idx}>
-                <p className="font-semibold">{category}</p>
-                <ul className="list-disc pl-5 space-y-1">
-                  {items.length > 0 ? (
-                    items.map((tool, i) => <li key={i}>{tool}</li>)
-                  ) : (
-                    <li>No tools listed.</li>
-                  )}
-                </ul>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm italic">No tools or skills provided yet.</p>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* Key Achievements */}
-      <section>
-        <h2 className="text-xl font-bold mb-2">Key Achievements</h2>
-        {achievements.length > 0 ? (
+      {achievementsList.length > 0 && (
+        <section>
+          <h2 className="text-xl font-bold mb-2">Key Achievements</h2>
           <ul className="list-disc pl-5 text-sm space-y-1">
-            {achievements.map((item, idx) => (
+            {achievementsList.map((item, idx) => (
               <li key={idx}>{item}</li>
             ))}
           </ul>
-        ) : (
-          <p className="text-sm italic">No achievements provided yet.</p>
-        )}
-      </section>
+        </section>
+      )}
     </div>
   );
 };

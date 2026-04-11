@@ -1,17 +1,25 @@
-// useDocumentBuilder.js
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import * as documentService from "../module-services/documentService";
+import * as documentService from "../../../api/documentGeneratorService";
 import { sanitizeMessage } from "../utils/sanitize";
 
-const DEFAULT_MESSAGE = {
-  id: 1,
-  sender: "ai",
-  content:
-    "Hello! 👋 I'm here to help you create professional cover letters and personal statements. What would you like to create today?",
-  timestamp: new Date().toLocaleTimeString("en-GB"),
+const isUuid = (value) => {
+  const v = String(value ?? "");
+  return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(v);
 };
+
+const toMessageShape = (m, i) => ({
+  id: i + 1,
+  sender: m.role === "user" ? "user" : "ai",
+  content: m.content,
+  timestamp: new Date(m.createdAt).toLocaleTimeString("en-GB", {
+    hour12: false,
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }),
+});
 
 export const useDocumentBuilder = () => {
   const queryClient = useQueryClient();
@@ -20,18 +28,9 @@ export const useDocumentBuilder = () => {
   const [conversationId, setConversationId] = useState(null);
   const [document, setDocument] = useState(null);
   const [userInput, setUserInput] = useState("");
-  const [editingConvId, setEditingConvId] = useState(null);
-  const [newTitle, setNewTitle] = useState("");
+  const initializedRef = useRef(false);
 
-  useEffect(() => {
-    if (!messages || messages.length === 0) {
-      setMessages([DEFAULT_MESSAGE]);
-    }
-  }, [messages]);
-
-  // =====================
-  // Queries
-  // =====================
+  // ── Queries ────────────────────────────────────────────────────────────────
 
   const {
     data: conversations = [],
@@ -39,20 +38,19 @@ export const useDocumentBuilder = () => {
     error: conversationsError,
   } = useQuery({
     queryKey: ["documentConversations"],
-    queryFn: documentService.getConversations,
+    queryFn: documentService.listDocumentConversations,
   });
 
-  // =====================
-  // Mutations
-  // =====================
+  // ── Mutations ──────────────────────────────────────────────────────────────
 
   const createConversationMutation = useMutation({
-    mutationFn: documentService.createConversation,
+    mutationFn: documentService.createDocumentConversation,
     onSuccess: (data) => {
-      queryClient.invalidateQueries(["documentConversations"]);
+      queryClient.invalidateQueries({ queryKey: ["documentConversations"] });
       setConversationId(data.id);
-      setMessages([]);
-      toast.success("New document conversation started");
+      localStorage.setItem("docConversationId", data.id);
+      // Messages are fetched separately (backend adds greeting after saving the entity,
+      // so the creation response doesn't include it). The caller chains loadMessages.
     },
     onError: (err) => {
       toast.error(err.message || "Failed to create conversation");
@@ -60,28 +58,11 @@ export const useDocumentBuilder = () => {
   });
 
   const loadMessagesMutation = useMutation({
-    mutationFn: documentService.loadMessages,
-    onSuccess: (data, id) => {
-      setConversationId(id);
-
-      if (data.messages?.length) {
-        setMessages(
-          data.messages.map((m, i) => ({
-            id: i + 1,
-            sender: m.role === "user" ? "user" : "ai",
-            content: m.content,
-            timestamp: new Date(m.createdAt).toLocaleTimeString("en-GB", {
-              hour12: false,
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-            }),
-          })),
-        );
-      } else {
-        setMessages([]);
-        toast("This conversation has no messages yet");
-      }
+    mutationFn: documentService.getDocumentConversation,
+    onSuccess: (data) => {
+      setConversationId(data.id);
+      localStorage.setItem("docConversationId", data.id);
+      setMessages(data.messages?.length ? data.messages.map(toMessageShape) : []);
     },
     onError: (err) => {
       toast.error(err.message || "Failed to load messages");
@@ -89,10 +70,10 @@ export const useDocumentBuilder = () => {
   });
 
   const sendMessageMutation = useMutation({
-    mutationFn: ({ conversationId, content }) =>
-      documentService.sendMessage(conversationId, content),
+    mutationFn: ({ conversationId: convId, content }) =>
+      documentService.sendDocumentMessage(convId, content),
     onSuccess: (data) => {
-      let aiContent =
+      const aiContent =
         data.content ||
         data.messages?.find((m) => m.role !== "user")?.content ||
         "AI response not available";
@@ -112,7 +93,6 @@ export const useDocumentBuilder = () => {
         },
       ]);
     },
-
     onError: (err) => {
       toast.error(err.message || "Failed to send message");
     },
@@ -140,50 +120,24 @@ export const useDocumentBuilder = () => {
     },
   });
 
-  const updateDocumentMutation = useMutation({
-    mutationFn: ({ conversationId, payload }) =>
-      documentService.updateDocument(conversationId, payload),
-    onSuccess: (data) => {
-      setDocument(data);
-      toast.success("Document updated successfully");
-    },
-    onError: (err) => {
-      toast.error(err.message || "Failed to update document");
-    },
-  });
-
-  const patchDocumentMutation = useMutation({
-    mutationFn: ({ conversationId, payload }) =>
-      documentService.patchDocument(conversationId, payload),
-    onSuccess: (data) => {
-      setDocument((prev) => ({ ...prev, ...data }));
-      toast.success("Document updated successfully");
-    },
-    onError: (err) => {
-      toast.error(err.message || "Failed to update document");
-    },
-  });
-
   const deleteDocumentMutation = useMutation({
     mutationFn: documentService.deleteDocument,
     onSuccess: () => {
       setDocument(null);
       toast.success("Document deleted successfully");
     },
+    onError: (err) => {
+      toast.error(err.message || "Failed to delete document");
+    },
   });
 
-  /* =========================
-     EXTRACT STABLE MUTATE FUNCTIONS
-  ========================= */
-
-  const { mutate: createConversation } = createConversationMutation;
-  const { mutate: loadMessages } = loadMessagesMutation;
-
-  // =====================
-  // Init logic
-  // =====================
+  // ── Init logic ─────────────────────────────────────────────────────────────
 
   useEffect(() => {
+    if (initializedRef.current) return;
+    if (conversationsLoading) return;
+    initializedRef.current = true;
+
     if (conversationsError) {
       console.error(conversationsError);
       toast.error("Failed to fetch conversations");
@@ -191,95 +145,77 @@ export const useDocumentBuilder = () => {
     }
 
     if (!conversations.length) {
-      createConversation({
-        title: "Cover Letter for Software Engineer",
-        documentType: "cover-letter",
-        targetJobTitle: "Software Engineer",
-        targetCompany: "Tech Corp",
-      });
+      // Create a new conversation then load its messages (the greeting isn't in
+      // the create response — it's added server-side after the entity is saved).
+      createConversationMutation
+        .mutateAsync({ title: "Cover Letter", documentType: "cover-letter" })
+        .then((data) => loadMessagesMutation.mutate(data.id))
+        .catch(() => {}); // errors surfaced by onError toasts
     } else {
       const sorted = [...conversations].sort(
         (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt),
       );
-
-      loadMessages(sorted[0].id);
+      const savedId = localStorage.getItem("docConversationId");
+      const savedConv = savedId ? sorted.find((c) => c.id === savedId) : null;
+      const target = savedConv || sorted[0];
+      loadMessagesMutation.mutate(target.id);
     }
-  }, [conversations, conversationsError, createConversation, loadMessages]);
+  }, [conversations, conversationsLoading, conversationsError]); // eslint-disable-line
 
-  // =====================
-  // Handlers
-  // =====================
+  // ── Handlers ───────────────────────────────────────────────────────────────
 
   const handleSendMessage = () => {
     if (!userInput.trim() || !conversationId) return;
-
     const sanitized = sanitizeMessage(userInput);
-
-    const newMessage = {
-      id: messages.length + 1,
-      sender: "user",
-      content: sanitized,
-      timestamp: new Date().toLocaleTimeString("en-GB", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-      }),
-    };
-
-    setMessages((prev) => [...prev, newMessage]);
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: prev.length + 1,
+        sender: "user",
+        content: sanitized,
+        timestamp: new Date().toLocaleTimeString("en-GB", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+        }),
+      },
+    ]);
     setUserInput("");
-
-    sendMessageMutation.mutate({
-      conversationId,
-      content: sanitized,
-    });
+    sendMessageMutation.mutate({ conversationId, content: sanitized });
   };
 
-  const handleLoadMessages = (id) => {
-    loadMessages(id);
+  const handleChange = (e) => setUserInput(e.target.value);
+
+  const handleNewChat = () => {
+    setDocument(null);
+    createConversationMutation
+      .mutateAsync({ title: "Cover Letter", documentType: "cover-letter" })
+      .then((data) => loadMessagesMutation.mutate(data.id))
+      .catch(() => {});
   };
 
-  const handleChange = (e) => {
-    setUserInput(e.target.value);
-  };
-
-  // =====================
-  // Return
-  // =====================
+  // ── Exported ───────────────────────────────────────────────────────────────
 
   return {
-    // state
     messages,
-    conversations,
     conversationId,
     userInput,
     document,
+    setDocument,
 
-    // loading
-    loading:
+    isSending: sendMessageMutation.isPending,
+    isGenerating: generateDocumentMutation.isPending,
+    // Show skeleton while: loading conversations list, creating, or loading messages
+    isInitializing:
       conversationsLoading ||
-      sendMessageMutation.isPending ||
-      createConversationMutation.isPending,
+      createConversationMutation.isPending ||
+      loadMessagesMutation.isPending,
 
-    // setters
-    setUserInput,
-    setConversationId,
-    editingConvId,
-    setEditingConvId,
-    newTitle,
-    setNewTitle,
-
-    // handlers
     handleSendMessage,
-    handleLoadMessages,
-
-    updateConversation: documentService.updateConversation,
-    deleteConversation: documentService.deleteConversation,
-
     handleChange,
+    handleNewChat,
 
-    // keypress
     handleKeyPress: (e) => {
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
@@ -287,20 +223,22 @@ export const useDocumentBuilder = () => {
       }
     },
 
-    handleGenerateDocument: () =>
-      generateDocumentMutation.mutate(conversationId),
-
-    handleGetDocument: () => getDocumentMutation.mutate(conversationId),
-
-    handleUpdateDocument: (payload) =>
-      updateDocumentMutation.mutate({ id: conversationId, payload }),
-
-    handlePatchDocument: (payload) =>
-      patchDocumentMutation.mutate({ id: conversationId, payload }),
-
+    handleGenerateDocument: () => {
+      if (!isUuid(conversationId)) {
+        toast.error("Please wait for the conversation to initialize.");
+        return;
+      }
+      generateDocumentMutation.mutate(conversationId);
+    },
+    handleGetDocument: () => {
+      if (!isUuid(conversationId)) {
+        toast.error("Please wait for the conversation to initialize.");
+        return;
+      }
+      getDocumentMutation.mutate(conversationId);
+    },
     handleDeleteDocument: () => deleteDocumentMutation.mutate(conversationId),
 
-    // expose error if needed
     conversationsError,
   };
 };

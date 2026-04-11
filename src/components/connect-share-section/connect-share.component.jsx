@@ -70,7 +70,7 @@ const ConnectAndShare = () => {
 
   return (
     <div className="py-10">
-      <style jsx>{`
+      <style>{`
         @keyframes slideInFromBottomRight {
           0% {
             transform: translateX(128px) translateY(128px) scale(0.75);

@@ -1,12 +1,17 @@
 import React, { useEffect, useMemo, useState } from "react";
+import toast from "react-hot-toast";
 import SelectableCard from "../reusable-components/selectable-card.component";
 import { UserIcon } from "@heroicons/react/24/outline";
 import { ArrowRight } from "lucide-react";
 import GradientIcon from "../reusable-components/gradient-icon.component";
-import { apiFetch } from "../../../auth/apiClient";
 import CurrentPersona from "./current-persona.component";
 import IdealPersona from "./ideal-persona.component";
 import TransformationPlan from "./transformation-plan.component";
+import {
+  useGeneratePersona,
+  usePersona,
+  useSubmitPersonaAnswers,
+} from "../../../hooks/ai/usePersonaBuilder";
 
 const STEPS = [
   {
@@ -14,10 +19,13 @@ const STEPS = [
     title: "Question 1 of 6",
     question: "When presenting ideas in meetings, you typically...",
     options: [
-      "Wait to be asked your opinion",
-      "Build on others ideas supportively",
-      "Present your ideas clearly and concisely",
-      "Challenge assumptions and build for better solutions",
+      { optionId: "q1-a", label: "Wait to be asked your opinion" },
+      { optionId: "q1-b", label: "Build on others ideas supportively" },
+      { optionId: "q1-c", label: "Present your ideas clearly and concisely" },
+      {
+        optionId: "q1-d",
+        label: "Challenge assumptions and build for better solutions",
+      },
     ],
   },
   {
@@ -25,10 +33,13 @@ const STEPS = [
     title: "Question 2 of 6",
     question: "Your colleagues would describe your work approach as...",
     options: [
-      "Steady, reliable and detail-oriented",
-      "Creative, innovative and flexible",
-      "Results-driven and goal-focused",
-      "People-focused and relationship-building",
+      { optionId: "q2-a", label: "Steady, reliable and detail-oriented" },
+      { optionId: "q2-b", label: "Creative, innovative and flexible" },
+      { optionId: "q2-c", label: "Results-driven and goal-focused" },
+      {
+        optionId: "q2-d",
+        label: "People-focused and relationship-building",
+      },
     ],
   },
   {
@@ -36,10 +47,16 @@ const STEPS = [
     title: "Question 3 of 6",
     question: "Your colleagues would describe your work approach as...",
     options: [
-      "Focus on executing tasks efficiently",
-      "Bring people together to find solutions",
-      "Step back and develop a strategic approach",
-      "Look for creative, unconventional solutions",
+      { optionId: "q3-a", label: "Focus on executing tasks efficiently" },
+      { optionId: "q3-b", label: "Bring people together to find solutions" },
+      {
+        optionId: "q3-c",
+        label: "Step back and develop a strategic approach",
+      },
+      {
+        optionId: "q3-d",
+        label: "Look for creative, unconventional solutions",
+      },
     ],
   },
   {
@@ -47,10 +64,22 @@ const STEPS = [
     title: "Question 4 of 6",
     question: "At work, you prefer to...",
     options: [
-      "Work behind the scenes and let results speak",
-      "Share credit with the team and celebrate together",
-      "Present your work to stakeholders when appropriate",
-      "Take the spotlight and lead high-profile initiatives",
+      {
+        optionId: "q4-a",
+        label: "Work behind the scenes and let results speak",
+      },
+      {
+        optionId: "q4-b",
+        label: "Share credit with the team and celebrate together",
+      },
+      {
+        optionId: "q4-c",
+        label: "Present your work to stakeholders when appropriate",
+      },
+      {
+        optionId: "q4-d",
+        label: "Take the spotlight and lead high-profile initiatives",
+      },
     ],
   },
   {
@@ -58,10 +87,22 @@ const STEPS = [
     title: "Question 5 of 6",
     question: "Your primary career aspiration is...",
     options: [
-      "Become a recognized expert in your field",
-      "Lead teams and drive organizational change",
-      "Create innovative solutions and lead projects",
-      "Build influence and shape strategic decisions",
+      {
+        optionId: "q5-a",
+        label: "Become a recognized expert in your field",
+      },
+      {
+        optionId: "q5-b",
+        label: "Lead teams and drive organizational change",
+      },
+      {
+        optionId: "q5-c",
+        label: "Create innovative solutions and lead projects",
+      },
+      {
+        optionId: "q5-d",
+        label: "Build influence and shape strategic decisions",
+      },
     ],
   },
   {
@@ -69,16 +110,46 @@ const STEPS = [
     title: "Question 6 of 6",
     question: "The area you most want to develop is...",
     options: [
-      "Speaking up with more confidence and authority",
-      "Building stronger professional relationships",
-      "Thinking and communicating more strategically",
-      "Commanding more respect and executive presence",
+      {
+        optionId: "q6-a",
+        label: "Speaking up with more confidence and authority",
+      },
+      {
+        optionId: "q6-b",
+        label: "Building stronger professional relationships",
+      },
+      {
+        optionId: "q6-c",
+        label: "Thinking and communicating more strategically",
+      },
+      {
+        optionId: "q6-d",
+        label: "Commanding more respect and executive presence",
+      },
     ],
   },
 ];
 
+/** Map legacy localStorage values (plain label strings) to { optionId, label }. */
+const normalizeStepSelection = (step, raw) => {
+  if (raw == null) return null;
+  if (typeof raw === "object" && raw.optionId && raw.label) return raw;
+  if (typeof raw === "string") {
+    const match = step.options.find((o) => o.label === raw);
+    return match ? { optionId: match.optionId, label: match.label } : null;
+  }
+  return null;
+};
+
 const STORAGE_KEY = "personaSelections";
 const STARTED_KEY = "personaStarted";
+const PERSONA_FETCH_ATTEMPTS = 4;
+const PERSONA_FETCH_RETRY_DELAY_MS = 700;
+
+const wait = (ms) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
 
 const BuildPersona = () => {
   const [started, setStarted] = useState(false);
@@ -87,65 +158,67 @@ const BuildPersona = () => {
   const [persona, setPersona] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const personaQuery = usePersona(false);
+  const submitAnswersMutation = useSubmitPersonaAnswers();
+  const generatePersonaMutation = useGeneratePersona();
+
   const handleFinish = async () => {
     try {
       setLoading(true);
 
-      // Format answers into array with questionId, question, and answer
-      const formattedAnswers = STEPS.map((step, index) => {
-        const answer = selections[step.id];
+      // Backend expects optionId (non-empty string) per answer; keep text fields for context.
+      const formattedAnswers = STEPS.map((step) => {
+        const sel = selections[step.id];
+        if (!sel?.optionId) return null;
         return {
-          questionId: String(index + 1), // or use step.id if backend accepts it
+          questionId: step.id,
+          optionId: sel.optionId,
           question: step.question,
-          answer,
+          answer: sel.label,
         };
-      }).filter((ans) => ans.answer); // only include answered questions
+      }).filter(Boolean);
 
       // Step 1: Submit answers
-      const answersRes = await apiFetch(
-        "https://hello-dreams-ai.onrender.com/persona-builder/answers",
-        {
-          method: "POST",
-          body: JSON.stringify({ answers: formattedAnswers }),
-        },
-      );
-
-      if (!answersRes.ok) {
-        console.error("Failed to submit answers:", answersRes.status);
-        setLoading(false);
-        return;
-      }
+      await submitAnswersMutation.mutateAsync({ answers: formattedAnswers });
 
       // Step 2: Trigger persona generation
-      const genRes = await apiFetch(
-        "https://hello-dreams-ai.onrender.com/persona-builder/generate",
-        {
-          method: "POST",
-        },
-      );
-
-      if (!genRes.ok) {
-        console.error("Failed to generate persona:", genRes.status);
-        setLoading(false);
+      const generatedPersona = await generatePersonaMutation.mutateAsync();
+      if (generatedPersona) {
+        setPersona(generatedPersona);
         return;
       }
 
-      // Step 3: Fetch persona
-      const personaRes = await apiFetch(
-        "https://hello-dreams-ai.onrender.com/persona-builder/persona",
-        {
-          method: "GET",
-        },
-      );
+      // Step 3: Fetch persona with bounded retries (generation can be eventually consistent).
+      let resolvedPersona = null;
+      for (let attempt = 0; attempt < PERSONA_FETCH_ATTEMPTS; attempt += 1) {
+        const personaResult = await personaQuery.refetch();
+        if (personaResult.data) {
+          resolvedPersona = personaResult.data;
+          break;
+        }
+        if (attempt < PERSONA_FETCH_ATTEMPTS - 1) {
+          await wait(PERSONA_FETCH_RETRY_DELAY_MS);
+        }
+      }
 
-      if (personaRes.ok) {
-        const data = await personaRes.json();
-        setPersona(data.persona);
+      if (resolvedPersona) {
+        setPersona(resolvedPersona);
       } else {
-        console.error("Failed to fetch persona:", personaRes.status);
+        console.error("Failed to fetch a complete persona after retries.");
+        toast.error(
+          "We couldn't generate your persona yet. Please try again in a moment.",
+        );
       }
     } catch (err) {
+      if (err?.apiError != null) {
+        console.error("Persona API error body:", err.apiError);
+      }
       console.error("Error generating persona:", err);
+      toast.error(
+        typeof err?.message === "string" && err.message
+          ? err.message
+          : "Error generating persona.",
+      );
     } finally {
       setLoading(false);
     }
@@ -159,7 +232,12 @@ const BuildPersona = () => {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        setSelections(parsed.selections || {});
+        const rawSelections = parsed.selections || {};
+        const migrated = {};
+        for (const step of STEPS) {
+          migrated[step.id] = normalizeStepSelection(step, rawSelections[step.id]);
+        }
+        setSelections(migrated);
         if (parsed.stepIndex != null) setStepIndex(parsed.stepIndex);
       }
     } catch (error) {
@@ -187,7 +265,10 @@ const BuildPersona = () => {
   const isLast = stepIndex === STEPS.length - 1;
 
   const selectOption = (option) => {
-    setSelections((prev) => ({ ...prev, [current.id]: option }));
+    setSelections((prev) => ({
+      ...prev,
+      [current.id]: { optionId: option.optionId, label: option.label },
+    }));
   };
 
   const goNext = () => {
@@ -317,7 +398,9 @@ const BuildPersona = () => {
           </p>
           <p className="text-[18px] mb-2">
             <strong>Personality Traits:</strong>{" "}
-            {persona.personalityTraits.join(", ")}
+            {Array.isArray(persona.personalityTraits)
+              ? persona.personalityTraits.join(", ")
+              : (persona.personalityTraits ?? "—")}
           </p>
         </div>
 
@@ -356,14 +439,14 @@ const BuildPersona = () => {
         <div className="space-y-3">
           {current.options.map((opt) => (
             <SelectableCard
-              key={opt}
-              isSelected={selections[current.id] === opt}
+              key={opt.optionId}
+              isSelected={selections[current.id]?.optionId === opt.optionId}
               onClick={() => selectOption(opt)}
             >
               <div className="flex items-center space-x-3">
                 <GradientIcon />
                 <div className="flex-1">
-                  <p className="text-[20px] font-medium mt-1">{opt}</p>
+                  <p className="text-[20px] font-medium mt-1">{opt.label}</p>
                 </div>
               </div>
             </SelectableCard>
@@ -380,7 +463,7 @@ const BuildPersona = () => {
           </button>
           <button
             onClick={isLast ? handleFinish : goNext}
-            disabled={!selections[current.id]}
+            disabled={!selections[current.id]?.optionId}
             className="px-5 py-2 text-[16px] font-medium rounded-md text-[#fff] bg-gradient-to-b from-[#748ffc] to-[#1342ff] disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed "
           >
             {isLast ? "Finish" : "Continue"}

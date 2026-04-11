@@ -1,16 +1,13 @@
-import React, { useState, useEffect } from "react";
-import {
-  getAccessToken,
-  clearTokens,
-  setTokens,
-  getRefreshToken,
-  isAuthenticated,
-} from "./authStorage";
-import { apiFetch } from "./apiClient";
+import React, { useState, useEffect, useCallback } from "react";
+import { getAccessToken, clearTokens } from "./authStorage";
 import toast from "react-hot-toast";
 import { AuthContext } from "./authContext";
-
-const API_BASE = "https://hello-dreams-ai.onrender.com";
+import {
+  login as authLogin,
+  logout as authLogout,
+  getUserProfile,
+  updateUserProfile as authUpdateUserProfile,
+} from "../api/authService";
 
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(getAccessToken());
@@ -18,16 +15,53 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [initializing, setInitializing] = useState(true);
   const [error, setError] = useState(null);
+  const handleAuthExpired = () => {
+    clearTokens();
+    setToken(null);
+    setUser(null);
+  };
 
-  // 🔹 Initialize auth state on app load
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  // 🔹 Fetch current user profile (retries on rate limits from dev / Strict Mode / burst traffic)
+  const fetchUserProfile = useCallback(async () => {
+    const maxAttempts = 4;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        const profile = await getUserProfile();
+        setUser(profile);
+        return;
+      } catch (err) {
+        const is429 = err?.status === 429;
+        if (is429 && attempt < maxAttempts) {
+          const fromHeader = err.retryAfterSeconds;
+          const backoffMs = Number.isFinite(fromHeader)
+            ? fromHeader * 1000
+            : Math.min(800 * 2 ** (attempt - 1), 5000);
+          await sleep(backoffMs);
+          continue;
+        }
+        if (err?.kind === "AUTH_EXPIRED") {
+          handleAuthExpired();
+          return;
+        }
+        console.error("Error fetching profile:", err);
+        return;
+      }
+    }
+  }, []);
+
   useEffect(() => {
     const boot = async () => {
       const existingToken = getAccessToken();
       setToken(existingToken);
 
-      // 🔹 If we already have a token, fetch the profile on app load
       if (existingToken) {
-        await fetchUserProfile();
+        // Race the profile fetch against a 5-second timeout so the app never
+        // hangs on a slow network. The user can still see the dashboard; the
+        // profile will re-fetch on the next request that needs it.
+        const timeout = new Promise((resolve) => setTimeout(resolve, 5000));
+        await Promise.race([fetchUserProfile(), timeout]);
       }
 
       setInitializing(false);
@@ -37,17 +71,7 @@ export const AuthProvider = ({ children }) => {
       console.error("Auth boot error:", err);
       setInitializing(false);
     });
-  }, []);
-
-  // 🔹 Fetch current user profile
-  const fetchUserProfile = async () => {
-    try {
-      const profile = await apiFetch(`${API_BASE}/users/profile`);
-      setUser(profile);
-    } catch (err) {
-      console.error("Error fetching profile:", err);
-    }
-  };
+  }, [fetchUserProfile]);
 
   // 🔹 Update user profile
   const updateUserProfile = async (updates) => {
@@ -56,18 +80,15 @@ export const AuthProvider = ({ children }) => {
       setError(null);
 
       if (!user?.id) throw new Error("No user ID available");
-
-      const data = await apiFetch(`${API_BASE}/users/${user.id}`, {
-        method: "PUT",
-        body: JSON.stringify(updates),
-      });
-
+      const data = await authUpdateUserProfile(user.id, updates);
       setUser(data);
       toast.success("Profile updated successfully");
       return data;
     } catch (err) {
-      setError(err.message || "Profile update failed");
-      toast.error(err.message || "Profile update failed");
+      console.error("Error updating profile:", err);
+      const message = err?.message || "Error updating profile";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -78,24 +99,21 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-
-      const data = await apiFetch(`${API_BASE}/auth/login`, {
-        method: "POST",
-        body: JSON.stringify(credentials),
-      });
-
-      // Save tokens
-      setTokens(data);
+      const data = await authLogin(credentials);
       setToken(data.access_token);
-
-      // Fetch user profile
-      await fetchUserProfile();
-
       toast.success("Logged in successfully");
+
+      // ✅ Only fetch profile from backend
+      await fetchUserProfile();
       navigate("/ai-dashboard");
     } catch (err) {
-      setError(err.message || "Login failed");
-      toast.error(err.message || "Login failed");
+      if (err?.kind === "AUTH_EXPIRED") {
+        handleAuthExpired();
+      }
+      const message = err?.message || "Error logging in";
+      console.log("Error", err);
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -106,19 +124,13 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-
-      const refresh_token = getRefreshToken();
-
-      await fetch(`${API_BASE}/auth/logout`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh_token }),
-      });
-
-      toast.success("Logged out successfully");
+      const data = await authLogout();
+      toast.success(data.message || "Logged out successfully");
     } catch (err) {
-      console.error("Logout error:", err);
-      toast.error("Error logging out");
+      console.log("Error", err);
+      const message = err?.message || "Error logging out";
+      setError(message);
+      toast.error(message);
     } finally {
       clearTokens();
       setToken(null);
@@ -142,7 +154,6 @@ export const AuthProvider = ({ children }) => {
         initializing,
         loading,
         error,
-        isAuthenticated: isAuthenticated(),
       }}
     >
       {children}

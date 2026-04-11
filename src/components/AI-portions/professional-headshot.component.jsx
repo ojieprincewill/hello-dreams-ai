@@ -1,8 +1,10 @@
 import React, { useRef, useState } from "react";
 import { UserIcon } from "@heroicons/react/24/outline";
 import { Download, Loader2, RefreshCcw } from "lucide-react";
+import toast from "react-hot-toast";
 import SelectableCard from "./reusable-components/selectable-card.component";
 import GradientIcon from "./reusable-components/gradient-icon.component";
+import * as headshotService from "../../api/headshotService";
 
 const STYLES = [
   {
@@ -50,12 +52,25 @@ const PERSONAS = [
   },
 ];
 
+const POLL_INTERVAL_MS = 2000;
+const POLL_MAX_ATTEMPTS = 15;
+
+const pollUntilDone = async (generationId) => {
+  for (let i = 0; i < POLL_MAX_ATTEMPTS; i++) {
+    await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+    const data = await headshotService.getHeadshotGeneration(generationId);
+    if (data.generatedImages?.length > 0) return data;
+    if (data.status === "failed") throw new Error("Image generation failed on the server");
+  }
+  throw new Error("Generation timed out. Please try again.");
+};
+
 const ProfessionalHeadshot = () => {
   const [file, setFile] = useState(null);
   const [styleId, setStyleId] = useState(null);
   const [personaId, setPersonaId] = useState(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [resultUrl, setResultUrl] = useState(null);
+  const [resultUrls, setResultUrls] = useState([]);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [hasGenerated, setHasGenerated] = useState(false);
 
@@ -67,8 +82,7 @@ const ProfessionalHeadshot = () => {
     const f = e.target.files?.[0];
     if (!f) return;
     setFile(f);
-    const url = URL.createObjectURL(f);
-    setPreviewUrl(url); // set preview only
+    setPreviewUrl(URL.createObjectURL(f));
   };
 
   const canGenerate = !!file && !!styleId && !!personaId;
@@ -76,31 +90,55 @@ const ProfessionalHeadshot = () => {
   const generateHeadshot = async () => {
     if (!canGenerate) return;
     setIsGenerating(true);
-    // Simulate generation delay and keep current preview until "generated"
-    setTimeout(() => {
+
+    try {
+      // Step 1 — upload photo
+      const { imageUrl } = await headshotService.uploadHeadshotPhoto(file);
+      if (!imageUrl) throw new Error("Upload succeeded but no image URL was returned");
+
+      // Step 2 — request generation
+      const generation = await headshotService.generateHeadshot({
+        originalImageUrl: imageUrl,
+        style: styleId,
+        personaId,
+      });
+
+      // Step 3 — wait for images (poll if not immediately available)
+      let images = generation.generatedImages ?? [];
+      if (images.length === 0 && generation.id) {
+        const polled = await pollUntilDone(generation.id);
+        images = polled.generatedImages ?? [];
+      }
+
+      if (images.length === 0) throw new Error("No images were returned by the server");
+
+      setResultUrls(images);
+      setHasGenerated(true);
+    } catch (err) {
+      toast.error(err.message || "Failed to generate headshot");
+    } finally {
       setIsGenerating(false);
-      setResultUrl(previewUrl); // use preview as final image
-      setHasGenerated(true); // now we show the result view
-    }, 1800);
+    }
   };
 
-  const downloadImage = () => {
-    if (!resultUrl) return;
+  const downloadImage = (url, index = 0) => {
     const a = document.createElement("a");
-    a.href = resultUrl;
-    a.download = "professional-headshot.png";
+    a.href = url;
+    a.download = `professional-headshot${index > 0 ? `-${index}` : ""}.png`;
     a.click();
   };
 
   const resetForAnother = () => {
     setIsGenerating(false);
-    setResultUrl(null);
+    setResultUrls([]);
     setPreviewUrl(null);
     setFile(null);
     setStyleId(null);
     setPersonaId(null);
     setHasGenerated(false);
   };
+
+  const hasResult = resultUrls.length > 0 && !isGenerating;
 
   return (
     <div className="px-[5%] py-10">
@@ -117,8 +155,8 @@ const ProfessionalHeadshot = () => {
         </div>
       </div>
 
-      {/* If generated result */}
-      {resultUrl && !isGenerating && styleId && personaId ? (
+      {/* Result view */}
+      {hasResult && styleId && personaId ? (
         <div className="bg-[#f6f6f6] dark:bg-[#181818] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -132,12 +170,14 @@ const ProfessionalHeadshot = () => {
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <button
-                onClick={downloadImage}
-                className="px-4 py-2 rounded-md bg-[#17a34a] hover:bg-[#1a9447] text-white flex items-center gap-2 cursor-pointer"
-              >
-                <Download size={16} /> Download Image
-              </button>
+              {resultUrls.length === 1 && (
+                <button
+                  onClick={() => downloadImage(resultUrls[0])}
+                  className="px-4 py-2 rounded-md bg-[#17a34a] hover:bg-[#1a9447] text-white flex items-center gap-2 cursor-pointer"
+                >
+                  <Download size={16} /> Download Image
+                </button>
+              )}
               <button
                 onClick={resetForAnother}
                 className="px-4 py-2 rounded-md border border-[#2d2d2d] flex items-center gap-2 cursor-pointer"
@@ -147,15 +187,38 @@ const ProfessionalHeadshot = () => {
             </div>
           </div>
 
-          <div className="w-full flex items-center justify-center">
-            <div className="border border-[#ccc] dark:border-[#2d2d2d] rounded-md p-2 bg-[#ececec] dark:bg-black">
-              <img
-                src={resultUrl}
-                alt="Generated headshot"
-                className="max-h-[420px] object-contain"
-              />
+          {resultUrls.length === 1 ? (
+            <div className="w-full flex items-center justify-center">
+              <div className="border border-[#ccc] dark:border-[#2d2d2d] rounded-md p-2 bg-[#ececec] dark:bg-black">
+                <img
+                  src={resultUrls[0]}
+                  alt="Generated headshot"
+                  className="max-h-[420px] object-contain"
+                />
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-4">
+              {resultUrls.map((url, i) => (
+                <div
+                  key={i}
+                  className="border border-[#ccc] dark:border-[#2d2d2d] rounded-md p-2 bg-[#ececec] dark:bg-black"
+                >
+                  <img
+                    src={url}
+                    alt={`Generated headshot ${i + 1}`}
+                    className="w-full object-contain"
+                  />
+                  <button
+                    onClick={() => downloadImage(url, i + 1)}
+                    className="mt-2 w-full px-3 py-1.5 rounded-md bg-[#17a34a] hover:bg-[#1a9447] text-white flex items-center justify-center gap-2 cursor-pointer text-sm"
+                  >
+                    <Download size={14} /> Download
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-4">
