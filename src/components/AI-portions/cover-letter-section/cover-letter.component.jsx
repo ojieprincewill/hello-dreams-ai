@@ -5,33 +5,8 @@ import AnimatedMessage from "../reusable-components/animated-message.component";
 import AiTypingIndicator from "../reusable-customs/ai-typing-indicator.component";
 import { useDocumentBuilder } from "../custom-hooks/useDocumentBuilder";
 import { useDashboardActions } from "../../../context/DashboardActionsContext";
+import CoverLetterPreview from "./cover-letter-preview.component";
 
-/**
- * Converts a StructuredDocumentJson object (returned by the backend) into a
- * readable string. Falls back gracefully for plain-string or unknown shapes.
- */
-const renderDocumentContent = (doc) => {
-  const content = doc?.content;
-  if (!content) return JSON.stringify(doc, null, 2);
-  if (typeof content === "string") return content;
-  // StructuredDocumentJson: { sections: [{ heading, paragraphs, bullets }] }
-  if (Array.isArray(content.sections)) {
-    return content.sections
-      .flatMap((s) => {
-        const parts = [];
-        if (s.heading) {
-          parts.push(`${s.heading.toUpperCase()}`);
-          parts.push("─".repeat(Math.min(s.heading.length, 40)));
-        }
-        (s.paragraphs || []).forEach((p) => parts.push(p));
-        (s.bullets || []).forEach((b) => parts.push(`• ${b}`));
-        return parts;
-      })
-      .filter(Boolean)
-      .join("\n\n");
-  }
-  return JSON.stringify(content, null, 2);
-};
 
 const CoverLetter = () => {
   const {
@@ -128,11 +103,7 @@ const CoverLetter = () => {
             </button>
           </div>
         </div>
-        <div className="border rounded p-6 bg-white dark:bg-[#121212] overflow-y-auto max-h-[70vh]">
-          <pre className="whitespace-pre-wrap text-[15px] leading-relaxed font-sans">
-            {renderDocumentContent(document)}
-          </pre>
-        </div>
+        <CoverLetterPreview document={document} />
       </div>
     );
 
