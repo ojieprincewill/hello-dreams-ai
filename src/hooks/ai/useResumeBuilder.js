@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   listResumeConversations,
   createResumeConversation,
@@ -29,8 +29,12 @@ export const useResumeConversation = (conversationId) => {
 };
 
 export const useCreateResumeConversation = () => {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ payload }) => createResumeConversation(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["resumeBuilder", "conversations"] });
+    },
   });
 };
 

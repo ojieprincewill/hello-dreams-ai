@@ -26,11 +26,6 @@ const AiDashboard = () => {
   const [activeModule, setActiveModule] = useState(null);
   const [newChatAction, setNewChatAction] = useState(null);
 
-  // Reset the New Chat action whenever the user switches modules
-  useEffect(() => {
-    setNewChatAction(null);
-  }, [activeModule]);
-
   // Restore active module on mount
   useEffect(() => {
     const saved = localStorage.getItem("activeModule");

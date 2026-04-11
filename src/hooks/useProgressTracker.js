@@ -5,6 +5,7 @@ import { listDocumentConversations } from "../api/documentGeneratorService";
 import { fetchPersona } from "../api/personaBuilderService";
 import { getLinkedInProfile } from "../api/linkedInService";
 import { getMyProfile } from "../api/professionalProfileService";
+import { getUser } from "../auth/authStorage";
 
 /**
  * Safe fetch wrappers — return null instead of throwing so a single failed
@@ -106,29 +107,51 @@ export function useProgressTracker() {
   const profilePersona = profile.persona ?? {};
   const completed = profile.completedSections ?? {};
 
+  // Auth user cached in localStorage — always has name + email on sign-in.
+  // This is the most reliable source for basic contact info.
+  const authUser = getUser() ?? {};
+  const authName =
+    authUser.name ||
+    [authUser.firstName, authUser.lastName].filter(Boolean).join(" ") ||
+    "";
+  const authEmail = authUser.email || "";
+
+  // True if any resume conversation already has at least one user message,
+  // meaning the user has provided info in the CV builder (even without generating).
+  const hasResumeWithUserMessages = resumeConversations.some(
+    (c) => Array.isArray(c.messages) && c.messages.some((m) => m.role === "user"),
+  );
+
   // ── Information fields ─────────────────────────────────────────────────────
-  // Generated resume is the primary source; professional profile is the fallback
-  // for users who've chatted but haven't yet hit "Generate Resume".
+  // Priority order:
+  // 1. Generated resume content (most accurate, post-generation)
+  // 2. Professional profile fields (populated by backend from various modules)
+  // 3. Auth user (always available on sign-in — name/email guaranteed)
+  // 4. Resume conversations with user messages (user has chatted in CV builder)
 
   const hasContact =
     !!(resumeContent?.contact?.fullName && resumeContent?.contact?.email) ||
-    !!(basicInfo.name && basicInfo.email);
+    !!(basicInfo.name && basicInfo.email) ||
+    !!(authName && authEmail);
 
   const hasWorkExperience =
     (Array.isArray(resumeContent?.workExperience) && resumeContent.workExperience.length > 0) ||
     (Array.isArray(cvMeta.workHistory) && cvMeta.workHistory.length > 0) ||
-    !!extracted.experience?.trim();
+    !!extracted.experience?.trim() ||
+    hasResumeWithUserMessages;
 
   const hasEducation =
     (Array.isArray(resumeContent?.education) && resumeContent.education.length > 0) ||
-    !!extracted.education?.trim();
+    !!extracted.education?.trim() ||
+    hasResumeWithUserMessages;
 
   const hasSkills =
     !!(
       resumeContent?.skills &&
       Object.values(resumeContent.skills).some((v) => Array.isArray(v) && v.length > 0)
     ) ||
-    (Array.isArray(extracted.skills) && extracted.skills.length > 0);
+    (Array.isArray(extracted.skills) && extracted.skills.length > 0) ||
+    hasResumeWithUserMessages;
 
   // Summary only exists after "Generate Resume"
   const hasSummary = !!resumeContent?.summary?.trim();
