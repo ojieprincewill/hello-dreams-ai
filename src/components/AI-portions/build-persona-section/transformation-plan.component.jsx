@@ -54,7 +54,11 @@ const transformData = [
   },
 ];
 
-const TransformationPlan = () => {
+const TransformationPlan = ({ onApply, onRestart, persona }) => {
+  const fromPersona = persona?.professionalVoice || "your current style";
+
+  const toPersona = persona?.tone || "your ideal persona";
+
   return (
     <div className="min-h-screen px-[5%] py-10 ">
       <div className="bg-[#e6e6e6] dark:bg-[#181818] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-6 md:p-10 ">
@@ -62,9 +66,8 @@ const TransformationPlan = () => {
           Your Transformation Playbook
         </div>
         <p className="text-[18px] md:text-[24px] mb-5 ">
-          From the{" "}
-          <span className="font-bold capitalize">reliable executor</span> to the{" "}
-          <span className="font-bold capitalize">executive presence</span>
+          From the <span className="font-bold capitalize">{fromPersona}</span>{" "}
+          to the <span className="font-bold capitalize">{toPersona}</span>
         </p>
         <div className="grid grid-cols-2 gap-x-5 gap-y-4">
           {transformData.map((data, index) => (
@@ -91,8 +94,9 @@ const TransformationPlan = () => {
           ))}
         </div>
       </div>
-      <div className="flex items-center justify-center mt-8">
+      <div className="flex flex-col items-center justify-center mt-8 space-y-4">
         <button
+          onClick={onApply}
           className="w-[476px] text-center py-3 border border-[#eaecf0] bg-gradient-to-b from-[#1342ff] to-[#ff00e6] text-[#fff] text-[24px] font-bold rounded-xl tracking-tighter disabled:opacity-60 cursor-pointer"
           style={{ fontFamily: "Poppins, sans-serif" }}
         >
@@ -100,6 +104,12 @@ const TransformationPlan = () => {
           <span>
             <ArrowRight size={24} strokeWidth={2.5} className="inline ml-2" />
           </span>
+        </button>
+        <button
+          onClick={onRestart}
+          className="w-[476px] text-center py-3 border border-[#eaecf0] bg-gradient-to-b from-[#1342ff] to-[#ff00e6] text-[#fff] text-[24px] font-bold rounded-xl tracking-tighter disabled:opacity-60 cursor-pointer"
+        >
+          Restart
         </button>
       </div>
     </div>

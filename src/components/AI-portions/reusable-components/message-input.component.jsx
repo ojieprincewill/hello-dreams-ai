@@ -7,6 +7,7 @@ const MessageInputField = ({
   onChange,
   onKeyDown,
   onSend,
+  onVoice,
   placeholder,
 }) => {
   const textareaRef = useRef(null);
@@ -35,7 +36,10 @@ const MessageInputField = ({
           />
         </div>
         <div className="flex items-center space-x-3">
-          <button className="p-2 hover:bg-[#dfdfdf] dark:hover:bg-[#2d2d2d] rounded-lg transition-colors cursor-pointer">
+          <button
+            onClick={onVoice}
+            className="p-2 hover:bg-[#dfdfdf] dark:hover:bg-[#2d2d2d] rounded-lg transition-colors cursor-pointer"
+          >
             <Mic size={24} className="text-[#333] dark:text-[#eaecf0]" />
           </button>
           <button

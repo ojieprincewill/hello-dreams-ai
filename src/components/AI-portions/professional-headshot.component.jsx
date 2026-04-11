@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef } from "react";
 import { UserIcon } from "@heroicons/react/24/outline";
 import { Download, Loader2, RefreshCcw } from "lucide-react";
 import toast from "react-hot-toast";
@@ -75,6 +75,30 @@ const ProfessionalHeadshot = () => {
   const [hasGenerated, setHasGenerated] = useState(false);
 
   const inputRef = useRef(null);
+
+  const {
+    previewUrl,
+    styleId,
+    personaId,
+    uploading,
+    uploadProgress,
+    isGenerating,
+    generation,
+    hasGenerated,
+    canGenerate,
+    autoPersona,
+
+    // loadingHistory,
+    // loadGeneration,
+    // generations,
+
+    setStyleId,
+    setPersonaId,
+    handleFileChange,
+    uploadImage,
+    generateHeadshot,
+    reset,
+  } = useProfessionalHeadshot();
 
   const handlePick = () => inputRef.current?.click();
 
@@ -168,6 +192,12 @@ const ProfessionalHeadshot = () => {
                 style and {PERSONAS.find((p) => p.id === personaId)?.label}{" "}
                 persona
               </p>
+
+              {autoPersona && (
+                <p className="text-sm text-green-500 mt-1">
+                  Persona auto-selected by AI
+                </p>
+              )}
             </div>
             <div className="flex items-center gap-3">
               {resultUrls.length === 1 && (
@@ -179,7 +209,7 @@ const ProfessionalHeadshot = () => {
                 </button>
               )}
               <button
-                onClick={resetForAnother}
+                onClick={reset}
                 className="px-4 py-2 rounded-md border border-[#2d2d2d] flex items-center gap-2 cursor-pointer"
               >
                 <RefreshCcw size={16} /> Generate another
@@ -222,6 +252,40 @@ const ProfessionalHeadshot = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-4">
+          {/* <div className="bg-[#f6f6f6] dark:bg-[#181818] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-4 h-[600px] overflow-y-auto">
+            <p className="font-semibold mb-4">History</p>
+
+            {loadingHistory ? (
+              <p className="text-sm">Loading...</p>
+            ) : generations.length === 0 ? (
+              <p className="text-sm text-gray-500">No generations yet</p>
+            ) : (
+              <div className="space-y-3">
+                {generations.map((gen) => (
+                  <div
+                    key={gen.id}
+                    onClick={() => loadGeneration(gen)}
+                    className="cursor-pointer border border-[#ddd] dark:border-[#2d2d2d] rounded-md p-2 hover:bg-[#eaeaea] dark:hover:bg-[#111]"
+                  >
+                    <img
+                      src={gen.imageUrl}
+                      alt="history"
+                      className="h-24 w-full object-cover rounded-md mb-2"
+                    />
+
+                    <p className="text-xs font-semibold">
+                      {STYLES.find((s) => s.id === gen.styleId)?.label ||
+                        "Style"}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {PERSONAS.find((p) => p.id === gen.personaId)?.label ||
+                        "Persona"}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div> */}
           {/* Upload */}
           <div className="bg-[#f6f6f6] dark:bg-[#181818] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-6">
             <p className="font-semibold mb-4">1. Upload Your Photo</p>
@@ -245,13 +309,25 @@ const ProfessionalHeadshot = () => {
                 </div>
               )}
             </div>
+
             <input
               ref={inputRef}
               type="file"
               accept="image/*"
               className="hidden"
-              onChange={onFileChange}
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                handleFileChange(file);
+                uploadImage(file);
+              }}
             />
+
+            {/* Optional progress */}
+            {uploading && (
+              <p className="text-sm mt-2">Uploading... {uploadProgress}%</p>
+            )}
           </div>
 
           {/* Choose Style */}

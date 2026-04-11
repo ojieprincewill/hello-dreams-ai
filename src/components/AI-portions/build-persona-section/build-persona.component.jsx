@@ -332,9 +332,9 @@ const BuildPersona = () => {
 
           <div className="flex justify-center items-center">
             <button
-              onClick={() => setStarted(true)}
+              onClick={handleStart}
               className="w-[476px] text-center py-3 border border-[#eaecf0] bg-gradient-to-b from-[#748ffc] to-[#1342ff]
- text-[#fff] text-[24px] font-bold rounded-xl tracking-tighter dark:shadow-[0_30px_80px_-10px_rgba(255,215,0,0.5),_0_-30px_80px_-10px_rgba(255,215,0,0.5)] mt-6 mb-12 cursor-pointer"
+         text-[#fff] text-[24px] font-bold rounded-xl tracking-tighter dark:shadow-[0_30px_80px_-10px_rgba(255,215,0,0.5),_0_-30px_80px_-10px_rgba(255,215,0,0.5)] mt-6 mb-12 cursor-pointer"
               style={{ fontFamily: "Poppins, sans-serif" }}
             >
               Start your persona journey
@@ -348,12 +348,13 @@ const BuildPersona = () => {
             </button>
           </div>
         </div>
-        <CurrentPersona />
-        <IdealPersona />
-        <TransformationPlan />
       </div>
     );
   }
+
+  // =====================
+  // LOADING
+  // =====================
 
   if (loading) {
     return (
@@ -361,7 +362,7 @@ const BuildPersona = () => {
         <div className="bg-[#e6e6e6] border-[#eaecf0] dark:bg-[#181818] border dark:border-[#2d2d2d] rounded-xl p-6 md:p-10 flex flex-col justify-center items-center space-y-3">
           <GradientIcon />
           <p className="text-[18px] md:text-[24px] font-bold">
-            Analysing your persona
+            Analysing your persona...
           </p>
           <p className="text-[18px] md:text-[24px]">
             Identifying your current workplace persona and career transformation
@@ -371,6 +372,10 @@ const BuildPersona = () => {
       </div>
     );
   }
+
+  // =====================
+  // RESULT
+  // =====================
 
   if (persona) {
     return (

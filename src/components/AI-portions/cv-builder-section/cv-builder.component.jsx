@@ -453,9 +453,9 @@ const CvBuilder = () => {
         renderMessage={renderMessage}
         inputProps={{
           value: userInput,
-          handleChange: handleChange,
-          handleKeyPress: handleKeyPress,
-          handleSendMessage: handleSendMessage,
+          handleChange,
+          handleKeyPress,
+          handleSendMessage,
         }}
       />
 
