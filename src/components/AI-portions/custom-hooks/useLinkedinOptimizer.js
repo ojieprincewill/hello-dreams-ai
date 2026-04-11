@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
+import { isNetworkError } from "../../../utils/networkError";
 import * as service from "../module-services/linkedinOptimizerService";
 
 export const useLinkedInOptimizer = () => {
@@ -26,7 +27,7 @@ export const useLinkedInOptimizer = () => {
       toast.success("LinkedIn profile generated");
     } catch (err) {
       console.error(err);
-      toast.error("Failed to generate profile");
+      if (!isNetworkError(err)) toast.error("Failed to generate profile");
     } finally {
       setIsGenerating(false);
     }
@@ -47,7 +48,7 @@ export const useLinkedInOptimizer = () => {
       }
     } catch (err) {
       console.error(err);
-      toast.error("Failed to load profile");
+      if (!isNetworkError(err)) toast.error("Failed to load profile");
     } finally {
       setIsFetching(false);
     }
@@ -66,7 +67,7 @@ export const useLinkedInOptimizer = () => {
       toast.success("Profile replaced");
     } catch (err) {
       console.error(err);
-      toast.error("Failed to replace profile");
+      if (!isNetworkError(err)) toast.error("Failed to replace profile");
     } finally {
       setIsUpdating(false);
     }
@@ -85,7 +86,7 @@ export const useLinkedInOptimizer = () => {
       toast.success("Profile updated");
     } catch (err) {
       console.error(err);
-      toast.error("Failed to update profile");
+      if (!isNetworkError(err)) toast.error("Failed to update profile");
     } finally {
       setIsUpdating(false);
     }
@@ -104,7 +105,7 @@ export const useLinkedInOptimizer = () => {
       toast.success(`${section} updated`);
     } catch (err) {
       console.error(err);
-      toast.error(`Failed to update ${section}`);
+      if (!isNetworkError(err)) toast.error(`Failed to update ${section}`);
     } finally {
       setIsUpdating(false);
     }
@@ -125,7 +126,7 @@ export const useLinkedInOptimizer = () => {
       toast.success("Profile deleted");
     } catch (err) {
       console.error(err);
-      toast.error("Failed to delete profile");
+      if (!isNetworkError(err)) toast.error("Failed to delete profile");
     } finally {
       setIsUpdating(false);
     }

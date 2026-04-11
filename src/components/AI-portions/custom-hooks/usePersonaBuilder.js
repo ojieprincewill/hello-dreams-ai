@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import toast from "react-hot-toast";
+import { isNetworkError } from "../../../utils/networkError";
 import * as service from "../module-services/personaBuilderService";
 
 const STORAGE_KEY = "personaSelections";
@@ -160,7 +161,7 @@ export const usePersonaBuilder = () => {
       setResultStep("current");
     } catch (err) {
       console.error(err);
-      toast.error("Failed to generate persona");
+      if (!isNetworkError(err)) toast.error("Failed to generate persona");
     } finally {
       setLoading(false);
     }
@@ -174,7 +175,7 @@ export const usePersonaBuilder = () => {
       await service.applyPersona();
       toast.success("Persona applied successfully ✨");
     } catch {
-      toast.error("Failed to apply persona");
+      if (!isNetworkError(err)) toast.error("Failed to apply persona");
     }
   };
 
@@ -188,7 +189,7 @@ export const usePersonaBuilder = () => {
       setStarted(false);
       setResultStep("current");
     } catch {
-      toast.error("Failed to restart");
+      if (!isNetworkError(err)) toast.error("Failed to restart");
     }
   };
 

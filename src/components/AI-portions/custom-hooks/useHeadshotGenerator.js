@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
+import { isNetworkError } from "../../../utils/networkError";
 import * as service from "../module-services/headshotService";
 
 export const useProfessionalHeadshot = () => {
@@ -65,7 +66,7 @@ export const useProfessionalHeadshot = () => {
       return res;
     } catch (err) {
       console.error(err);
-      toast.error("Upload failed");
+      if (!isNetworkError(err)) toast.error("Upload failed");
     } finally {
       setUploading(false);
     }
@@ -95,7 +96,7 @@ export const useProfessionalHeadshot = () => {
       setHasGenerated(true);
     } catch (err) {
       console.error(err);
-      toast.error("Generation failed");
+      if (!isNetworkError(err)) toast.error("Generation failed");
     } finally {
       setIsGenerating(false);
     }
@@ -123,7 +124,7 @@ export const useProfessionalHeadshot = () => {
       setGenerations(res?.data || res || []);
     } catch (err) {
       console.error(err);
-      toast.error("Failed to load history");
+      if (!isNetworkError(err)) toast.error("Failed to load history");
     } finally {
       setLoadingHistory(false);
     }

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
+import { isNetworkError } from "../../../utils/networkError";
 import { UserIcon } from "@heroicons/react/24/outline";
 import {
   useCreateResumeConversation,
@@ -92,12 +93,12 @@ const CvBuilder = () => {
         }
       } catch (err) {
         console.error("Error initializing CvBuilder:", err);
-        toast.error(err.message || "Failed to create conversation");
+        if (!isNetworkError(err)) toast.error(err.message || "Failed to create conversation");
       }
     };
 
     run();
-  }, [conversationsQuery.isSuccess, conversationsQuery.data, createConversationMutation]);
+  }, [conversationsQuery.isSuccess, conversationsQuery.data]); // eslint-disable-line
 
   // Sync messages when a conversation loads
   useEffect(() => {
@@ -172,7 +173,7 @@ const CvBuilder = () => {
       ]);
     } catch (err) {
       console.error("Error sending message:", err);
-      toast.error("Error sending message");
+      if (!isNetworkError(err)) toast.error("Error sending message");
     } finally {
       setLoading(false);
     }
@@ -197,7 +198,7 @@ const CvBuilder = () => {
       return resumeData;
     } catch (err) {
       console.error("Error generating resume:", err);
-      toast.error("Error generating resume");
+      if (!isNetworkError(err)) toast.error("Error generating resume");
       return null;
     } finally {
       setLoading(false);
@@ -224,7 +225,7 @@ const CvBuilder = () => {
       return resumeData;
     } catch (err) {
       console.error("Error fetching resume:", err);
-      toast.error("Error fetching resume");
+      if (!isNetworkError(err)) toast.error("Error fetching resume");
       return null;
     } finally {
       setLoading(false);
@@ -249,7 +250,7 @@ const CvBuilder = () => {
       return true;
     } catch (err) {
       console.error("Error deleting resume:", err);
-      toast.error("Error deleting resume");
+      if (!isNetworkError(err)) toast.error("Error deleting resume");
       return false;
     } finally {
       setLoading(false);
@@ -352,7 +353,7 @@ const CvBuilder = () => {
       );
       setResume(null);
     } catch (err) {
-      toast.error(err.message || "Failed to create new chat");
+      if (!isNetworkError(err)) toast.error(err.message || "Failed to create new chat");
     } finally {
       setLoading(false);
     }

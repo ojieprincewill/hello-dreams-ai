@@ -1,6 +1,7 @@
 // useCareerProfile.js
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
+import { isNetworkError } from "../../../utils/networkError";
 import * as service from "../module-services/careerProfileService";
 
 // =====================
@@ -102,7 +103,7 @@ export const useCareerProfile = () => {
         // Start first question
       } catch (err) {
         console.error("Error: ", err);
-        toast.error("Failed to initialize profile");
+        if (!isNetworkError(err)) toast.error("Failed to initialize profile");
       } finally {
         setLoading(false);
       }
@@ -228,7 +229,7 @@ export const useCareerProfile = () => {
       setConfirmation(data);
     } catch (err) {
       console.error("Error: ", err);
-      toast.error("Failed to fetch confirmation");
+      if (!isNetworkError(err)) toast.error("Failed to fetch confirmation");
     }
   };
 
@@ -268,7 +269,7 @@ export const useCareerProfile = () => {
       }, 500);
     } catch {
       setUploading(false);
-      toast.error("CV upload failed");
+      if (!isNetworkError(err)) toast.error("CV upload failed");
     }
   };
 
@@ -288,7 +289,7 @@ export const useCareerProfile = () => {
         }, 200);
       }
     } catch {
-      toast.error("Voice message failed");
+      if (!isNetworkError(err)) toast.error("Voice message failed");
     }
   };
 

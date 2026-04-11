@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import * as documentService from "../../../api/documentGeneratorService";
 import { sanitizeMessage } from "../utils/sanitize";
+import { isNetworkError } from "../../../utils/networkError";
 
 const isUuid = (value) => {
   const v = String(value ?? "");
@@ -53,6 +54,7 @@ export const useDocumentBuilder = () => {
       // so the creation response doesn't include it). The caller chains loadMessages.
     },
     onError: (err) => {
+      if (isNetworkError(err)) return;
       toast.error(err.message || "Failed to create conversation");
     },
   });
@@ -65,6 +67,7 @@ export const useDocumentBuilder = () => {
       setMessages(data.messages?.length ? data.messages.map(toMessageShape) : []);
     },
     onError: (err) => {
+      if (isNetworkError(err)) return;
       toast.error(err.message || "Failed to load messages");
     },
   });
@@ -94,6 +97,7 @@ export const useDocumentBuilder = () => {
       ]);
     },
     onError: (err) => {
+      if (isNetworkError(err)) return;
       toast.error(err.message || "Failed to send message");
     },
   });
@@ -105,6 +109,7 @@ export const useDocumentBuilder = () => {
       toast.success("Document generated successfully");
     },
     onError: (err) => {
+      if (isNetworkError(err)) return;
       toast.error(err.message || "Failed to generate document");
     },
   });
@@ -116,6 +121,7 @@ export const useDocumentBuilder = () => {
       toast.success("Document fetched successfully");
     },
     onError: (err) => {
+      if (isNetworkError(err)) return;
       toast.error(err.message || "Failed to fetch document");
     },
   });
@@ -127,6 +133,7 @@ export const useDocumentBuilder = () => {
       toast.success("Document deleted successfully");
     },
     onError: (err) => {
+      if (isNetworkError(err)) return;
       toast.error(err.message || "Failed to delete document");
     },
   });
@@ -140,7 +147,9 @@ export const useDocumentBuilder = () => {
 
     if (conversationsError) {
       console.error(conversationsError);
-      toast.error("Failed to fetch conversations");
+      if (!isNetworkError(conversationsError)) {
+        toast.error("Failed to fetch conversations");
+      }
       return;
     }
 

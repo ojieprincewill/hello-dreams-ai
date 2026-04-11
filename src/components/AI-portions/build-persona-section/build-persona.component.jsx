@@ -162,6 +162,8 @@ const BuildPersona = () => {
   const submitAnswersMutation = useSubmitPersonaAnswers();
   const generatePersonaMutation = useGeneratePersona();
 
+  const handleStart = () => setStarted(true);
+
   const handleFinish = async () => {
     try {
       setLoading(true);

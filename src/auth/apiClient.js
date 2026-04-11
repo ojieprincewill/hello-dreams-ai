@@ -132,6 +132,11 @@ export const apiFetch = async (url, options = {}, navigate) => {
 
     throw await attachErrorDetails(res);
   } catch (e) {
+    // Detect genuine network failures (no internet, DNS failure, etc.)
+    if (e instanceof TypeError && e.message === "Failed to fetch") {
+      e.kind = "NETWORK_ERROR";
+    }
+
     console.error("Network/API error:", e);
     const message = typeof e?.message === "string" ? e.message : "";
     const isAuthError =

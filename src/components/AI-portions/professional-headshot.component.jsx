@@ -1,10 +1,9 @@
 import React, { useRef } from "react";
 import { UserIcon } from "@heroicons/react/24/outline";
 import { Download, Loader2, RefreshCcw } from "lucide-react";
-import toast from "react-hot-toast";
 import SelectableCard from "./reusable-components/selectable-card.component";
 import GradientIcon from "./reusable-components/gradient-icon.component";
-import * as headshotService from "../../api/headshotService";
+import { useProfessionalHeadshot } from "./custom-hooks/useHeadshotGenerator";
 
 const STYLES = [
   {
@@ -52,28 +51,7 @@ const PERSONAS = [
   },
 ];
 
-const POLL_INTERVAL_MS = 2000;
-const POLL_MAX_ATTEMPTS = 15;
-
-const pollUntilDone = async (generationId) => {
-  for (let i = 0; i < POLL_MAX_ATTEMPTS; i++) {
-    await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
-    const data = await headshotService.getHeadshotGeneration(generationId);
-    if (data.generatedImages?.length > 0) return data;
-    if (data.status === "failed") throw new Error("Image generation failed on the server");
-  }
-  throw new Error("Generation timed out. Please try again.");
-};
-
 const ProfessionalHeadshot = () => {
-  const [file, setFile] = useState(null);
-  const [styleId, setStyleId] = useState(null);
-  const [personaId, setPersonaId] = useState(null);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [resultUrls, setResultUrls] = useState([]);
-  const [previewUrl, setPreviewUrl] = useState(null);
-  const [hasGenerated, setHasGenerated] = useState(false);
-
   const inputRef = useRef(null);
 
   const {
@@ -87,11 +65,6 @@ const ProfessionalHeadshot = () => {
     hasGenerated,
     canGenerate,
     autoPersona,
-
-    // loadingHistory,
-    // loadGeneration,
-    // generations,
-
     setStyleId,
     setPersonaId,
     handleFileChange,
@@ -100,50 +73,10 @@ const ProfessionalHeadshot = () => {
     reset,
   } = useProfessionalHeadshot();
 
+  const resultUrls = generation?.generatedImages ?? [];
+  const hasResult = resultUrls.length > 0 && !isGenerating;
+
   const handlePick = () => inputRef.current?.click();
-
-  const onFileChange = (e) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    setFile(f);
-    setPreviewUrl(URL.createObjectURL(f));
-  };
-
-  const canGenerate = !!file && !!styleId && !!personaId;
-
-  const generateHeadshot = async () => {
-    if (!canGenerate) return;
-    setIsGenerating(true);
-
-    try {
-      // Step 1 — upload photo
-      const { imageUrl } = await headshotService.uploadHeadshotPhoto(file);
-      if (!imageUrl) throw new Error("Upload succeeded but no image URL was returned");
-
-      // Step 2 — request generation
-      const generation = await headshotService.generateHeadshot({
-        originalImageUrl: imageUrl,
-        style: styleId,
-        personaId,
-      });
-
-      // Step 3 — wait for images (poll if not immediately available)
-      let images = generation.generatedImages ?? [];
-      if (images.length === 0 && generation.id) {
-        const polled = await pollUntilDone(generation.id);
-        images = polled.generatedImages ?? [];
-      }
-
-      if (images.length === 0) throw new Error("No images were returned by the server");
-
-      setResultUrls(images);
-      setHasGenerated(true);
-    } catch (err) {
-      toast.error(err.message || "Failed to generate headshot");
-    } finally {
-      setIsGenerating(false);
-    }
-  };
 
   const downloadImage = (url, index = 0) => {
     const a = document.createElement("a");
@@ -152,25 +85,13 @@ const ProfessionalHeadshot = () => {
     a.click();
   };
 
-  const resetForAnother = () => {
-    setIsGenerating(false);
-    setResultUrls([]);
-    setPreviewUrl(null);
-    setFile(null);
-    setStyleId(null);
-    setPersonaId(null);
-    setHasGenerated(false);
-  };
-
-  const hasResult = resultUrls.length > 0 && !isGenerating;
-
   return (
     <div className="px-[5%] py-10">
       {/* Header */}
       <div className="flex items-center space-x-3 mb-6 p-5 border-b-[1.5px] dark:border-b border-[#eaecf0] dark:border-[#2d2d2d]">
         <UserIcon className="h-6 w-6" />
         <div>
-          <h2 className="text-[24px] font-extrabold ">
+          <h2 className="text-[24px] font-extrabold">
             Professional Image Generator
           </h2>
           <p className="text-[20px]">
@@ -192,7 +113,6 @@ const ProfessionalHeadshot = () => {
                 style and {PERSONAS.find((p) => p.id === personaId)?.label}{" "}
                 persona
               </p>
-
               {autoPersona && (
                 <p className="text-sm text-green-500 mt-1">
                   Persona auto-selected by AI
@@ -252,40 +172,6 @@ const ProfessionalHeadshot = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-4">
-          {/* <div className="bg-[#f6f6f6] dark:bg-[#181818] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-4 h-[600px] overflow-y-auto">
-            <p className="font-semibold mb-4">History</p>
-
-            {loadingHistory ? (
-              <p className="text-sm">Loading...</p>
-            ) : generations.length === 0 ? (
-              <p className="text-sm text-gray-500">No generations yet</p>
-            ) : (
-              <div className="space-y-3">
-                {generations.map((gen) => (
-                  <div
-                    key={gen.id}
-                    onClick={() => loadGeneration(gen)}
-                    className="cursor-pointer border border-[#ddd] dark:border-[#2d2d2d] rounded-md p-2 hover:bg-[#eaeaea] dark:hover:bg-[#111]"
-                  >
-                    <img
-                      src={gen.imageUrl}
-                      alt="history"
-                      className="h-24 w-full object-cover rounded-md mb-2"
-                    />
-
-                    <p className="text-xs font-semibold">
-                      {STYLES.find((s) => s.id === gen.styleId)?.label ||
-                        "Style"}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {PERSONAS.find((p) => p.id === gen.personaId)?.label ||
-                        "Persona"}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div> */}
           {/* Upload */}
           <div className="bg-[#f6f6f6] dark:bg-[#181818] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-6">
             <p className="font-semibold mb-4">1. Upload Your Photo</p>
@@ -305,7 +191,7 @@ const ProfessionalHeadshot = () => {
                   <p className="text-[24px] font-extrabold">
                     Click to upload your photo
                   </p>
-                  <p className="text-[20px] ">JPG, PNG up to 10MB</p>
+                  <p className="text-[20px]">JPG, PNG up to 10MB</p>
                 </div>
               )}
             </div>
@@ -316,15 +202,13 @@ const ProfessionalHeadshot = () => {
               accept="image/*"
               className="hidden"
               onChange={(e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-
-                handleFileChange(file);
-                uploadImage(file);
+                const f = e.target.files[0];
+                if (!f) return;
+                handleFileChange(f);
+                uploadImage(f);
               }}
             />
 
-            {/* Optional progress */}
             {uploading && (
               <p className="text-sm mt-2">Uploading... {uploadProgress}%</p>
             )}
@@ -344,7 +228,7 @@ const ProfessionalHeadshot = () => {
                     <GradientIcon />
                     <div>
                       <p className="text-[16px] font-semibold">{s.label}</p>
-                      <p className="text-sm w-[200px] ">{s.desc}</p>
+                      <p className="text-sm w-[200px]">{s.desc}</p>
                     </div>
                   </div>
                 </SelectableCard>
@@ -369,7 +253,7 @@ const ProfessionalHeadshot = () => {
                   <GradientIcon />
                   <div>
                     <p className="text-[16px] font-semibold">{p.label}</p>
-                    <p className="text-sm ">{p.desc}</p>
+                    <p className="text-sm">{p.desc}</p>
                   </div>
                 </div>
               </SelectableCard>
