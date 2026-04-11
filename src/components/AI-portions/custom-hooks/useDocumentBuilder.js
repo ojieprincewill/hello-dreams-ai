@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import * as documentService from "../../../api/documentGeneratorService";
 import { sanitizeMessage } from "../utils/sanitize";
 import { isNetworkError } from "../../../utils/networkError";
+import { preGenerateCheck } from "../../../utils/preGenerateCheck";
 
 const isUuid = (value) => {
   const v = String(value ?? "");
@@ -233,11 +234,33 @@ export const useDocumentBuilder = () => {
     },
 
     handleGenerateDocument: () => {
-      if (!isUuid(conversationId)) {
-        toast.error("Please wait for the conversation to initialize.");
-        return;
-      }
-      generateDocumentMutation.mutate(conversationId);
+      // Inner async so the returned handler keeps a synchronous signature
+      const run = async () => {
+        if (!isUuid(conversationId)) {
+          toast.error("Please wait for the conversation to initialize.");
+          return;
+        }
+        const check = await preGenerateCheck(messages);
+        if (!check.ok) {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: prev.length + 1,
+              sender: "ai",
+              content: check.reason,
+              timestamp: new Date().toLocaleTimeString("en-GB", {
+                hour12: false,
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+              }),
+            },
+          ]);
+          return;
+        }
+        generateDocumentMutation.mutate(conversationId);
+      };
+      run();
     },
     handleGetDocument: () => {
       if (!isUuid(conversationId)) {

@@ -7,6 +7,13 @@ const CoverLetterPreview = ({ document: doc }) => {
   const { user } = useAuth();
   const printRef = useRef();
 
+  // Try multiple fields — backend may store name as `name`, `firstName`+`lastName`, etc.
+  const userName =
+    user?.name ||
+    [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
+    user?.email?.split("@")[0] ||
+    "";
+
   const handlePrint = useReactToPrint({
     contentRef: printRef,
     documentTitle: "Cover Letter",
@@ -18,7 +25,7 @@ const CoverLetterPreview = ({ document: doc }) => {
       <div ref={printRef} className="border rounded-lg shadow bg-white">
         <CoverLetterTemplate
           document={doc}
-          userName={user?.name || ""}
+          userName={userName}
           userEmail={user?.email || ""}
         />
       </div>

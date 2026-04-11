@@ -2,10 +2,11 @@ import React from "react";
 
 /**
  * Replaces common placeholder strings with real user data.
+ * Handles both bracketed [Your Name] and unbracketed "Your Name" signature lines.
  */
 const fillPlaceholders = (text, name, email) => {
   if (!text || typeof text !== "string") return "";
-  return text
+  let result = text
     .replace(/\[Your Name\]/gi, name || "")
     .replace(/\[Your Email\]/gi, email || "")
     .replace(/\[Your Phone(?: Number)?\]/gi, "")
@@ -13,29 +14,57 @@ const fillPlaceholders = (text, name, email) => {
     .replace(/\[Your Location\]/gi, "")
     .replace(/\[Your Title\]/gi, "")
     .replace(/\[Your LinkedIn\]/gi, "");
+
+  // Handle unbracketed "Your Name" that appears alone on a line (e.g. signature blocks)
+  if (name) {
+    result = result.replace(/^Your Name\s*$/gm, name);
+  }
+
+  return result;
 };
 
 /**
- * Extracts sender info from the document's StructuredDocumentJson.
+ * Extracts sender contact info from multiple possible locations in the backend response.
  * Backend shape: { content: { meta: { sender: { name, email, phone, location } }, sections, closing } }
+ * Fallbacks: content.contact, content.name, content.email
  */
 const extractSender = (doc) => {
   const content = doc?.content || {};
   const meta = content.meta || {};
   const sender = meta.sender || meta.contact || content.contact || {};
   return {
-    name: sender.name || sender.fullName || "",
-    email: sender.email || "",
+    name: sender.name || sender.fullName || content.name || "",
+    email: sender.email || content.email || "",
     phone: sender.phone || "",
     location: sender.location || "",
   };
+};
+
+/**
+ * Renders a single paragraph string as one or more <p> elements.
+ * Splits on double-newlines (paragraph breaks) and handles single newlines with <br />.
+ */
+const ParagraphBlock = ({ text, fill, baseKey }) => {
+  const filled = fill(text);
+  const chunks = filled
+    .split(/\n\n+/)
+    .map((c) => c.trim())
+    .filter(Boolean);
+
+  return chunks.map((chunk, k) => (
+    <p key={`${baseKey}-${k}`} className="mb-4">
+      {chunk.split(/\n/).map((line, l) =>
+        l === 0 ? line : <React.Fragment key={l}><br />{line}</React.Fragment>
+      )}
+    </p>
+  ));
 };
 
 const CoverLetterTemplate = ({ document: doc, userName, userEmail }) => {
   const sender = extractSender(doc);
   const content = doc?.content || {};
 
-  // Prefer document data, fall back to auth user
+  // Prefer document-embedded data, fall back to auth user
   const displayName = sender.name || userName || "";
   const displayEmail = sender.email || userEmail || "";
   const displayPhone = sender.phone || "";
@@ -70,15 +99,16 @@ const CoverLetterTemplate = ({ document: doc, userName, userEmail }) => {
       {/* Body sections */}
       {sections.map((section, i) => (
         <div key={i} className="mb-4">
-          {/* Skip the top-level "Cover Letter" heading — it's decorative */}
+          {/* Skip the generic "Cover Letter" heading — it's decorative */}
           {section.heading && section.heading.toLowerCase() !== "cover letter" && (
             <h3 className="font-semibold mb-2">{section.heading}</h3>
           )}
-          {(section.paragraphs || []).map((para, j) => (
-            <p key={j} className="mb-4">
-              {fill(para)}
-            </p>
+
+          {/* Each paragraph string is split on \n\n so multi-paragraph blobs render correctly */}
+          {(section.paragraphs || []).flatMap((para, j) => (
+            <ParagraphBlock key={j} text={para} fill={fill} baseKey={`${i}-${j}`} />
           ))}
+
           {(section.bullets || []).map((bullet, j) => (
             <p key={j} className="mb-2 pl-4">
               &bull; {fill(bullet)}

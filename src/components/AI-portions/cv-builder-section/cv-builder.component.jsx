@@ -16,6 +16,7 @@ import AnimatedMessage from "../reusable-components/animated-message.component";
 import AiTypingIndicator from "../reusable-customs/ai-typing-indicator.component";
 import CVPreview from "./cv-preview.component";
 import { useDashboardActions } from "../../../context/DashboardActionsContext";
+import { preGenerateCheck } from "../../../utils/preGenerateCheck";
 
 const CvBuilder = () => {
   const [userInput, setUserInput] = useState("");
@@ -326,7 +327,27 @@ const CvBuilder = () => {
     };
   };
 
-  const handleGenerateResume = () => generateResume(conversationId);
+  const handleGenerateResume = async () => {
+    const check = await preGenerateCheck(messages);
+    if (!check.ok) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: prev.length + 1,
+          sender: "ai",
+          content: check.reason,
+          timestamp: new Date().toLocaleTimeString("en-GB", {
+            hour12: false,
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          }),
+        },
+      ]);
+      return;
+    }
+    generateResume(conversationId);
+  };
   const handleGetResume = () => getGeneratedResume(conversationId);
   const handleDeleteResume = () => deleteResume(conversationId);
 
