@@ -60,7 +60,7 @@ export const useProfessionalHeadshot = () => {
       const res = await service.uploadImage(file);
 
       setUploadProgress(100);
-      setImageId(res?.imageId || res?.id);
+      setImageId(res?.imageUrl || res?.imageId || res?.id);
 
       toast.success("Upload complete");
       return res;
