@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { isNetworkError } from "../../../utils/networkError";
 import * as service from "../module-services/headshotService";
 
 export const useProfessionalHeadshot = () => {
+  const queryClient = useQueryClient();
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
 
@@ -94,6 +96,8 @@ export const useProfessionalHeadshot = () => {
 
       setGeneration(res);
       setHasGenerated(true);
+      queryClient.invalidateQueries({ queryKey: ["professionalProfile", "me"] });
+      queryClient.invalidateQueries({ queryKey: ["headshotGenerator", "generations"] });
     } catch (err) {
       console.error(err);
       if (!isNetworkError(err)) toast.error("Generation failed");

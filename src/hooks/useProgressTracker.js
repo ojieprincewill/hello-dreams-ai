@@ -5,6 +5,7 @@ import { listDocumentConversations } from "../api/documentGeneratorService";
 import { fetchPersona } from "../api/personaBuilderService";
 import { getLinkedInProfile } from "../api/linkedInService";
 import { getMyProfile } from "../api/professionalProfileService";
+import { getAllGenerations } from "../components/AI-portions/module-services/headshotService";
 import { getUser } from "../auth/authStorage";
 
 /**
@@ -26,6 +27,7 @@ const safeFetchPersona = safe(fetchPersona);
 const safeGetLinkedIn = safe(getLinkedInProfile);
 const safeGetMyProfile = safe(getMyProfile);
 const safeGetResume = safe(getGeneratedResume);
+const safeGetAllGenerations = safe(getAllGenerations);
 
 export function useProgressTracker() {
   const [
@@ -35,6 +37,7 @@ export function useProgressTracker() {
     personaQuery,
     linkedInQuery,
     profileQuery,
+    headshotGenerationsQuery,
   ] = useQueries({
     queries: [
       {
@@ -65,7 +68,12 @@ export function useProgressTracker() {
       {
         queryKey: ["professionalProfile", "me"],
         queryFn: safeGetMyProfile,
-        staleTime: 60_000,
+        staleTime: 0,
+      },
+      {
+        queryKey: ["headshotGenerator", "generations"],
+        queryFn: safeGetAllGenerations,
+        staleTime: 0,
       },
     ],
   });
@@ -173,8 +181,7 @@ export function useProgressTracker() {
       profilePersona.professionalVoice ||
       profilePersona.writingStyle ||
       (Array.isArray(profilePersona.personalityTraits) && profilePersona.personalityTraits.length > 0)
-    ) ||
-    localStorage.getItem("persona_built") === "true";
+    );
 
   // CV Builder: has at least one conversation OR a resume was successfully fetched
   const hasResume =
@@ -185,10 +192,15 @@ export function useProgressTracker() {
     Array.isArray(docListQuery.data) && docListQuery.data.length > 0;
 
   const linkedInDone =
-    !!(linkedInQuery.data && Object.keys(linkedInQuery.data).length > 0) ||
-    localStorage.getItem("linkedin_optimized") === "true";
+    !!completed.linkedin ||
+    !!(linkedInQuery.data && Object.keys(linkedInQuery.data).length > 0);
 
-  const headshotDone = localStorage.getItem("headshot_generated") === "true";
+  const headshotGenerations = Array.isArray(headshotGenerationsQuery.data)
+    ? headshotGenerationsQuery.data
+    : [];
+  const headshotDone =
+    !!completed.headshot ||
+    headshotGenerations.some((g) => g.status === "completed");
 
   // ── Items ──────────────────────────────────────────────────────────────────
   const items = [

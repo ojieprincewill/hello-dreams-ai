@@ -15,6 +15,7 @@ export const useGenerateLinkedInProfile = () => {
     mutationFn: linkedInService.generateLinkedInProfile,
     onSuccess: (data) => {
       queryClient.setQueryData(["linkedInProfile"], data);
+      queryClient.invalidateQueries({ queryKey: ["professionalProfile", "me"] });
       toast.success("LinkedIn profile generated successfully");
     },
     onError: (err) => {
