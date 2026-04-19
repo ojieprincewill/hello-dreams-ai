@@ -118,3 +118,11 @@ export const deleteResume = async (conversationId) => {
   return res.json().catch(() => ({ ok: true }));
 };
 
+export const getLatestResume = async () => {
+  const res = await apiFetch(
+    `${API_BASE_URL}/resume-builder/latest-resume`,
+    { method: "GET" },
+  );
+  return parseResponseBody(res, null);
+};
+

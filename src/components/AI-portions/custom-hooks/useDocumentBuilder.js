@@ -270,6 +270,7 @@ export const useDocumentBuilder = () => {
       getDocumentMutation.mutate(conversationId);
     },
     handleDeleteDocument: () => deleteDocumentMutation.mutate(conversationId),
+    loadConversation: (id) => loadMessagesMutation.mutate(id),
 
     conversationsError,
   };

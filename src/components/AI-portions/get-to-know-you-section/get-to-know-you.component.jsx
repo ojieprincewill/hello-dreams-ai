@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { ArrowRight } from "lucide-react";
 import { UserIcon } from "@heroicons/react/24/outline";
 import ChatLayout from "../reusable-components/chat-layout.component";
@@ -7,7 +7,7 @@ import AiTypingIndicator from "../reusable-customs/ai-typing-indicator.component
 import LoadingSpinner from "../../loading-spinner/loading-spinner.component";
 import { useCareerProfile } from "../custom-hooks/useCareerProfile";
 
-const GetToKnowYou = () => {
+const GetToKnowYou = ({ requestedConversationId, onConversationLoaded }) => {
   const {
     messages,
     conversations,
@@ -32,6 +32,13 @@ const GetToKnowYou = () => {
     handleKeyPress,
     handleChange,
   } = useCareerProfile();
+
+  // Load a specific conversation when navigated from history
+  useEffect(() => {
+    if (!requestedConversationId) return;
+    handleLoadMessages(requestedConversationId);
+    onConversationLoaded?.();
+  }, [requestedConversationId]); // eslint-disable-line
 
   const displayMessages = isTyping
     ? [...messages, { id: "typing", sender: "ai", typing: true, content: "" }]

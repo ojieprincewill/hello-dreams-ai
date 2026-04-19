@@ -8,6 +8,15 @@ import {
   getUserProfile,
   updateUserProfile as authUpdateUserProfile,
 } from "../api/authService";
+import { getLatestResume } from "../api/resumeBuilderService";
+
+const prefetchResume = () => {
+  getLatestResume()
+    .then((data) => {
+      if (data) localStorage.setItem("latestResume", JSON.stringify(data));
+    })
+    .catch(() => {}); // non-fatal — ResumeContext will retry on module mount
+};
 
 export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(getAccessToken());
@@ -115,6 +124,7 @@ export const AuthProvider = ({ children }) => {
 
       // ✅ Only fetch profile from backend
       await fetchUserProfile();
+      prefetchResume(); // warm the resume cache so modules load faster
       navigate("/ai-dashboard");
     } catch (err) {
       if (err?.kind === "AUTH_EXPIRED") {
@@ -143,6 +153,7 @@ export const AuthProvider = ({ children }) => {
       toast.error(message);
     } finally {
       clearTokens();
+      localStorage.removeItem("latestResume");
       setToken(null);
       setUser(null);
       setLoading(false);

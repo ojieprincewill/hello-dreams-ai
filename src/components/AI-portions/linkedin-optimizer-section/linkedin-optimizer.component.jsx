@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Loader2, Sparkles, Pencil, Trash2, Check, X } from "lucide-react";
+import toast from "react-hot-toast";
 import {
   useLinkedInProfile,
   useGenerateLinkedInProfile,
   usePatchLinkedInProfile,
   useDeleteLinkedInProfile,
 } from "../../../hooks/ai/useLinkedInOptimizer";
+import { useResume } from "../../../context/ResumeContext";
+import { useDashboardActions } from "../../../context/DashboardActionsContext";
 import LoadingSpinner from "../../loading-spinner/loading-spinner.component";
 
 /* ─── Inline editable text area ─── */
@@ -87,6 +90,27 @@ const LinkedInOptimizer = () => {
   const patchMutation = usePatchLinkedInProfile();
   const deleteMutation = useDeleteLinkedInProfile();
 
+  const { resume, isLoading: resumeLoading, refresh: refreshResume } = useResume();
+  const { navigateToConversation } = useDashboardActions();
+
+  // Try to load resume from server once on mount if not in context
+  useEffect(() => {
+    if (!resume && !resumeLoading) refreshResume();
+  }, []); // eslint-disable-line
+
+  // Show one-time toast when we've confirmed there is no resume
+  const resumeToastShown = useRef(false);
+  useEffect(() => {
+    if (resumeLoading || resumeToastShown.current) return;
+    if (!resume) {
+      resumeToastShown.current = true;
+      toast("Complete your CV Builder first so we can generate a personalised LinkedIn profile from your resume.", {
+        icon: "ℹ️",
+        duration: 6000,
+      });
+    }
+  }, [resume, resumeLoading]);
+
   const handlePatch = (field, value) => {
     patchMutation.mutate({ [field]: value });
   };
@@ -136,10 +160,20 @@ const LinkedInOptimizer = () => {
               — including a compelling headline, about section, experience
               bullets, and skills list.
             </p>
-            <p className="text-sm text-[#888]">
-              Make sure you've completed the CV Builder module first so we have
-              your resume data to work from.
-            </p>
+            {!resumeLoading && !resume && (
+              <div className="p-4 bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg text-left">
+                <p className="text-sm text-amber-800 dark:text-amber-200">
+                  No resume found. Complete your CV Builder first so we can
+                  generate a personalised profile from your actual data.
+                </p>
+                <button
+                  onClick={() => navigateToConversation("cv-builder", null)}
+                  className="mt-2 text-sm text-[#1342ff] hover:underline"
+                >
+                  Go to CV Builder →
+                </button>
+              </div>
+            )}
             <button
               onClick={() => generateMutation.mutate()}
               disabled={generateMutation.isPending}

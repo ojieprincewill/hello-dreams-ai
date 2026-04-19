@@ -12,6 +12,7 @@ import { careerModules } from "../../data/career-modules.data";
 import ThemeToggle from "./theme-toggle/theme-toggle.component";
 import ProgressIndicator from "./progress-indicator.component";
 import { DashboardActionsContext } from "../../context/DashboardActionsContext";
+import { ResumeProvider } from "../../context/ResumeContext";
 
 const MODULE_COMPONENTS = {
   "get-to-know": GetToKnowYou,
@@ -25,6 +26,7 @@ const MODULE_COMPONENTS = {
 const AiDashboard = () => {
   const [activeModule, setActiveModule] = useState(null);
   const [newChatAction, setNewChatAction] = useState(null);
+  const [requestedConversationId, setRequestedConversationId] = useState(null);
 
   // Restore active module on mount
   useEffect(() => {
@@ -52,58 +54,72 @@ const AiDashboard = () => {
   const ActiveComponent = activeModule ? MODULE_COMPONENTS[activeModule] : null;
 
   return (
-    <DashboardActionsContext.Provider value={{ registerNewChat: (fn) => setNewChatAction(() => fn) }}>
-      <div
-        className="bg-white text-[#010413] dark:bg-[#212121] dark:text-white transition-colors ease-in-out"
-        style={{ fontFamily: "Darker Grotesque, sans-serif" }}
+    <ResumeProvider>
+      <DashboardActionsContext.Provider
+        value={{
+          registerNewChat: (fn) => setNewChatAction(() => fn),
+          navigateToConversation: (moduleId, conversationId) => {
+            setActiveModule(moduleId);
+            if (conversationId) setRequestedConversationId(conversationId);
+          },
+        }}
       >
-        <div className="flex ">
-          {/* Left Sidebar */}
-          <div className="fixed top-0 left-0 h-screen w-[25%] overflow-auto sidebar border-r-2 border-r-[#eaecf0] dark:border-r-0 bg-[#f9f9f9] dark:bg-[#181818] z-50">
-            <SidebarNavigation
-              modules={careerModules}
-              activeModule={activeModule}
-              onModuleClick={handleModuleClick}
-            />
-          </div>
-
-          <div className="relative ml-[25%] flex flex-col w-full">
-            {/* Top Bar */}
-            <div className="flex justify-end items-center space-x-15 px-10 py-4 border-b-[1.5px] dark:border-b border-[#eaecf0] dark:border-[#2d2d2d]">
-              {newChatAction && (
-                <button
-                  onClick={newChatAction}
-                  className="px-4 py-2 text-sm bg-gray-100 dark:bg-[#2d2d2d] text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-[#3d3d3d] transition-colors"
-                >
-                  + New Chat
-                </button>
-              )}
-              <ThemeToggle />
-              <ProgressIndicator />
-              <UserIconDropdown />
+        <div
+          className="bg-white text-[#010413] dark:bg-[#212121] dark:text-white transition-colors ease-in-out"
+          style={{ fontFamily: "Darker Grotesque, sans-serif" }}
+        >
+          <div className="flex">
+            {/* Left Sidebar */}
+            <div className="fixed top-0 left-0 h-screen w-[25%] overflow-auto sidebar border-r-2 border-r-[#eaecf0] dark:border-r-0 bg-[#f9f9f9] dark:bg-[#181818] z-50">
+              <SidebarNavigation
+                modules={careerModules}
+                activeModule={activeModule}
+                onModuleClick={handleModuleClick}
+              />
             </div>
 
-            {/* Main Content Area */}
-            <div className="flex-1">
-              {!activeModule ? (
-                <WelcomeContent onStartAssessment={handleStartAssessment} />
-              ) : ActiveComponent ? (
-                <ActiveComponent />
-              ) : (
-                <div className="min-h-screen p-6">
-                  <h2 className="text-2xl font-bold mb-4">
-                    {careerModules.find((m) => m.id === activeModule)?.title}
-                  </h2>
-                  <p className="text-gray-400">
-                    Module content will be implemented here...
-                  </p>
-                </div>
-              )}
+            {/* Right panel — fixed so the top bar never scrolls away */}
+            <div className="fixed left-[25%] right-0 top-0 bottom-0 flex flex-col">
+              {/* Top Bar */}
+              <div className="flex justify-end items-center space-x-15 px-10 py-4 border-b-[1.5px] dark:border-b border-[#eaecf0] dark:border-[#2d2d2d] bg-white dark:bg-[#212121] z-40 shrink-0">
+                {newChatAction && (
+                  <button
+                    onClick={newChatAction}
+                    className="px-4 py-2 text-sm bg-gray-100 dark:bg-[#2d2d2d] text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-[#3d3d3d] transition-colors"
+                  >
+                    + New Chat
+                  </button>
+                )}
+                <ThemeToggle />
+                <ProgressIndicator />
+                <UserIconDropdown />
+              </div>
+
+              {/* Main Content Area — scrollable */}
+              <div className="flex-1 overflow-y-auto">
+                {!activeModule ? (
+                  <WelcomeContent onStartAssessment={handleStartAssessment} />
+                ) : ActiveComponent ? (
+                  <ActiveComponent
+                    requestedConversationId={requestedConversationId}
+                    onConversationLoaded={() => setRequestedConversationId(null)}
+                  />
+                ) : (
+                  <div className="min-h-screen p-6">
+                    <h2 className="text-2xl font-bold mb-4">
+                      {careerModules.find((m) => m.id === activeModule)?.title}
+                    </h2>
+                    <p className="text-gray-400">
+                      Module content will be implemented here...
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </DashboardActionsContext.Provider>
+      </DashboardActionsContext.Provider>
+    </ResumeProvider>
   );
 };
 

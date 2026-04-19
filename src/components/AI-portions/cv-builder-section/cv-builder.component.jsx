@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { isNetworkError } from "../../../utils/networkError";
 import { UserIcon } from "@heroicons/react/24/outline";
+import { useResume } from "../../../context/ResumeContext";
 import {
   useCreateResumeConversation,
   useDeleteResume,
@@ -18,7 +19,7 @@ import CVPreview from "./cv-preview.component";
 import { useDashboardActions } from "../../../context/DashboardActionsContext";
 import { preGenerateCheck } from "../../../utils/preGenerateCheck";
 
-const CvBuilder = () => {
+const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
   const [userInput, setUserInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [conversationId, setConversationId] = useState(null);
@@ -27,6 +28,7 @@ const CvBuilder = () => {
 
   const initializedRef = useRef(false);
   const { registerNewChat } = useDashboardActions();
+  const { refresh: refreshResume } = useResume();
 
   const conversationsQuery = useResumeConversations();
   const conversationQuery = useResumeConversation(conversationId);
@@ -50,6 +52,13 @@ const CvBuilder = () => {
   useEffect(() => {
     if (conversationId) localStorage.setItem("cvConversationId", conversationId);
   }, [conversationId]);
+
+  // Load a specific conversation when navigated from history
+  useEffect(() => {
+    if (!requestedConversationId) return;
+    setConversationId(requestedConversationId);
+    onConversationLoaded?.();
+  }, [requestedConversationId]); // eslint-disable-line
 
   // Create or restore conversation once when component mounts
   useEffect(() => {
@@ -195,6 +204,7 @@ const CvBuilder = () => {
 
       // ✅ Store resume in state for preview (mapped to template shape)
       setResume(mapResumeToTemplateData(resumeData));
+      refreshResume(); // update cross-module resume context
 
       return resumeData;
     } catch (err) {

@@ -1,14 +1,16 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { UserIcon } from "@heroicons/react/24/outline";
+import toast from "react-hot-toast";
 import ChatLayout from "../reusable-components/chat-layout.component";
 import AnimatedMessage from "../reusable-components/animated-message.component";
 import AiTypingIndicator from "../reusable-customs/ai-typing-indicator.component";
 import { useDocumentBuilder } from "../custom-hooks/useDocumentBuilder";
 import { useDashboardActions } from "../../../context/DashboardActionsContext";
+import { useResume } from "../../../context/ResumeContext";
 import CoverLetterPreview from "./cover-letter-preview.component";
 
 
-const CoverLetter = () => {
+const CoverLetter = ({ requestedConversationId, onConversationLoaded }) => {
   const {
     messages,
     userInput,
@@ -23,17 +25,42 @@ const CoverLetter = () => {
     handleChange,
     handleSendMessage,
     handleNewChat,
+    loadConversation,
 
     handleGenerateDocument,
     handleDeleteDocument,
   } = useDocumentBuilder();
 
   // Register "New Chat" with the dashboard top bar
-  const { registerNewChat } = useDashboardActions();
+  const { registerNewChat, navigateToConversation } = useDashboardActions();
   useEffect(() => {
     registerNewChat(handleNewChat);
     return () => registerNewChat(null);
   }, []); // handleNewChat is stable — defined once in the hook
+
+  // Load a specific conversation when navigated from history
+  useEffect(() => {
+    if (!requestedConversationId) return;
+    loadConversation(requestedConversationId);
+    onConversationLoaded?.();
+  }, [requestedConversationId]); // eslint-disable-line
+
+  // Show a one-time toast if user has no resume
+  const { resume, isLoading: resumeLoading, refresh: refreshResume } = useResume();
+  const resumeToastShown = useRef(false);
+  useEffect(() => {
+    refreshResume();
+  }, []); // eslint-disable-line
+  useEffect(() => {
+    if (resumeLoading || resumeToastShown.current) return;
+    if (!resume) {
+      resumeToastShown.current = true;
+      toast("Complete your CV Builder first so your cover letter can be generated from your actual resume.", {
+        icon: "ℹ️",
+        duration: 6000,
+      });
+    }
+  }, [resume, resumeLoading]);
 
   const displayMessages = isSending
     ? [...messages, { id: "typing", sender: "ai", typing: true, content: "" }]
