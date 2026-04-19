@@ -118,7 +118,7 @@ export const useProfessionalHeadshot = () => {
   const fetchGenerations = async () => {
     try {
       setLoadingHistory(true);
-      const res = await service.getGenerations();
+      const res = await service.getAllGenerations();
 
       // adjust depending on backend shape
       setGenerations(res?.data || res || []);
