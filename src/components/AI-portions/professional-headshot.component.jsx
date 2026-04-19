@@ -88,7 +88,7 @@ const ProfessionalHeadshot = () => {
       const namePart = user?.name
         ? user.name.trim().toLowerCase().replace(/\s+/g, "-")
         : "headshot";
-      const timestamp = new Date().toISOString().slice(0, 10);
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, -1);
       const suffix = index > 0 ? `-${index}` : "";
       const a = document.createElement("a");
       a.href = objectUrl;
