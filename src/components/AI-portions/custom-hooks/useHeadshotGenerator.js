@@ -113,7 +113,8 @@ export const useProfessionalHeadshot = () => {
     setUploadProgress(0);
   };
 
-  const canGenerate = !!file && !!styleId && !!personaId;
+  // imageId must be set (upload complete) and upload must not still be in progress
+  const canGenerate = !!file && !!styleId && !!personaId && !!imageId && !uploading;
 
   const fetchGenerations = async () => {
     try {
