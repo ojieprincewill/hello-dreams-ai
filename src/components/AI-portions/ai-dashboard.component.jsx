@@ -52,7 +52,7 @@ const AiDashboard = () => {
   const ActiveComponent = activeModule ? MODULE_COMPONENTS[activeModule] : null;
 
   return (
-    <DashboardActionsContext.Provider value={{ registerNewChat: setNewChatAction }}>
+    <DashboardActionsContext.Provider value={{ registerNewChat: (fn) => setNewChatAction(() => fn) }}>
       <div
         className="bg-white text-[#010413] dark:bg-[#212121] dark:text-white transition-colors ease-in-out"
         style={{ fontFamily: "Darker Grotesque, sans-serif" }}
