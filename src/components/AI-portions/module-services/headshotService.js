@@ -14,14 +14,15 @@ export const uploadImage = async (file) => {
   const formData = new FormData();
   formData.append("image", file);
 
-  return apiFetch(`${BASE}/upload`, {
+  const res = await apiFetch(`${BASE}/upload`, {
     method: "POST",
     body: formData,
   });
+  return res.json();
 };
 
 export const generateHeadshots = async ({ styleId, personaId, imageId }) => {
-  return apiFetch(`${BASE}/generate`, {
+  const res = await apiFetch(`${BASE}/generate`, {
     method: "POST",
     body: JSON.stringify({
       originalImageUrl: imageId,
@@ -29,16 +30,19 @@ export const generateHeadshots = async ({ styleId, personaId, imageId }) => {
       personaType: PERSONA_MAP[personaId] ?? personaId,
     }),
   });
+  return res.json();
 };
 
 export const getGeneration = async (id) => {
-  return apiFetch(`${BASE}/generations/${id}`, {
+  const res = await apiFetch(`${BASE}/generations/${id}`, {
     method: "GET",
   });
+  return res.json();
 };
 
 export const getAllGenerations = async () => {
-  return apiFetch(`${BASE}/generations`, {
+  const res = await apiFetch(`${BASE}/generations`, {
     method: "GET",
   });
+  return res.json();
 };
