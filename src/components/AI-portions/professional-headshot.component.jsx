@@ -4,6 +4,7 @@ import { Download, Loader2, RefreshCcw } from "lucide-react";
 import SelectableCard from "./reusable-components/selectable-card.component";
 import GradientIcon from "./reusable-components/gradient-icon.component";
 import { useProfessionalHeadshot } from "./custom-hooks/useHeadshotGenerator";
+import { useAuth } from "../../auth/authContext";
 
 const STYLES = [
   {
@@ -53,6 +54,7 @@ const PERSONAS = [
 
 const ProfessionalHeadshot = () => {
   const inputRef = useRef(null);
+  const { user } = useAuth();
 
   const {
     previewUrl,
@@ -78,11 +80,26 @@ const ProfessionalHeadshot = () => {
 
   const handlePick = () => inputRef.current?.click();
 
-  const downloadImage = (url, index = 0) => {
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `professional-headshot${index > 0 ? `-${index}` : ""}.png`;
-    a.click();
+  const downloadImage = async (url, index = 0) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const namePart = user?.name
+        ? user.name.trim().toLowerCase().replace(/\s+/g, "-")
+        : "headshot";
+      const timestamp = new Date().toISOString().slice(0, 10);
+      const suffix = index > 0 ? `-${index}` : "";
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = `${namePart}-headshot-${timestamp}${suffix}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(objectUrl);
+    } catch (err) {
+      console.error("Download failed:", err);
+    }
   };
 
   return (
