@@ -1,9 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import * as documentService from "../../../api/documentGeneratorService";
 import { sanitizeMessage } from "../utils/sanitize";
 import { isNetworkError } from "../../../utils/networkError";
+import { isCreditLimitError } from "../../../utils/creditErrors";
+import { PaywallContext } from "../../../context/paywallContext";
 import { preGenerateCheck } from "../../../utils/preGenerateCheck";
 
 const isUuid = (value) => {
@@ -25,6 +27,8 @@ const toMessageShape = (m, i) => ({
 
 export const useDocumentBuilder = () => {
   const queryClient = useQueryClient();
+  const paywallCtx = useContext(PaywallContext);
+  const showPaywall = paywallCtx?.showPaywall;
 
   const [messages, setMessages] = useState([]);
   const [conversationId, setConversationId] = useState(null);
@@ -98,6 +102,7 @@ export const useDocumentBuilder = () => {
       ]);
     },
     onError: (err) => {
+      if (isCreditLimitError(err)) { showPaywall?.(err.apiError); return; }
       if (isNetworkError(err)) return;
       toast.error(err.message || "Failed to send message");
     },
@@ -110,6 +115,7 @@ export const useDocumentBuilder = () => {
       toast.success("Document generated successfully");
     },
     onError: (err) => {
+      if (isCreditLimitError(err)) { showPaywall?.(err.apiError); return; }
       if (isNetworkError(err)) return;
       toast.error(err.message || "Failed to generate document");
     },

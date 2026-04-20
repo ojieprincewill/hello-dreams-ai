@@ -1,9 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import toast from "react-hot-toast";
 import { isNetworkError } from "../../../utils/networkError";
+import { isCreditLimitError } from "../../../utils/creditErrors";
+import { PaywallContext } from "../../../context/paywallContext";
 import * as service from "../module-services/linkedinOptimizerService";
 
 export const useLinkedInOptimizer = () => {
+  const paywallCtx = useContext(PaywallContext);
+  const showPaywall = paywallCtx?.showPaywall;
+
   const [profile, setProfile] = useState(null);
 
   const [isGenerating, setIsGenerating] = useState(false);
@@ -26,6 +31,7 @@ export const useLinkedInOptimizer = () => {
 
       toast.success("LinkedIn profile generated");
     } catch (err) {
+      if (isCreditLimitError(err)) { showPaywall?.(err.apiError); return; }
       console.error(err);
       if (!isNetworkError(err)) toast.error("Failed to generate profile");
     } finally {

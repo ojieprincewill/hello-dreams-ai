@@ -1,7 +1,9 @@
 // useCareerProfile.js
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import toast from "react-hot-toast";
 import { isNetworkError } from "../../../utils/networkError";
+import { isCreditLimitError } from "../../../utils/creditErrors";
+import { PaywallContext } from "../../../context/paywallContext";
 import * as service from "../module-services/careerProfileService";
 
 // =====================
@@ -70,6 +72,9 @@ const extractAiContent = (res) => {
 };
 
 export const useCareerProfile = () => {
+  const paywallCtx = useContext(PaywallContext);
+  const showPaywall = paywallCtx?.showPaywall;
+
   const [messages, setMessages] = useState([WELCOME_MESSAGE]);
   const [conversations, setConversations] = useState([]);
   const [conversationId, setConversationId] = useState(null);
@@ -165,6 +170,10 @@ export const useCareerProfile = () => {
       const aiContent = extractAiContent(res) || fallback;
       pushAIMessage(aiContent);
     } catch (err) {
+      if (isCreditLimitError(err)) {
+        showPaywall?.(err.apiError);
+        return;
+      }
       console.error(err);
       pushAIMessage(fallback);
     } finally {

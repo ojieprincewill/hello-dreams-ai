@@ -13,6 +13,8 @@ import ThemeToggle from "./theme-toggle/theme-toggle.component";
 import ProgressIndicator from "./progress-indicator.component";
 import { DashboardActionsContext } from "../../context/DashboardActionsContext";
 import { ResumeProvider } from "../../context/ResumeContext";
+import { PaywallProvider, usePaywall } from "../../context/paywallContext";
+import PaywallModal from "../paywall-modal/paywall-modal.component";
 
 const MODULE_COMPONENTS = {
   "get-to-know": GetToKnowYou,
@@ -23,7 +25,7 @@ const MODULE_COMPONENTS = {
   "linkedin-optimizer": LinkedInOptimizer,
 };
 
-const AiDashboard = () => {
+const AiDashboardInner = () => {
   const [activeModule, setActiveModule] = useState(null);
   const [newChatAction, setNewChatAction] = useState(null);
   const [requestedConversationId, setRequestedConversationId] = useState(null);
@@ -123,4 +125,24 @@ const AiDashboard = () => {
   );
 };
 
-export default AiDashboard;
+const AiDashboardWithPaywall = () => (
+  <PaywallProvider>
+    <AiDashboardInner />
+    <PaywallModalConnector />
+  </PaywallProvider>
+);
+
+const PaywallModalConnector = () => {
+  const { paywallVisible, creditInfo, hidePaywall } = usePaywall();
+  return (
+    <PaywallModal
+      isOpen={paywallVisible}
+      onClose={hidePaywall}
+      used={creditInfo?.used ?? 5}
+      limit={creditInfo?.limit ?? 5}
+      resetsAt={creditInfo?.resetsAt}
+    />
+  );
+};
+
+export default AiDashboardWithPaywall;

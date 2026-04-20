@@ -1,13 +1,23 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../auth/authContext";
 import LoadingSpinner from "../loading-spinner/loading-spinner.component";
+import { getCredits } from "../../api/creditsService";
+
 const UserIconDropdown = ({ active }) => {
   const [open, setOpen] = useState(false);
+  const [credits, setCredits] = useState(null);
   const navigate = useNavigate();
   const { logout, loading, user } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (!user) return;
+    getCredits()
+      .then(setCredits)
+      .catch(() => {});
+  }, [user]);
 
   const menuItems = [
     { key: "settings", label: "Settings" },
@@ -48,14 +58,14 @@ const UserIconDropdown = ({ active }) => {
           >
             <div className="hidden xl:flex space-x-2 items-center px-2 py-3 border-b border-b-[#eaecf0] dark:border-b-[#272725] ">
               <div className="bg-[#8aa1ff] dark:bg-gradient-to-b from-[#8aa1ff] via-[#becbff] to-[#ffffff] w-8 h-8 md:w-12 md:h-12 xl:w-[45.86px] xl:h-[45.86px] text-[#fff] uppercase text-[14px] md:text-[18px] xl:text-[32px] text-center font-bold flex justify-center items-center rounded-full cursor-pointer">
-                P
+                {user?.name?.[0]?.toUpperCase() || "U"}
               </div>
               <div>
                 <p className="text-[16px] md:text-[18px] xl:text-[20px] font-bold text-[#010413] dark:text-[#f7f7f7]">
-                  Pamela's Dream World
+                  {user?.name ? `${user.name}'s Dream World` : "Dream World"}
                 </p>
                 <p className="text-[14px] text-[#010413] dark:text-[#f7f7f7]">
-                  ohaeripamela12@gmail.com
+                  {user?.email || ""}
                 </p>
               </div>
             </div>
@@ -66,10 +76,19 @@ const UserIconDropdown = ({ active }) => {
                   Credits
                 </p>
                 <button className="bg-[#fff] border-0 rounded-xl w-[32px] h-[20.27px] text-[#1342ff] text-[12px] text-center font-bold">
-                  0/5
+                  {credits ? `${credits.used}/${credits.limit}` : "…/5"}
                 </button>
               </div>
-              <div className="w-full h-[10px] bg-[#1342ff] rounded-3xl mb-2"></div>
+              <div className="w-full h-[10px] bg-[#e0e0e0] dark:bg-[#444] rounded-3xl mb-2 overflow-hidden">
+                <div
+                  className="h-full bg-[#1342ff] rounded-3xl transition-all"
+                  style={{
+                    width: credits
+                      ? `${Math.min((credits.used / credits.limit) * 100, 100)}%`
+                      : "0%",
+                  }}
+                />
+              </div>
               <p className="text-[16px] text-[#010413] dark:text-[#f7f7f7] ">
                 Daily credits, reset at midnight
               </p>

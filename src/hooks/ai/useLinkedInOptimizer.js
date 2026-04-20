@@ -1,6 +1,9 @@
+import { useContext } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import * as linkedInService from "../../api/linkedInService";
+import { PaywallContext } from "../../context/paywallContext";
+import { isCreditLimitError } from "../../utils/creditErrors";
 
 export const useLinkedInProfile = () => {
   return useQuery({
@@ -11,6 +14,8 @@ export const useLinkedInProfile = () => {
 
 export const useGenerateLinkedInProfile = () => {
   const queryClient = useQueryClient();
+  const paywallCtx = useContext(PaywallContext);
+  const showPaywall = paywallCtx?.showPaywall;
   return useMutation({
     mutationFn: linkedInService.generateLinkedInProfile,
     onSuccess: (data) => {
@@ -19,6 +24,7 @@ export const useGenerateLinkedInProfile = () => {
       toast.success("LinkedIn profile generated successfully");
     },
     onError: (err) => {
+      if (isCreditLimitError(err)) { showPaywall?.(err.apiError); return; }
       toast.error(err.message || "Failed to generate LinkedIn profile");
     },
   });

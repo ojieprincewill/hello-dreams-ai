@@ -1,3 +1,4 @@
+import { useContext } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   listCareerProfileConversations,
@@ -5,6 +6,8 @@ import {
   getCareerProfileConversation,
   sendCareerProfileMessage,
 } from "../../api/careerProfileService";
+import { PaywallContext } from "../../context/paywallContext";
+import { isCreditLimitError } from "../../utils/creditErrors";
 
 export const useCareerProfileConversations = () => {
   return useQuery({
@@ -28,9 +31,14 @@ export const useCreateCareerProfileConversation = () => {
 };
 
 export const useSendCareerProfileMessage = () => {
+  const paywallCtx = useContext(PaywallContext);
+  const showPaywall = paywallCtx?.showPaywall;
   return useMutation({
     mutationFn: ({ conversationId, content }) =>
       sendCareerProfileMessage(conversationId, content),
+    onError: (err) => {
+      if (isCreditLimitError(err)) showPaywall?.(err.apiError);
+    },
   });
 };
 

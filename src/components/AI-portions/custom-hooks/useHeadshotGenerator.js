@@ -1,11 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { isNetworkError } from "../../../utils/networkError";
+import { isCreditLimitError } from "../../../utils/creditErrors";
+import { PaywallContext } from "../../../context/paywallContext";
 import * as service from "../module-services/headshotService";
 
 export const useProfessionalHeadshot = () => {
   const queryClient = useQueryClient();
+  const paywallCtx = useContext(PaywallContext);
+  const showPaywall = paywallCtx?.showPaywall;
   const [file, setFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
 
@@ -99,6 +103,7 @@ export const useProfessionalHeadshot = () => {
       queryClient.invalidateQueries({ queryKey: ["professionalProfile", "me"] });
       queryClient.invalidateQueries({ queryKey: ["headshotGenerator", "generations"] });
     } catch (err) {
+      if (isCreditLimitError(err)) { showPaywall?.(err.apiError); return; }
       console.error(err);
       if (!isNetworkError(err)) toast.error("Generation failed");
     } finally {

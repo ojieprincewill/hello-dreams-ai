@@ -1,6 +1,8 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useContext } from "react";
 import toast from "react-hot-toast";
 import { isNetworkError } from "../../../utils/networkError";
+import { isCreditLimitError } from "../../../utils/creditErrors";
+import { PaywallContext } from "../../../context/paywallContext";
 import * as service from "../module-services/personaBuilderService";
 
 const STORAGE_KEY = "personaSelections";
@@ -77,6 +79,9 @@ const QUESTIONS = [
 ];
 
 export const usePersonaBuilder = () => {
+  const paywallCtx = useContext(PaywallContext);
+  const showPaywall = paywallCtx?.showPaywall;
+
   const [started, setStarted] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [selections, setSelections] = useState({});
@@ -160,6 +165,7 @@ export const usePersonaBuilder = () => {
       setPersona(data.persona);
       setResultStep("current");
     } catch (err) {
+      if (isCreditLimitError(err)) { showPaywall?.(err.apiError); return; }
       console.error(err);
       if (!isNetworkError(err)) toast.error("Failed to generate persona");
     } finally {
