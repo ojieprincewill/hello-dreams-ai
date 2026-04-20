@@ -17,7 +17,6 @@ import AnimatedMessage from "../reusable-components/animated-message.component";
 import AiTypingIndicator from "../reusable-customs/ai-typing-indicator.component";
 import CVPreview from "./cv-preview.component";
 import { useDashboardActions } from "../../../context/DashboardActionsContext";
-import { preGenerateCheck } from "../../../utils/preGenerateCheck";
 
 const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
   const [userInput, setUserInput] = useState("");
@@ -338,14 +337,30 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
   };
 
   const handleGenerateResume = async () => {
-    const check = await preGenerateCheck(messages);
-    if (!check.ok) {
+    const hasUserMessages = messages.some((m) => m.sender === "user");
+
+    if (!hasUserMessages) {
+      // If the user hasn't chatted, show their existing resume from localStorage
+      // instead of generating dummy content from an empty conversation.
+      try {
+        const stored = localStorage.getItem("latestResume");
+        if (stored) {
+          const latest = JSON.parse(stored);
+          if (latest?.content) {
+            setResume(mapResumeToTemplateData(latest));
+            return;
+          }
+        }
+      } catch {}
+
+      // No stored resume — prompt the user to chat first
       setMessages((prev) => [
         ...prev,
         {
           id: prev.length + 1,
           sender: "ai",
-          content: check.reason,
+          content:
+            "I don't have enough information about you yet. Please tell me about yourself in the chat above — your name, work experience, and target role — and I'll build a personalised resume for you.",
           timestamp: new Date().toLocaleTimeString("en-GB", {
             hour12: false,
             hour: "2-digit",
@@ -356,6 +371,7 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
       ]);
       return;
     }
+
     generateResume(conversationId);
   };
   const handleGetResume = () => getGeneratedResume(conversationId);

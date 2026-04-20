@@ -73,7 +73,10 @@ const CoverLetterTemplate = ({ document: doc, userName, userEmail }) => {
   const fill = (text) => fillPlaceholders(text, displayName, displayEmail);
 
   const sections = content.sections || [];
-  const closing = fill(content.closing || "");
+  const rawClosing = content.closing;
+  const closing = typeof rawClosing === "string"
+    ? fill(rawClosing)
+    : fill(rawClosing?.signoff || "");
 
   const today = new Date().toLocaleDateString("en-GB", {
     year: "numeric",

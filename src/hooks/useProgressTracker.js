@@ -82,11 +82,16 @@ export function useProgressTracker() {
   // The CV builder saves the user's active conversation to localStorage.
   // Prefer that over the most-recently-updated one — clicking "+ New Chat"
   // creates a newer empty conversation but the resume lives in the older one.
-  const resumeConversations = Array.isArray(resumeListQuery.data)
-    ? [...resumeListQuery.data].sort(
-        (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt),
-      )
-    : [];
+  // listResumeConversations returns a paginated { data: [], meta: {} } shape.
+  // Handle both the paginated shape and a raw array for backward compatibility.
+  const rawResumeList = resumeListQuery.data;
+  const resumeConversations = (
+    Array.isArray(rawResumeList)
+      ? rawResumeList
+      : Array.isArray(rawResumeList?.data)
+      ? rawResumeList.data
+      : []
+  ).sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
 
   const savedCvId = localStorage.getItem("cvConversationId");
   const preferredConv = savedCvId
@@ -106,7 +111,14 @@ export function useProgressTracker() {
   });
 
   // ── Pull data safely ───────────────────────────────────────────────────────
-  const resumeContent = resumeContentQuery.data?.content ?? null;
+  // Fall back to the latest resume cached in localStorage (written by ResumeContext
+  // after login and after generation) when the per-conversation query is unavailable.
+  const storedLatestResume = (() => {
+    try { return JSON.parse(localStorage.getItem("latestResume") || "null"); }
+    catch { return null; }
+  })();
+  const resumeContent =
+    resumeContentQuery.data?.content ?? storedLatestResume?.content ?? null;
 
   const profile = profileQuery.data ?? {};
   const basicInfo = profile.basicInfo ?? {};
