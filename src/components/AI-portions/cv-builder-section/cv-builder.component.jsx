@@ -446,6 +446,19 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
     </AnimatedMessage>
   );
 
+  // Allow generate if the AI has signalled readiness OR the user already has a
+  // stored resume from a previous session (so returning users can view it).
+  const hasStoredResume = (() => {
+    try {
+      const raw = localStorage.getItem("latestResume");
+      return raw ? !!JSON.parse(raw)?.content : false;
+    } catch { return false; }
+  })();
+  const aiSignalledReady = messages.some(
+    (m) => m.sender === "ai" && m.content.includes("Generate Resume"),
+  );
+  const canGenerate = aiSignalledReady || hasStoredResume;
+
   const isInitializing = conversationsQuery.isLoading && !conversationId;
 
   if (isInitializing)
@@ -507,14 +520,19 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
         }}
       />
 
-      <div className="mt-4 flex justify-center">
+      <div className="mt-4 flex flex-col items-center gap-2">
         <button
           onClick={handleGenerateResume}
-          disabled={loading || !conversationIdIsValid}
+          disabled={loading || !conversationIdIsValid || !canGenerate}
           className="px-8 py-3 bg-indigo-600 text-white text-[18px] font-semibold rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {loading ? "Generating…" : "Generate Resume"}
         </button>
+        {!canGenerate && (
+          <p className="text-sm text-[#667085] dark:text-gray-400 text-center">
+            Continue the conversation — the AI will let you know when it has enough to build your resume.
+          </p>
+        )}
       </div>
     </div>
   );

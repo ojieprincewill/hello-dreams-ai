@@ -62,6 +62,16 @@ const CoverLetter = ({ requestedConversationId, onConversationLoaded }) => {
     }
   }, [resume, resumeLoading]);
 
+  // Enable generate only when the AI has signalled it has enough information.
+  // The system prompt instructs the AI to say "I have everything I need" or
+  // "I have what I need" when it's ready — we detect that signal here.
+  const aiSignalledReady = messages.some(
+    (m) =>
+      m.sender === "ai" &&
+      (m.content.includes("I have everything I need") ||
+        m.content.includes("I have what I need")),
+  );
+
   const displayMessages = isSending
     ? [...messages, { id: "typing", sender: "ai", typing: true, content: "" }]
     : messages;
@@ -160,14 +170,19 @@ const CoverLetter = ({ requestedConversationId, onConversationLoaded }) => {
         }}
       />
 
-      <div className="mt-4 flex justify-center">
+      <div className="mt-4 flex flex-col items-center gap-2">
         <button
           onClick={handleGenerateDocument}
-          disabled={isGenerating}
+          disabled={isGenerating || !aiSignalledReady}
           className="px-8 py-3 bg-indigo-600 text-white text-[18px] font-semibold rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {isGenerating ? "Generating…" : "Generate Document"}
         </button>
+        {!aiSignalledReady && (
+          <p className="text-sm text-[#667085] dark:text-gray-400 text-center">
+            Continue the conversation — the AI will let you know when it has enough to write your document.
+          </p>
+        )}
       </div>
     </div>
   );
