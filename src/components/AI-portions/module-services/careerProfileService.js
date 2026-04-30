@@ -1,114 +1,102 @@
-// careerProfileService.js
 import { apiFetch } from "../../../auth/apiClient";
+import { API_BASE_URL } from "../../../config/apiConfig";
 
-const BASE_URL = "https://hello-dreams-ai.onrender.com/career-profile";
+const BASE_URL = `${API_BASE_URL}/career-profile`;
 
-// =====================
-// Conversations
-// =====================
+const parseJson = async (res) => {
+  if (res.status === 204) return null;
+  return res.json();
+};
+
+// ── Conversations ─────────────────────────────────────────────────────────────
 
 export const getConversations = async () => {
-  try {
-    const data = await apiFetch(`${BASE_URL}/conversations`, {
-      method: "GET",
-    });
-    return data || [];
-  } catch (err) {
-    console.error("Career Profile - getConversations:", err);
-    return [];
-  }
+  const res = await apiFetch(`${BASE_URL}/conversations`, { method: "GET" });
+  return parseJson(res);
 };
 
 export const createConversation = async (payload) => {
-  return await apiFetch(`${BASE_URL}/conversations`, {
+  const res = await apiFetch(`${BASE_URL}/conversations`, {
     method: "POST",
     body: JSON.stringify(payload),
   });
+  return parseJson(res);
 };
 
 export const getConversation = async (id) => {
-  return await apiFetch(`${BASE_URL}/conversations/${id}`, {
-    method: "GET",
-  });
+  const res = await apiFetch(`${BASE_URL}/conversations/${id}`, { method: "GET" });
+  return parseJson(res);
 };
 
 export const updateConversation = async (id, updates) => {
-  return await apiFetch(`${BASE_URL}/conversations/${id}`, {
+  const res = await apiFetch(`${BASE_URL}/conversations/${id}`, {
     method: "PUT",
     body: JSON.stringify(updates),
   });
+  return parseJson(res);
 };
 
 export const deleteConversation = async (id) => {
-  await apiFetch(`${BASE_URL}/conversations/${id}`, {
-    method: "DELETE",
-  });
+  await apiFetch(`${BASE_URL}/conversations/${id}`, { method: "DELETE" });
   return true;
 };
 
-// =====================
-// Messaging
-// =====================
+// ── Messaging ─────────────────────────────────────────────────────────────────
 
 export const sendMessage = async (conversationId, content) => {
-  return await apiFetch(
+  const res = await apiFetch(
     `${BASE_URL}/conversations/${conversationId}/messages`,
-    {
-      method: "POST",
-      body: JSON.stringify({ content }),
-    },
+    { method: "POST", body: JSON.stringify({ content }) },
   );
+  return parseJson(res);
 };
 
-// =====================
-// Profile Intelligence
-// =====================
+// ── Profile Intelligence ──────────────────────────────────────────────────────
 
 export const getSummary = async (conversationId) => {
-  return await apiFetch(`${BASE_URL}/conversations/${conversationId}/summary`, {
-    method: "GET",
-  });
+  const res = await apiFetch(
+    `${BASE_URL}/conversations/${conversationId}/summary`,
+    { method: "GET" },
+  );
+  return parseJson(res);
 };
 
 export const getConfirmation = async (conversationId) => {
-  return await apiFetch(
+  const res = await apiFetch(
     `${BASE_URL}/conversations/${conversationId}/confirmation`,
     { method: "GET" },
   );
+  return parseJson(res);
 };
 
-// =====================
-// CV Upload
-// =====================
+export const completeConversation = async (conversationId) => {
+  const res = await apiFetch(
+    `${BASE_URL}/conversations/${conversationId}/complete`,
+    { method: "POST" },
+  );
+  return res.status === 204 ? null : parseJson(res);
+};
+
+// ── CV Upload ─────────────────────────────────────────────────────────────────
 
 export const uploadCV = async (conversationId, file) => {
   const formData = new FormData();
   formData.append("file", file);
-
-  return await apiFetch(
+  const res = await apiFetch(
     `${BASE_URL}/conversations/${conversationId}/upload-cv`,
-    {
-      method: "POST",
-      body: formData,
-      headers: {}, // IMPORTANT: let browser set multipart
-    },
+    { method: "POST", body: formData, headers: {} },
   );
+  return parseJson(res);
 };
 
-// =====================
-// Voice Message
-// =====================
+// ── Voice Message ─────────────────────────────────────────────────────────────
 
 export const sendVoiceMessage = async (conversationId, audioBlob) => {
   const formData = new FormData();
-  formData.append("file", audioBlob);
-
-  return await apiFetch(
+  formData.append("audio", audioBlob);
+  const res = await apiFetch(
     `${BASE_URL}/conversations/${conversationId}/voice-message`,
-    {
-      method: "POST",
-      body: formData,
-      headers: {},
-    },
+    { method: "POST", body: formData, headers: {} },
   );
+  return parseJson(res);
 };
