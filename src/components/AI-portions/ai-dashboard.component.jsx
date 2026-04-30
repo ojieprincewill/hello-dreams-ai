@@ -7,6 +7,7 @@ import CvBuilder from "./cv-builder-section/cv-builder.component";
 import CoverLetter from "./cover-letter-section/cover-letter.component";
 import ProfessionalHeadshot from "./professional-headshot.component";
 import LinkedInOptimizer from "./linkedin-optimizer-section/linkedin-optimizer.component";
+import JobApplication from "./job-application-section/job-application.component";
 import UserIconDropdown from "../user-icon-dropdown/user-icon-dropdown.component";
 import { careerModules } from "../../data/career-modules.data";
 import ThemeToggle from "./theme-toggle/theme-toggle.component";
@@ -23,6 +24,7 @@ const MODULE_COMPONENTS = {
   "cover-letter": CoverLetter,
   "professional-headshot": ProfessionalHeadshot,
   "linkedin-optimizer": LinkedInOptimizer,
+  "job-application": JobApplication,
 };
 
 const AiDashboardInner = () => {

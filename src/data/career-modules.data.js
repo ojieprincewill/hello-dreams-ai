@@ -45,7 +45,7 @@ export const careerModules = [
     id: "job-application",
     title: "Job Application",
     description: "Find relevant jobs and get application assistance",
-    isActive: false,
+    isActive: true,
     isCompleted: false,
   },
 ];
