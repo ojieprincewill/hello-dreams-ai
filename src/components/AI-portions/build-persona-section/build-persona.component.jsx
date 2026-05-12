@@ -12,6 +12,7 @@ import {
   usePersona,
   useSubmitPersonaAnswers,
 } from "../../../hooks/ai/usePersonaBuilder";
+import { usePersonaBuilder } from "../custom-hooks/usePersonaBuilder";
 
 const STEPS = [
   {
@@ -156,6 +157,7 @@ const BuildPersona = () => {
   const [stepIndex, setStepIndex] = useState(0);
   const [selections, setSelections] = useState({});
   const [persona, setPersona] = useState(null);
+  const [personaStep, setPersonaStep] = useState("current");
   const [loading, setLoading] = useState(false);
 
   const personaQuery = usePersona(false);
@@ -237,7 +239,10 @@ const BuildPersona = () => {
         const rawSelections = parsed.selections || {};
         const migrated = {};
         for (const step of STEPS) {
-          migrated[step.id] = normalizeStepSelection(step, rawSelections[step.id]);
+          migrated[step.id] = normalizeStepSelection(
+            step,
+            rawSelections[step.id],
+          );
         }
         setSelections(migrated);
         if (parsed.stepIndex != null) setStepIndex(parsed.stepIndex);
@@ -280,6 +285,8 @@ const BuildPersona = () => {
   const goPrev = () => {
     if (stepIndex > 0) setStepIndex((i) => i - 1);
   };
+
+  const { handleRestart, handleApplyPersona } = usePersonaBuilder();
 
   if (!started) {
     return (
@@ -381,51 +388,29 @@ const BuildPersona = () => {
 
   if (persona) {
     return (
-      <div className="min-h-screen px-[5%] py-10">
-        <div className="flex items-center gap-3 mb-8 p-5 border-b-[1.5px] dark:border-b border-[#eaecf0] dark:border-[#2d2d2d]">
-          <UserIcon className="h-6 w-6" />
-          <p className="text-[24px] font-extrabold">
-            Your Professional Persona
-          </p>
-        </div>
+      <>
+        {personaStep === "current" && (
+          <CurrentPersona
+            persona={persona}
+            onNext={() => setPersonaStep("ideal")}
+          />
+        )}
 
-        <div className="bg-[#f6f6f6] dark:bg-[#181818] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-6 md:p-10">
-          <h3 className="text-[22px] font-bold mb-4">Persona Summary</h3>
-          <p className="text-[18px] mb-2">
-            <strong>Communication Style:</strong> {persona.communicationStyle}
-          </p>
-          <p className="text-[18px] mb-2">
-            <strong>Tone:</strong> {persona.tone}
-          </p>
-          <p className="text-[18px] mb-2">
-            <strong>Professional Voice:</strong> {persona.professionalVoice}
-          </p>
-          <p className="text-[18px] mb-2">
-            <strong>Writing Style:</strong> {persona.writingStyle}
-          </p>
-          <p className="text-[18px] mb-2">
-            <strong>Personality Traits:</strong>{" "}
-            {Array.isArray(persona.personalityTraits)
-              ? persona.personalityTraits.join(", ")
-              : (persona.personalityTraits ?? "—")}
-          </p>
-        </div>
+        {personaStep === "ideal" && (
+          <IdealPersona
+            persona={persona}
+            onNext={() => setPersonaStep("transformation")}
+          />
+        )}
 
-        {/* Restart Button */}
-        <div className="flex justify-center mt-10">
-          <button
-            onClick={() => {
-              setPersona(null);
-              setStarted(false);
-              setSelections({});
-              setStepIndex(0);
-            }}
-            className="px-6 py-3 text-[18px] font-bold rounded-lg bg-gradient-to-b from-[#748ffc] to-[#1342ff] text-white hover:opacity-90"
-          >
-            Restart Questionnaire
-          </button>
-        </div>
-      </div>
+        {personaStep === "transformation" && (
+          <TransformationPlan
+            persona={persona}
+            onRestart={handleRestart}
+            onApply={handleApplyPersona}
+          />
+        )}
+      </>
     );
   }
 

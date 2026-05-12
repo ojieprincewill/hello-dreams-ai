@@ -1,63 +1,59 @@
 import React from "react";
 import { ArrowRight } from "lucide-react";
 
-const transformData = [
-  {
-    id: "speaking-style",
-    title: "Speaking Style",
-    actions: [
-      "Use authoritative language and speak with measured confidence",
-      "Pause strategically for emphasis and to command attention",
-      "Make direct eye contact and use purposeful body language",
-      "Keep communications concise and impactful",
-    ],
-  },
-  {
-    id: "dressing-for-impact",
-    title: "Dressing for Impact",
-    actions: [
-      "Invest in executive-level wardrobe pieces that command respect",
-      "Choose sophisticated, timeless styles that project gravitas",
-      "Ensure perfect fit and impeccable grooming at all times",
-      "Select accessories that enhance rather than distract from your presence",
-    ],
-  },
-  {
-    id: "workplace-behavior",
-    title: "Workplace Behavior",
-    actions: [
-      "Enter rooms with confidence and greet others warmly but authoritatively",
-      "Take up appropriate space in meetings and conversations",
-      "Make decisions quickly and stand behind them confidently",
-      "Handle pressure and difficult situations with calm composure",
-    ],
-  },
-  {
-    id: "meeting-mastery",
-    title: "Meeting Mastery",
-    actions: [
-      "Arrive early and use the time to build relationships",
-      "Speak with authority and back up statements with evidence",
-      "Take charge when leadership is needed, but listen actively to others",
-      "End meetings with clear action items and accountability",
-    ],
-  },
-  {
-    id: "digital-presence",
-    title: "Digital Presence & Personal Brand",
-    actions: [
-      "Use professional photography that captures your executive presence",
-      "Share perspectives on leadership, strategy, and industry direction",
-      "Engage thoughtfully with senior leaders and industry influencers",
-      "Position yourself as someone who shapes conversations, not just participates",
-    ],
-  },
-];
-
 const TransformationPlan = ({ onApply, onRestart, persona }) => {
-  const fromPersona = persona?.professionalVoice || "your current style";
-
-  const toPersona = persona?.tone || "your ideal persona";
+  const transformData = persona?.transformationPlan || [
+    {
+      id: "speaking-style",
+      title: "Speaking Style",
+      actions: [
+        "Use authoritative language and speak with measured confidence",
+        "Pause strategically for emphasis and to command attention",
+        "Make direct eye contact and use purposeful body language",
+        "Keep communications concise and impactful",
+      ],
+    },
+    {
+      id: "dressing-for-impact",
+      title: "Dressing for Impact",
+      actions: [
+        "Invest in executive-level wardrobe pieces that command respect",
+        "Choose sophisticated, timeless styles that project gravitas",
+        "Ensure perfect fit and impeccable grooming at all times",
+        "Select accessories that enhance rather than distract from your presence",
+      ],
+    },
+    {
+      id: "workplace-behavior",
+      title: "Workplace Behavior",
+      actions: [
+        "Enter rooms with confidence and greet others warmly but authoritatively",
+        "Take up appropriate space in meetings and conversations",
+        "Make decisions quickly and stand behind them confidently",
+        "Handle pressure and difficult situations with calm composure",
+      ],
+    },
+    {
+      id: "meeting-mastery",
+      title: "Meeting Mastery",
+      actions: [
+        "Arrive early and use the time to build relationships",
+        "Speak with authority and back up statements with evidence",
+        "Take charge when leadership is needed, but listen actively to others",
+        "End meetings with clear action items and accountability",
+      ],
+    },
+    {
+      id: "digital-presence",
+      title: "Digital Presence & Personal Brand",
+      actions: [
+        "Use professional photography that captures your executive presence",
+        "Share perspectives on leadership, strategy, and industry direction",
+        "Engage thoughtfully with senior leaders and industry influencers",
+        "Position yourself as someone who shapes conversations, not just participates",
+      ],
+    },
+  ];
 
   return (
     <div className="min-h-screen px-[5%] py-10 ">
@@ -66,8 +62,18 @@ const TransformationPlan = ({ onApply, onRestart, persona }) => {
           Your Transformation Playbook
         </div>
         <p className="text-[18px] md:text-[24px] mb-5 ">
-          From the <span className="font-bold capitalize">{fromPersona}</span>{" "}
-          to the <span className="font-bold capitalize">{toPersona}</span>
+          From the{" "}
+          <span className="font-bold capitalize">
+            {persona?.currentPersona?.title ||
+              persona?.currentPersona ||
+              "Reliable Executor"}
+          </span>{" "}
+          to the{" "}
+          <span className="font-bold capitalize">
+            {persona?.idealPersona?.title ||
+              persona?.idealPersona ||
+              "Executive Presence"}
+          </span>
         </p>
         <div className="grid grid-cols-2 gap-x-5 gap-y-4">
           {transformData.map((data, index) => (

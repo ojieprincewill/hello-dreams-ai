@@ -2,16 +2,6 @@ import React from "react";
 import { ArrowRight } from "lucide-react";
 
 const IdealPersona = ({ onNext, persona }) => {
-  const idealTitle = persona?.tone || "The executive presence";
-
-  const idealDescription =
-    persona?.writingStyle ||
-    "A confident professional who commands respect through authoritative communication and decisive leadership";
-
-  const whyItMatters =
-    persona?.communicationStyle ||
-    "Those with executive presence are natural choices for board presentations, client meetings and leadership roles because they project confidence and competence";
-
   return (
     <div className="min-h-screen px-[5%] py-10 ">
       <div className="bg-[#e6e6e6] dark:bg-[#181818] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-6 md:p-10 ">
@@ -19,13 +9,21 @@ const IdealPersona = ({ onNext, persona }) => {
           Your Ideal Persona
         </div>
         <p className="text-[18px] md:text-[24px] font-bold capitalize ">
-          {idealTitle}
+          {persona?.idealPersona?.title ||
+            persona?.idealPersona ||
+            "Executive Presence"}
         </p>
-        <p className="text-[14px] md:text-[16px] mb-5 ">{idealDescription}</p>
+        <p className="text-[14px] md:text-[16px] mb-5 ">
+          {persona?.idealPersona?.description ||
+            "A confident professional who commands respect through authoritative communication and decisive leadership"}
+        </p>
         <p className="text-[18px] md:text-[24px] font-bold ">
           Why this Persona is career gold
         </p>
-        <p className="text-[14px] md:text-[16px] mb-5 ">{whyItMatters}</p>
+        <p className="text-[14px] md:text-[16px] mb-5 ">
+          {persona?.idealPersona?.careerAdvantage ||
+            "Those with executive presence are natural choices for board presentations, client meetings and leadership roles because they project confidence and competence"}
+        </p>
       </div>
       <div className="flex items-center justify-center mt-8">
         <button
