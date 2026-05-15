@@ -165,7 +165,10 @@ export const usePersonaBuilder = () => {
       setPersona(data.persona);
       setResultStep("current");
     } catch (err) {
-      if (isCreditLimitError(err)) { showPaywall?.(err.apiError); return; }
+      if (isCreditLimitError(err)) {
+        showPaywall?.(err.apiError);
+        return;
+      }
       console.error(err);
       if (!isNetworkError(err)) toast.error("Failed to generate persona");
     } finally {
@@ -180,7 +183,7 @@ export const usePersonaBuilder = () => {
     try {
       await service.applyPersona();
       toast.success("Persona applied successfully ✨");
-    } catch {
+    } catch (err) {
       if (!isNetworkError(err)) toast.error("Failed to apply persona");
     }
   };
@@ -194,7 +197,7 @@ export const usePersonaBuilder = () => {
       setStepIndex(0);
       setStarted(false);
       setResultStep("current");
-    } catch {
+    } catch (err) {
       if (!isNetworkError(err)) toast.error("Failed to restart");
     }
   };
