@@ -1,9 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
 import Logo2 from "../logos/logo2.component";
 import { Link } from "react-router-dom";
-import { Bars3BottomLeftIcon } from "@heroicons/react/24/solid";
+import { Bars3BottomLeftIcon, XMarkIcon } from "@heroicons/react/24/solid";
+// eslint-disable-next-line no-unused-vars
+import { motion, AnimatePresence } from "motion/react";
 
 const Navbar = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleBarClick = () => {
+    setIsOpen(!isOpen);
+  };
+
   return (
     <>
       <nav className="w-full h-[72px] fixed top-0 left-0 bg-[#000] text-[#fff] px-[10%] flex justify-between items-center drop-shadow-2xl drop-shadow-[#0c4af65b] z-20">
@@ -27,21 +35,98 @@ const Navbar = () => {
         >
           <Link
             to="/signin"
-            className="hidden xl:inline bg-transparent text-[#fff] border border-[#fff] font-medium text-[12px] md:text-[16px] xl:text-[18px] px-6 py-2 rounded-md transition-colors duration-300 hover:text-[#1342ff] cursor-pointer"
+            className="hidden md:inline bg-transparent text-[#fff] border border-[#fff] font-medium text-[12px] md:text-[16px] xl:text-[18px] px-6 py-2 rounded-md transition-colors duration-300 hover:text-[#1342ff] cursor-pointer"
           >
             Sign in
           </Link>
 
           <Link
             to="/signup"
-            className="hidden xl:inline bg-[#1342ff] text-white border border-[#1342ff] font-medium text-[12px] md:text-[16px] xl:text-[18px] px-6 py-2 rounded-md hover:bg-[#1b13ff] hover:border-[#1b13ff] cursor-pointer transition-colors duration-300"
+            className="hidden md:inline bg-[#1342ff] text-white border border-[#1342ff] font-medium text-[12px] md:text-[16px] xl:text-[18px] px-6 py-2 rounded-md hover:bg-[#1b13ff] hover:border-[#1b13ff] cursor-pointer transition-colors duration-300"
           >
             Sign up
           </Link>
 
-          <button className="h-8 w-8 text-[#fff] xl:hidden cursor-pointer align-middle">
-            <Bars3BottomLeftIcon />
-          </button>
+          <div className="relative md:hidden">
+            <AnimatePresence mode="wait">
+              {isOpen ? (
+                <motion.div
+                  key="close"
+                  initial={{ rotate: -90, opacity: 0, scale: 0.6 }}
+                  animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                  exit={{ rotate: 90, opacity: 0, scale: 0.6 }}
+                  transition={{
+                    duration: 0.25,
+                    ease: "easeInOut",
+                  }}
+                >
+                  <XMarkIcon
+                    onClick={handleBarClick}
+                    className="h-8 w-8 text-white cursor-pointer"
+                  />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="menu"
+                  initial={{ rotate: 90, opacity: 0, scale: 0.6 }}
+                  animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                  exit={{ rotate: -90, opacity: 0, scale: 0.6 }}
+                  transition={{
+                    duration: 0.25,
+                    ease: "easeInOut",
+                  }}
+                >
+                  <Bars3BottomLeftIcon
+                    onClick={handleBarClick}
+                    className="h-8 w-8 text-white cursor-pointer"
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+              {isOpen && (
+                <motion.div
+                  initial={{
+                    opacity: 0,
+                    y: -20,
+                    scale: 0.95,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                  }}
+                  exit={{
+                    opacity: 0,
+                    y: -15,
+                    scale: 0.95,
+                  }}
+                  transition={{
+                    duration: 0.25,
+                    ease: "easeOut",
+                  }}
+                  className="absolute top-full right-[-18px] mt-3 z-30 bg-[#000]/70 backdrop-blur-sm border-[1.5px] border-[#ffffff63] p-3 rounded-lg flex flex-col space-y-3 w-[140px]"
+                >
+                  <Link
+                    onClick={() => setIsOpen(false)}
+                    to="/signin"
+                    className="bg-transparent text-white border border-white text-[12px] px-4 py-2 rounded-md text-center"
+                  >
+                    Sign in
+                  </Link>
+
+                  <Link
+                    onClick={() => setIsOpen(false)}
+                    to="/signup"
+                    className="bg-[#1342ff] text-white border border-[#1342ff] text-[12px] px-4 py-2 rounded-md text-center"
+                  >
+                    Sign up
+                  </Link>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
       </nav>
       <div className="h-[72px]"></div>

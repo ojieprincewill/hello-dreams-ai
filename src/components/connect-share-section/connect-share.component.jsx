@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 const ConnectAndShare = () => {
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
-  const [isSliding, setIsSliding] = useState(false);
+  const [direction, setDirection] = useState("next");
 
   const cards = [
     {
@@ -51,115 +51,100 @@ const ConnectAndShare = () => {
     },
   ];
 
+  // autoplay (feels more “alive”)
   useEffect(() => {
-    const interval = setInterval(() => {
-      setIsSliding(true);
+    const t = setInterval(() => {
+      setDirection("next");
+      setCurrentCardIndex((prev) => (prev + 1) % cards.length);
     }, 5000);
 
-    if (isSliding) {
-      const timeout = setTimeout(() => {
-        setCurrentCardIndex((prev) => (prev + 1) % cards.length);
-        setIsSliding(false);
-      }, 600);
+    return () => clearInterval(t);
+  }, [cards.length]);
 
-      return () => clearTimeout(timeout);
-    }
+  const getCardStyle = (index) => {
+    const total = cards.length;
+    let diff = index - currentCardIndex;
 
-    return () => clearInterval(interval);
-  }, [isSliding, cards.length]);
+    // wrap-around correction
+    if (diff > total / 2) diff -= total;
+    if (diff < -total / 2) diff += total;
+
+    const abs = Math.abs(diff);
+
+    // core "alive stack" physics
+    const translateY = direction === "next" ? diff * 18 : diff * -18; // stack spacing
+    const scale = 1 - abs * 0.06;
+    const rotate = diff * -2;
+    const opacity = 1 - abs * 0.25;
+    const blur = abs * 1.5;
+
+    return {
+      transform: `
+        translateY(${translateY}px)
+        scale(${scale})
+        rotate(${rotate}deg)
+      `,
+      opacity,
+      filter: `blur(${blur}px)`,
+      zIndex: 100 - abs,
+      transition:
+        "transform 700ms cubic-bezier(0.16, 1, 0.3, 1), opacity 400ms ease",
+    };
+  };
 
   return (
     <div className="py-10">
-      <style>{`
-        @keyframes slideInFromBottomRight {
-          0% {
-            transform: translateX(128px) translateY(128px) scale(0.75);
-            opacity: 0;
-          }
-          100% {
-            transform: translateX(0) translateY(0) scale(1);
-            opacity: 1;
-          }
-        }
-        .slide-in-animation {
-          animation: slideInFromBottomRight 0.6s ease-out forwards;
-        }
-      `}</style>
-
       <div className="px-[5%] mb-15">
-        <p className="text-[64px] font-bold tracking-tighter">
+        <p className="text-[30px] md:text-[50px] xl:text-[64px] font-bold tracking-tighter">
           Connect & Share
         </p>
-        <p className="w-[593px] text-[#eaecf0] text-[20px]">
+        <p className="md:w-[593px] text-[#eaecf0] text-[16px] md:text-[20px]">
           Join our community and share your career aspirations. Feel supported
           from the very first click.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 h-[900px] ">
-        {/* Left Side - Featured Card Display */}
-        <div
-          aria-live="polite"
-          className="relative h-full border-t-[1.5px] border-[#a554f1] shadow-[0_-10px_20px_-5px_rgba(165,84,241,0.6),_10px_0_20px_-5px_rgba(165,84,241,0.6)] bg-black flex items-center justify-center p-6  overflow-hidden "
-        >
-          {/* Featured Card with slide-in animation from bottom-right */}
-          <div
-            key={currentCardIndex}
-            className={`max-w-[508px] h-auto md:h-[508px] rounded-3xl p-8 flex items-center justify-center text-center slide-in-animation ${cards[currentCardIndex].gradient}`}
-          >
-            <p
-              className={`text-[24px] font-semibold leading-relaxed ${cards[currentCardIndex].textColor}`}
+      {/* RESPONSIVE: stack on mobile */}
+      <div className="grid grid-cols-1 md:grid-cols-2 min-h-[500px] md:min-h-[700px]">
+        {/* LEFT - ACTIVE CARD (focused stage) */}
+        <div className="relative isolate flex items-center justify-center bg-black overflow-hidden p-6 md:border-t-[1.5px] md:border-[#a554f1] md:shadow-[0_-10px_20px_-5px_rgba(165,84,241,0.6),_10px_0_20px_-5px_rgba(165,84,241,0.6)]">
+          {cards.map((card, index) => (
+            <div
+              key={card.id}
+              onClick={() => {
+                setDirection("next");
+                setCurrentCardIndex(index);
+              }}
+              className={`absolute w-[85%] md:w-[70%] h-[380px] rounded-3xl p-8 flex items-center justify-center text-center cursor-pointer ${card.gradient}`}
+              style={getCardStyle(index)}
             >
-              {cards[currentCardIndex].text}
-            </p>
-          </div>
+              <p
+                className={`text-[20px] md:text-[24px] font-semibold ${card.textColor}`}
+              >
+                {card.text}
+              </p>
+            </div>
+          ))}
         </div>
 
-        {/* Right Side - Overlapping Card Stack */}
-        <div
-          className="h-full flex items-center justify-center p-6 bg-gradient-to-br from-gray-900 via-gray-800 to-slate-700 border-l-[1.5px] border-b-[1.5px] border-[#a554f1] shadow-[0_10px_40px_-10px_rgba(165,84,241,0.6)]
- overflow-hidden"
-        >
-          <div className="relative w-[508px]">
-            {cards.map((card, index) => {
-              const totalStackHeight = (cards.length - 1) * 80 + 120; // Total height of the stack
-              const centerOffset = -totalStackHeight / 2; // Offset to center the stack
-
-              // Calculate how many positions this card is from the current prominent card
-              const positionFromCurrent =
-                (index - currentCardIndex + cards.length) % cards.length;
-
-              // Position 0 = prominent card (bottom of stack)
-              // Position 1 = next card (second from bottom)
-              // Position 6 = card at back (top of stack)
-              const stackPosition = cards.length - 1 - positionFromCurrent;
-
-              const isMovingToBack = isSliding && index === currentCardIndex;
-
-              return (
-                <div
-                  key={card.id}
-                  onClick={() => {
-                    setIsSliding(true);
-                    setTimeout(() => {
-                      setCurrentCardIndex(index);
-                      setIsSliding(false);
-                    }, 600);
-                  }}
-                  className={`absolute w-full h-[120px] rounded-xl p-4 flex items-center justify-center text-center transition-all duration-600 ${card.gradient}`}
-                  style={{
-                    top: `${centerOffset + stackPosition * 80}px`,
-                    zIndex: isMovingToBack ? 0 : stackPosition + 1, // Moving card goes to back
-                  }}
-                >
-                  <p
-                    className={`text-sm font-medium leading-relaxed ${card.textColor}`}
-                  >
-                    {card.text}
-                  </p>
-                </div>
-              );
-            })}
+        {/* RIGHT - PREVIEW STRIP (simple + clean) */}
+        <div className="hidden md:flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-slate-700 p-6 md:border-l-[1.5px] md:border-b-[1.5px] md:border-[#a554f1] md:shadow-[0_10px_40px_-10px_rgba(165,84,241,0.6)]">
+          <div className="space-y-3 w-[80%]">
+            {cards.map((card, index) => (
+              <div
+                key={card.id}
+                onClick={() => setCurrentCardIndex(index)}
+                className={`p-4 rounded-xl cursor-pointer transition-all duration-300 ${card.gradient} ${
+                  index === currentCardIndex
+                    ? "ring-2 ring-white"
+                    : "opacity-60 hover:opacity-90"
+                }`}
+              >
+                <p className={`text-sm ${card.textColor}`}>
+                  {card.text.slice(0, 60)}...
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </div>
