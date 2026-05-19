@@ -9,6 +9,6 @@ const parseResponseBody = async (res, fallback = null) => {
 };
 
 export const getCredits = async () => {
-  const res = await apiFetch(`${API_BASE_URL}/users/credits`);
+  const res = await apiFetch(`${API_BASE_URL}/credits`);
   return parseResponseBody(res, { used: 0, limit: 5, remaining: 5, exempt: false });
 };
