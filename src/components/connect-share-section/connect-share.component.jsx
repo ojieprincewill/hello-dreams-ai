@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+// eslint-disable-next-line no-unused-vars
+import { motion } from "motion/react";
 
 const ConnectAndShare = () => {
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
@@ -93,8 +95,22 @@ const ConnectAndShare = () => {
   };
 
   return (
-    <div className="py-10">
-      <div className="px-[5%] mb-15">
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.25 }}
+      transition={{
+        duration: 0.8,
+        ease: "easeOut",
+      }}
+      className="py-10 overflow-hidden"
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1, duration: 0.6 }}
+        className="px-[5%] mb-15"
+      >
         <p className="text-[30px] md:text-[50px] xl:text-[64px] font-bold tracking-tighter">
           Connect & Share
         </p>
@@ -102,12 +118,22 @@ const ConnectAndShare = () => {
           Join our community and share your career aspirations. Feel supported
           from the very first click.
         </p>
-      </div>
+      </motion.div>
 
       {/* RESPONSIVE: stack on mobile */}
-      <div className="grid grid-cols-1 md:grid-cols-2 min-h-[500px] md:min-h-[700px]">
+      <motion.div
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.15 }}
+        className="grid grid-cols-1 md:grid-cols-2 min-h-[500px] md:min-h-[700px]"
+      >
         {/* LEFT - ACTIVE CARD (focused stage) */}
-        <div className="relative isolate flex items-center justify-center bg-black overflow-hidden p-6 md:border-t-[1.5px] md:border-[#a554f1] md:shadow-[0_-10px_20px_-5px_rgba(165,84,241,0.6),_10px_0_20px_-5px_rgba(165,84,241,0.6)]">
+        <motion.div
+          initial={{ x: -30, opacity: 0 }}
+          whileInView={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className="relative isolate flex items-center justify-center bg-black overflow-hidden p-6 md:border-t-[1.5px] md:border-[#a554f1] md:shadow-[0_-10px_20px_-5px_rgba(165,84,241,0.6),_10px_0_20px_-5px_rgba(165,84,241,0.6)]"
+        >
           {cards.map((card, index) => (
             <div
               key={card.id}
@@ -125,10 +151,15 @@ const ConnectAndShare = () => {
               </p>
             </div>
           ))}
-        </div>
+        </motion.div>
 
         {/* RIGHT - PREVIEW STRIP (simple + clean) */}
-        <div className="hidden md:flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-slate-700 p-6 md:border-l-[1.5px] md:border-b-[1.5px] md:border-[#a554f1] md:shadow-[0_10px_40px_-10px_rgba(165,84,241,0.6)]">
+        <motion.div
+          initial={{ x: 30, opacity: 0 }}
+          whileInView={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.7, ease: "easeOut", delay: 0.1 }}
+          className="hidden md:flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-slate-700 p-6 md:border-l-[1.5px] md:border-b-[1.5px] md:border-[#a554f1] md:shadow-[0_10px_40px_-10px_rgba(165,84,241,0.6)]"
+        >
           <div className="space-y-3 w-[80%]">
             {cards.map((card, index) => (
               <div
@@ -146,9 +177,9 @@ const ConnectAndShare = () => {
               </div>
             ))}
           </div>
-        </div>
-      </div>
-    </div>
+        </motion.div>
+      </motion.div>
+    </motion.div>
   );
 };
 
