@@ -100,13 +100,15 @@ const AiDashboardInner = () => {
               </div>
 
               {/* Main Content Area — scrollable */}
-              <div className="flex-1 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto bg-white dark:bg-[#121212] custom-scrollbar">
                 {!activeModule ? (
                   <WelcomeContent onStartAssessment={handleStartAssessment} />
                 ) : ActiveComponent ? (
                   <ActiveComponent
                     requestedConversationId={requestedConversationId}
-                    onConversationLoaded={() => setRequestedConversationId(null)}
+                    onConversationLoaded={() =>
+                      setRequestedConversationId(null)
+                    }
                   />
                 ) : (
                   <div className="min-h-screen p-6">

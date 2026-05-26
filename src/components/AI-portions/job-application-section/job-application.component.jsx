@@ -1,5 +1,8 @@
 import React, { useState } from "react";
-import { MagnifyingGlassIcon, ClipboardDocumentListIcon } from "@heroicons/react/24/outline";
+import {
+  MagnifyingGlassIcon,
+  ClipboardDocumentListIcon,
+} from "@heroicons/react/24/outline";
 import { useJobApplication } from "../custom-hooks/useJobApplication";
 import JobSearch from "./job-search.component";
 import JobBoard from "./job-board.component";
@@ -10,12 +13,18 @@ import JobDocumentsViewer from "./job-documents-viewer.component";
 
 class JobApplicationErrorBoundary extends React.Component {
   state = { error: null };
-  static getDerivedStateFromError(error) { return { error }; }
+  static getDerivedStateFromError(error) {
+    return { error };
+  }
   render() {
     if (this.state.error) {
       return (
         <div className="p-8 text-red-600 dark:text-red-400 font-mono text-sm whitespace-pre-wrap">
-          <strong>Job Application error:</strong>{"\n"}{this.state.error?.stack ?? this.state.error?.message ?? String(this.state.error)}
+          <strong>Job Application error:</strong>
+          {"\n"}
+          {this.state.error?.stack ??
+            this.state.error?.message ??
+            String(this.state.error)}
         </div>
       );
     }
@@ -119,10 +128,15 @@ const JobApplication = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#f9f9f9] dark:bg-[#181818]" style={{ fontFamily: "Darker Grotesque, sans-serif" }}>
+    <div
+      className="min-h-screen bg-[#efefef] dark:bg-[#121212]"
+      style={{ fontFamily: "Darker Grotesque, sans-serif" }}
+    >
       {/* Header */}
       <div className="bg-white dark:bg-[#212121] border-b border-[#eaecf0] dark:border-[#2d2d2d] px-8 py-5">
-        <h1 className="text-2xl font-bold text-[#010413] dark:text-white">Job Application</h1>
+        <h1 className="text-2xl font-bold text-[#010413] dark:text-white">
+          Job Application
+        </h1>
         <p className="text-sm text-[#667085] dark:text-gray-400 mt-1">
           Find jobs, generate tailored documents, and track your applications
         </p>
@@ -176,7 +190,8 @@ const JobApplication = () => {
             {/* Search error */}
             {searchError && (
               <div className="mb-4 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-sm text-red-700 dark:text-red-300">
-                <strong>Search error:</strong> {searchError?.message ?? JSON.stringify(searchError)}
+                <strong>Search error:</strong>{" "}
+                {searchError?.message ?? JSON.stringify(searchError)}
               </div>
             )}
 

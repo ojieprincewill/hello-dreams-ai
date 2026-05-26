@@ -17,13 +17,21 @@
   font-family: "Poppins", sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: #fff;
-  background-color: #000;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: white;
+  color: #101828;
+}
+
+.dark body {
+  background: black;
+  color: white;
 }
 
 input.global-input {
@@ -61,7 +69,7 @@ select.global-select::placeholder {
   scrollbar-width: none; /* Firefox */
 }
 
-/* Fade-in/out scrollbar styling */
+/* Premium subtle scrollbar (light + dark aware) */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
@@ -71,22 +79,30 @@ select.global-select::placeholder {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0); /* invisible by default */
-  border-radius: 3px;
+  background-color: rgba(100, 116, 139, 0.35); /* soft slate gray */
+  border-radius: 10px;
   transition: background-color 0.3s ease;
 }
 
-.custom-scrollbar:hover::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.3); /* fades in on hover */
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(100, 116, 139, 0.6);
 }
 
-/* Firefox support */
+/* Dark mode tweak */
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.25);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(148, 163, 184, 0.5);
+}
+
+/* Firefox */
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
-  transition: scrollbar-color 0.3s ease;
+  scrollbar-color: rgba(100, 116, 139, 0.35) transparent;
 }
 
-.custom-scrollbar:hover {
-  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+.dark .custom-scrollbar {
+  scrollbar-color: rgba(148, 163, 184, 0.25) transparent;
 }

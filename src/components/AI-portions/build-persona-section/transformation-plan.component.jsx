@@ -57,7 +57,7 @@ const TransformationPlan = ({ onApply, onRestart, persona }) => {
 
   return (
     <div className="min-h-screen px-[5%] py-10 ">
-      <div className="bg-[#e6e6e6] dark:bg-[#181818] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-6 md:p-10 ">
+      <div className="bg-[#efefef] dark:bg-[#181818] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-6 md:p-10 ">
         <div className="bg-gradient-to-r from-[#8a2be2] to-[#ff00e6] py-1 px-2 w-max rounded-2xl text-[12px] text-[#fff] font-bold mb-1 ">
           Your Transformation Playbook
         </div>
@@ -114,6 +114,7 @@ const TransformationPlan = ({ onApply, onRestart, persona }) => {
         <button
           onClick={onRestart}
           className="w-[476px] text-center py-3 border border-[#eaecf0] bg-gradient-to-b from-[#1342ff] to-[#ff00e6] text-[#fff] text-[24px] font-bold rounded-xl tracking-tighter disabled:opacity-60 cursor-pointer"
+          style={{ fontFamily: "Poppins, sans-serif" }}
         >
           Restart
         </button>

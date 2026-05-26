@@ -303,7 +303,7 @@ const BuildPersona = () => {
           </div>
         </div>
 
-        <div className="bg-[#e6e6e6] dark:bg-[#2d2d2d] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-6 md:p-10 ">
+        <div className="bg-[#efefef] dark:bg-[#2d2d2d] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-6 md:p-10 ">
           <p className="text-[24px] font-bold ">
             Your Professional Headshot is Ready
           </p>
@@ -368,7 +368,7 @@ const BuildPersona = () => {
   if (loading) {
     return (
       <div className="min-h-screen px-[5%] py-10 flex justify-center items-center">
-        <div className="bg-[#e6e6e6] border-[#eaecf0] dark:bg-[#181818] border dark:border-[#2d2d2d] rounded-xl p-6 md:p-10 flex flex-col justify-center items-center space-y-3">
+        <div className="bg-[#efefef] border-[#eaecf0] dark:bg-[#181818] border dark:border-[#2d2d2d] rounded-xl p-6 md:p-10 flex flex-col justify-center items-center space-y-3">
           <GradientIcon />
           <p className="text-[18px] md:text-[24px] font-bold">
             Analysing your persona...
@@ -388,7 +388,7 @@ const BuildPersona = () => {
 
   if (persona) {
     return (
-      <>
+      <div className="min-h-screen py-10 flex justify-center items-center">
         {personaStep === "current" && (
           <CurrentPersona
             persona={persona}
@@ -410,7 +410,7 @@ const BuildPersona = () => {
             onApply={handleApplyPersona}
           />
         )}
-      </>
+      </div>
     );
   }
 
