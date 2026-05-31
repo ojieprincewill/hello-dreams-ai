@@ -22,9 +22,11 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: black;
+  color: white;
 }
 
-body {
+/* body {
   background: white;
   color: #101828;
 }
@@ -32,7 +34,7 @@ body {
 .dark body {
   background: black;
   color: white;
-}
+} */
 
 input.global-input {
   color: #101828;
