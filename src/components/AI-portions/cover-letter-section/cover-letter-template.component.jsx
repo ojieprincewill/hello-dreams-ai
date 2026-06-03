@@ -54,7 +54,14 @@ const ParagraphBlock = ({ text, fill, baseKey }) => {
   return chunks.map((chunk, k) => (
     <p key={`${baseKey}-${k}`} className="mb-4">
       {chunk.split(/\n/).map((line, l) =>
-        l === 0 ? line : <React.Fragment key={l}><br />{line}</React.Fragment>
+        l === 0 ? (
+          line
+        ) : (
+          <React.Fragment key={l}>
+            <br />
+            {line}
+          </React.Fragment>
+        ),
       )}
     </p>
   ));
@@ -74,9 +81,10 @@ const CoverLetterTemplate = ({ document: doc, userName, userEmail }) => {
 
   const sections = content.sections || [];
   const rawClosing = content.closing;
-  const closing = typeof rawClosing === "string"
-    ? fill(rawClosing)
-    : fill(rawClosing?.signoff || "");
+  const closing =
+    typeof rawClosing === "string"
+      ? fill(rawClosing)
+      : fill(rawClosing?.signoff || "");
 
   const today = new Date().toLocaleDateString("en-GB", {
     year: "numeric",
@@ -85,11 +93,11 @@ const CoverLetterTemplate = ({ document: doc, userName, userEmail }) => {
   });
 
   return (
-    <div className="max-w-3xl mx-auto p-10 bg-white text-black font-sans text-[14px] leading-[1.8]">
+    <div className="max-w-3xl mx-auto px-4 py-6 md:p-10 bg-white text-black font-sans text-[13px] md:text-[14px] leading-[1.7] md:leading-[1.8]">
       {/* Sender block */}
-      <div className="mb-6">
+      <div className="mb-4 md:mb-6">
         {displayName && (
-          <p className="font-bold text-[16px]">{displayName}</p>
+          <p className="font-bold text-[15px] md:text-[16px]">{displayName}</p>
         )}
         {displayEmail && <p>{displayEmail}</p>}
         {displayPhone && <p>{displayPhone}</p>}
@@ -97,23 +105,31 @@ const CoverLetterTemplate = ({ document: doc, userName, userEmail }) => {
       </div>
 
       {/* Date */}
-      <p className="mb-8">{today}</p>
+      <p className="mb-6 md:mb-8">{today}</p>
 
       {/* Body sections */}
       {sections.map((section, i) => (
-        <div key={i} className="mb-4">
+        <div key={i} className="mb-4 break-words">
           {/* Skip the generic "Cover Letter" heading — it's decorative */}
-          {section.heading && section.heading.toLowerCase() !== "cover letter" && (
-            <h3 className="font-semibold mb-2">{section.heading}</h3>
-          )}
+          {section.heading &&
+            section.heading.toLowerCase() !== "cover letter" && (
+              <h3 className="font-semibold text-[14px] md:text-[15px] mb-2">
+                {section.heading}
+              </h3>
+            )}
 
           {/* Each paragraph string is split on \n\n so multi-paragraph blobs render correctly */}
           {(section.paragraphs || []).flatMap((para, j) => (
-            <ParagraphBlock key={j} text={para} fill={fill} baseKey={`${i}-${j}`} />
+            <ParagraphBlock
+              key={j}
+              text={para}
+              fill={fill}
+              baseKey={`${i}-${j}`}
+            />
           ))}
 
           {(section.bullets || []).map((bullet, j) => (
-            <p key={j} className="mb-2 pl-4">
+            <p key={j} className="mb-2 pl-3 md:pl-4 break-words">
               &bull; {fill(bullet)}
             </p>
           ))}
@@ -121,11 +137,11 @@ const CoverLetterTemplate = ({ document: doc, userName, userEmail }) => {
       ))}
 
       {/* Closing line */}
-      {closing && <p className="mt-4 mb-8">{closing}</p>}
+      {closing && <p className="mt-3 mb-6 md:mt-4 md:mb-8">{closing}</p>}
 
       {/* Signature */}
       {displayName && (
-        <p className="mt-10 font-semibold">{displayName}</p>
+        <p className="mt-8 md:mt-10 font-semibold">{displayName}</p>
       )}
     </div>
   );

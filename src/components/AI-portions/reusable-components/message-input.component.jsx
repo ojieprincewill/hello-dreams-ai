@@ -22,7 +22,7 @@ const MessageInputField = ({
   }, [value]);
 
   return (
-    <div className="bg-[#efefef] dark:bg-[#303030] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-lg p-5">
+    <div className="bg-[#efefef] dark:bg-[#303030] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-lg p-3 md:p-4 lg:p-5">
       <div className="flex items-center space-x-4">
         <div className="flex-1">
           <textarea
@@ -32,21 +32,24 @@ const MessageInputField = ({
             onKeyDown={onKeyDown}
             placeholder={placeholder}
             rows={1}
-            className="w-full resize-none bg-transparent text-[#010413] dark:text-white text-[20px] font-medium placeholder:text-[#333] dark:placeholder:text-white focus:outline-none overflow-y-auto max-h-[200px] transition-colors duration-200 ease-in-out custom-scrollbar"
+            className="w-full resize-none bg-transparent text-[#010413] dark:text-white text-base md:text-lg lg:text-[20px] font-medium placeholder:text-[#333] dark:placeholder:text-white focus:outline-none overflow-y-auto max-h-[200px] transition-colors duration-200 ease-in-out custom-scrollbar"
           />
         </div>
-        <div className="flex items-center space-x-3">
+        <div className="flex items-end gap-2 md:gap-3 lg:gap-4">
           <button
             onClick={onVoice}
             className="p-2 hover:bg-[#dfdfdf] dark:hover:bg-[#2d2d2d] rounded-lg transition-colors cursor-pointer"
           >
-            <Mic size={24} className="text-[#333] dark:text-[#eaecf0]" />
+            <Mic
+              size={20}
+              className="md:w-6 md:h-6 text-[#333] dark:text-[#eaecf0]"
+            />
           </button>
           <button
             onClick={onSend}
-            className="w-12 h-12 flex justify-center items-center bg-[#dfdfdf] dark:bg-white dark:hover:bg-[#eaecf0] rounded-full transition-colors cursor-pointer"
+            className="w-10 h-10 md:w-11 md:h-11 lg:w-12 lg:h-12 flex justify-center items-center bg-[#dfdfdf] dark:bg-white dark:hover:bg-[#eaecf0] rounded-full transition-colors cursor-pointer"
           >
-            <Send size={20} className=" dark:text-[#303030]" />
+            <Send size={18} className="md:w-5 md:h-5 dark:text-[#303030]" />
           </button>
         </div>
       </div>

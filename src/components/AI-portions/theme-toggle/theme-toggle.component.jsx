@@ -44,7 +44,7 @@ const ThemeToggle = () => {
   }, []);
 
   return (
-    <div className="relative group inline-block">
+    <div className="relative group hidden lg:inline-block">
       <button
         onClick={toggleTheme}
         className="p-2 rounded-full shadow-md shadow-[#1342ff6f] dark:shadow-[rgba(255,215,0,0.5)] 

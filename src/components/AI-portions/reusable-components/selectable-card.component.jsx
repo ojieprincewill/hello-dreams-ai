@@ -6,11 +6,11 @@ const SelectableCard = ({ isSelected, onClick, children, className = "" }) => {
       onClick={onClick}
       className={`relative cursor-pointer transition-colors duration-300 ${
         isSelected
-          ? "bg-gradient-to-br from-[#1342ff] to-[#ff00e6] p-[2px] rounded-md"
-          : "border border-[#eaecf0] dark:border-[#2d2d2d] rounded-md"
+          ? "bg-gradient-to-br from-[#1342ff] to-[#ff00e6] p-[2px] rounded-md md:rounded-lg"
+          : "border border-[#eaecf0] dark:border-[#2d2d2d] rounded-md md:rounded-lg"
       } ${className}`}
     >
-      <div className="bg-[#efefef] dark:bg-[#181818] rounded-md p-4 hover:bg-[#dfdfdf] dark:hover:bg-[#151515] transition-colors duration-200">
+      <div className="bg-[#efefef] dark:bg-[#181818] rounded-md md:rounded-lg p-3 md:p-4 hover:bg-[#dfdfdf] dark:hover:bg-[#151515] transition-colors duration-200">
         {children}
       </div>
     </div>

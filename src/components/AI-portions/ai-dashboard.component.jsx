@@ -31,6 +31,7 @@ const AiDashboardInner = () => {
   const [activeModule, setActiveModule] = useState(null);
   const [newChatAction, setNewChatAction] = useState(null);
   const [requestedConversationId, setRequestedConversationId] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Restore active module on mount
   useEffect(() => {
@@ -49,10 +50,12 @@ const AiDashboardInner = () => {
 
   const handleModuleClick = (moduleId) => {
     setActiveModule(moduleId);
+    setSidebarOpen(false);
   };
 
   const handleStartAssessment = () => {
     setActiveModule("get-to-know");
+    setSidebarOpen(false);
   };
 
   const ActiveComponent = activeModule ? MODULE_COMPONENTS[activeModule] : null;
@@ -65,6 +68,7 @@ const AiDashboardInner = () => {
           navigateToConversation: (moduleId, conversationId) => {
             setActiveModule(moduleId);
             if (conversationId) setRequestedConversationId(conversationId);
+            setSidebarOpen(false);
           },
         }}
       >
@@ -73,8 +77,26 @@ const AiDashboardInner = () => {
           style={{ fontFamily: "Darker Grotesque, sans-serif" }}
         >
           <div className="flex">
+            {/* 🆕 ADDED: Backdrop for mobile sidebar */}
+            {sidebarOpen && (
+              <div
+                onClick={() => setSidebarOpen(false)}
+                className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+              />
+            )}
+
             {/* Left Sidebar */}
-            <div className="fixed top-0 left-0 h-screen w-[25%] overflow-auto sidebar border-r-2 border-r-[#eaecf0] dark:border-r-0 bg-[#f9f9f9] dark:bg-[#181818] z-50">
+            <div
+              className={`
+                fixed top-0 left-0 h-screen overflow-auto sidebar
+                w-[80%] sm:w-[60%] md:w-[40%] lg:w-[25%]
+                border-r-2 border-r-[#eaecf0] dark:border-r-0
+                bg-[#f9f9f9] dark:bg-[#181818]
+                z-50
+                transition-transform duration-300
+                ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+              `}
+            >
               <SidebarNavigation
                 modules={careerModules}
                 activeModule={activeModule}
@@ -83,24 +105,37 @@ const AiDashboardInner = () => {
             </div>
 
             {/* Right panel — fixed so the top bar never scrolls away */}
-            <div className="fixed left-[25%] right-0 top-0 bottom-0 flex flex-col">
+            <div className="fixed xl:left-[25%] inset-0 flex flex-col ">
               {/* Top Bar */}
-              <div className="flex justify-end items-center space-x-15 px-10 py-4 border-b-[1.5px] dark:border-b border-[#eaecf0] dark:border-[#2d2d2d] bg-white dark:bg-[#212121] z-40 shrink-0">
-                {newChatAction && (
+              <div className="flex items-center justify-between px-4 md:px-10 py-3 md:py-4 border-b-[1.5px] dark:border-b border-[#eaecf0] dark:border-[#2d2d2d] bg-white dark:bg-[#212121] z-40 shrink-0">
+                {/* hamburger menu */}
+                <div className="flex items-center gap-3">
                   <button
-                    onClick={newChatAction}
-                    className="px-4 py-2 text-sm bg-gray-100 dark:bg-[#2d2d2d] text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-[#3d3d3d] transition-colors"
+                    className="lg:hidden text-2xl"
+                    onClick={() => setSidebarOpen(true)}
                   >
-                    + New Chat
+                    ☰
                   </button>
-                )}
-                <ThemeToggle />
-                <ProgressIndicator />
-                <UserIconDropdown />
+                </div>
+
+                <div className="flex items-center gap-3 md:gap-6 ml-auto">
+                  {newChatAction && (
+                    <button
+                      onClick={newChatAction}
+                      className="hidden md:block px-4 py-2 text-sm bg-gray-100 dark:bg-[#2d2d2d] text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-[#3d3d3d] transition-colors"
+                    >
+                      + New Chat
+                    </button>
+                  )}
+
+                  <ThemeToggle />
+                  <ProgressIndicator />
+                  <UserIconDropdown />
+                </div>
               </div>
 
               {/* Main Content Area — scrollable */}
-              <div className="flex-1 overflow-y-auto bg-white dark:bg-[#121212] custom-scrollbar">
+              <div className="flex-1 min-h-0 overflow-y-auto bg-white dark:bg-[#121212] custom-scrollbar">
                 {!activeModule ? (
                   <WelcomeContent onStartAssessment={handleStartAssessment} />
                 ) : ActiveComponent ? (

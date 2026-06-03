@@ -8,7 +8,12 @@ const CheckIcon = () => (
     stroke="currentColor"
     viewBox="0 0 24 24"
   >
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2.5}
+      d="M5 13l4 4L19 7"
+    />
   </svg>
 );
 
@@ -46,10 +51,14 @@ const ProgressIndicator = () => {
     <div className="relative" ref={containerRef}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="text-[20px] text-[#222] dark:text-white font-extrabold hover:opacity-75 transition-opacity focus:outline-none"
+        className="text-sm md:text-[16px] lg:text-[20px] text-[#222] dark:text-white font-extrabold hover:opacity-75 transition-opacity focus:outline-none whitespace-nowrap"
         aria-expanded={open}
       >
-        {isLoading ? "Progress: —" : `Progress: ${percentage}%`}
+        <span className="md:hidden">{isLoading ? "…" : `${percentage}%`}</span>
+
+        <span className="hidden md:inline">
+          {isLoading ? "Progress: —" : `Progress: ${percentage}%`}
+        </span>
       </button>
 
       {open && (
@@ -57,7 +66,9 @@ const ProgressIndicator = () => {
           {/* Progress bar */}
           <div className="px-4 pt-4 pb-3">
             <div className="flex justify-between text-sm font-semibold mb-1.5">
-              <span className="text-[#010413] dark:text-white">Your Progress</span>
+              <span className="text-[#010413] dark:text-white">
+                Your Progress
+              </span>
               <span className="text-[#1342ff]">{percentage}%</span>
             </div>
             <div className="w-full h-2 bg-gray-100 dark:bg-[#2d2d2d] rounded-full overflow-hidden">
@@ -77,9 +88,14 @@ const ProgressIndicator = () => {
             </p>
             <ul className="space-y-1.5">
               {infoItems.map((item) => (
-                <li key={item.id} className="flex items-center gap-2 text-sm text-[#010413] dark:text-[#e0e0e0]">
+                <li
+                  key={item.id}
+                  className="flex items-center gap-2 text-sm text-[#010413] dark:text-[#e0e0e0]"
+                >
                   {item.done ? <CheckIcon /> : <CircleIcon />}
-                  <span className={item.done ? "" : "opacity-60"}>{item.label}</span>
+                  <span className={item.done ? "" : "opacity-60"}>
+                    {item.label}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -94,9 +110,14 @@ const ProgressIndicator = () => {
             </p>
             <ul className="space-y-1.5">
               {moduleItems.map((item) => (
-                <li key={item.id} className="flex items-center gap-2 text-sm text-[#010413] dark:text-[#e0e0e0]">
+                <li
+                  key={item.id}
+                  className="flex items-center gap-2 text-sm text-[#010413] dark:text-[#e0e0e0]"
+                >
                   {item.done ? <CheckIcon /> : <CircleIcon />}
-                  <span className={item.done ? "" : "opacity-60"}>{item.label}</span>
+                  <span className={item.done ? "" : "opacity-60"}>
+                    {item.label}
+                  </span>
                 </li>
               ))}
             </ul>

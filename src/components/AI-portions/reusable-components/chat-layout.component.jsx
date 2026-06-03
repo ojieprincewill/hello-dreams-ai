@@ -14,9 +14,9 @@ const ChatLayout = ({ messages, renderMessage, inputProps }) => {
   }, [messages]);
 
   return (
-    <div className="relative h-screen flex flex-col">
+    <div className="relative flex flex-col h-full min-h-0 overflow-x-hidden">
       {/* Scrollable messages area */}
-      <div className="flex-1 overflow-y-auto py-6 scrollbar-hide">
+      <div className="flex-1 overflow-y-auto py-4 md:py-6 scrollbar-hide">
         {messages.map((msg) => (
           <div key={msg.id} ref={(el) => (messageRefs.current[msg.id] = el)}>
             {renderMessage(msg)}
@@ -25,7 +25,7 @@ const ChatLayout = ({ messages, renderMessage, inputProps }) => {
       </div>
 
       {/* Fixed input pinned at bottom */}
-      <div className="sticky bottom-0 z-10 py-5">
+      <div className="mt-auto z-10 py-3 md:py-4 lg:py-5">
         <MessageInputField
           value={inputProps.value}
           onChange={inputProps.handleChange}

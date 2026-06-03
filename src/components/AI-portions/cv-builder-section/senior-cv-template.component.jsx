@@ -2,7 +2,8 @@ import React from "react";
 import PropTypes from "prop-types";
 
 function normalizeSeniorContact(data = {}) {
-  const c = data.contact && typeof data.contact === "object" ? data.contact : {};
+  const c =
+    data.contact && typeof data.contact === "object" ? data.contact : {};
   return {
     phone: c.phone ?? data.phone ?? "",
     email: c.email ?? data.email ?? "",
@@ -33,21 +34,21 @@ const SeniorCVTemplate = ({ data = {} }) => {
   const educationList = asArray(education);
   const achievementsList = asArray(achievements);
   const toolsSkillsObj =
-    toolsSkills && typeof toolsSkills === "object" && !Array.isArray(toolsSkills)
+    toolsSkills &&
+    typeof toolsSkills === "object" &&
+    !Array.isArray(toolsSkills)
       ? toolsSkills
       : {};
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white text-black font-sans">
+    <div className="max-w-4xl mx-auto px-4 py-6 md:p-6 bg-white text-black font-sans text-sm md:text-base">
       {/* Header */}
-      <div className="text-center mb-6">
-        <h1 className="text-3xl font-bold">{name}</h1>
-        <p className="text-lg font-semibold">{title}</p>
-        <div className="mt-2 text-sm space-y-1">
+      <div className="text-center mb-4 md:mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold">{name}</h1>
+        <p className="text-base md:text-lg font-semibold">{title}</p>
+        <div className="mt-2 text-xs md:text-sm space-y-1">
           {(contact.phone || contact.email) && (
-            <p>
-              {[contact.phone, contact.email].filter(Boolean).join(" | ")}
-            </p>
+            <p>{[contact.phone, contact.email].filter(Boolean).join(" | ")}</p>
           )}
           {contact.location && <p>{contact.location}</p>}
           <p className="space-x-2">
@@ -87,17 +88,19 @@ const SeniorCVTemplate = ({ data = {} }) => {
 
       {/* Summary */}
       {summary && (
-        <section className="mb-6">
-          <h2 className="text-xl font-bold mb-2">Professional Summary</h2>
-          <p className="text-sm leading-relaxed">{summary}</p>
+        <section className="mb-4 md:mb-6">
+          <h2 className="text-lg md:text-xl font-bold mb-2">
+            Professional Summary
+          </h2>
+          <p className="text-xs md:text-sm leading-relaxed">{summary}</p>
         </section>
       )}
 
       {/* Tools & Skills */}
       {Object.keys(toolsSkillsObj).length > 0 && (
-        <section className="mb-6">
-          <h2 className="text-xl font-bold mb-2">Tools & Skills</h2>
-          <ul className="list-disc pl-5 text-sm space-y-1">
+        <section className="mb-4 md:mb-6">
+          <h2 className="text-lg md:text-xl font-bold mb-2">Tools & Skills</h2>
+          <ul className="list-disc pl-5 text-xs md:text-sm space-y-1">
             {Object.entries(toolsSkillsObj).map(([category, items], idx) => (
               <li key={idx}>
                 <strong>{category}:</strong> {asArray(items).join(", ")}
@@ -109,14 +112,14 @@ const SeniorCVTemplate = ({ data = {} }) => {
 
       {/* Experience */}
       {experienceList.length > 0 && (
-        <section className="mb-6">
-          <h2 className="text-xl font-bold mb-2">Experience</h2>
+        <section className="mb-4 md:mb-6">
+          <h2 className="text-lg md:text-xl font-bold mb-2">Experience</h2>
           {experienceList.map((role, idx) => (
             <div key={idx} className="mb-4">
               <p className="font-semibold">
                 {role.company} — {role.title} ({role.dates})
               </p>
-              <ul className="list-disc pl-5 text-sm space-y-1">
+              <ul className="list-disc pl-5 text-xs md:text-sm space-y-1">
                 {asArray(role.bullets).map((point, i) => (
                   <li key={i}>{point}</li>
                 ))}
@@ -128,9 +131,11 @@ const SeniorCVTemplate = ({ data = {} }) => {
 
       {/* Education & Certifications */}
       {educationList.length > 0 && (
-        <section className="mb-6">
-          <h2 className="text-xl font-bold mb-2">Education & Certifications</h2>
-          <ul className="list-disc pl-5 text-sm space-y-1">
+        <section className="mb-4 md:mb-6">
+          <h2 className="text-lg md:text-xl font-bold mb-2">
+            Education & Certifications
+          </h2>
+          <ul className="list-disc pl-5 text-xs md:text-sm space-y-1">
             {educationList.map((item, idx) => (
               <li key={idx}>{item}</li>
             ))}
@@ -141,8 +146,10 @@ const SeniorCVTemplate = ({ data = {} }) => {
       {/* Key Achievements */}
       {achievementsList.length > 0 && (
         <section>
-          <h2 className="text-xl font-bold mb-2">Key Achievements</h2>
-          <ul className="list-disc pl-5 text-sm space-y-1">
+          <h2 className="text-lg md:text-xl font-bold mb-2">
+            Key Achievements
+          </h2>
+          <ul className="list-disc pl-5 text-xs md:text-sm space-y-1">
             {achievementsList.map((item, idx) => (
               <li key={idx}>{item}</li>
             ))}

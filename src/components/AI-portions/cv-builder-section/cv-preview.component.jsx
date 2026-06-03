@@ -13,9 +13,12 @@ const CVPreview = ({ data }) => {
   });
 
   return (
-    <div className="p-6">
+    <div className="p-2 md:p-6">
       {/* Preview */}
-      <div ref={componentRef} className="border rounded-lg shadow bg-white p-6">
+      <div
+        ref={componentRef}
+        className="border rounded-lg shadow bg-white p-3 md:p-6 w-full max-w-full overflow-x-auto "
+      >
         {data.level === "senior" ? (
           <SeniorCVTemplate data={data} />
         ) : (
@@ -24,10 +27,10 @@ const CVPreview = ({ data }) => {
       </div>
 
       {/* Download Buttons */}
-      <div className="flex justify-center gap-4 mt-6">
+      <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 mt-6">
         <button
           onClick={handlePrint}
-          className="px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors"
+          className="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors"
         >
           Download / Print PDF
         </button>

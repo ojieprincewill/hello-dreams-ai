@@ -49,7 +49,8 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
 
   // Persist conversationId across refreshes
   useEffect(() => {
-    if (conversationId) localStorage.setItem("cvConversationId", conversationId);
+    if (conversationId)
+      localStorage.setItem("cvConversationId", conversationId);
   }, [conversationId]);
 
   // Load a specific conversation when navigated from history
@@ -75,7 +76,9 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
           );
           // Prefer the conversation the user was last working on
           const savedId = localStorage.getItem("cvConversationId");
-          const savedConv = savedId ? sorted.find((c) => c.id === savedId) : null;
+          const savedConv = savedId
+            ? sorted.find((c) => c.id === savedId)
+            : null;
           const target = savedConv || sorted[0];
           setConversationId(target.id);
         } else {
@@ -94,7 +97,10 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
                 sender: m.role === "user" ? "user" : "ai",
                 content: m.content,
                 timestamp: new Date(m.createdAt).toLocaleTimeString("en-GB", {
-                  hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit",
+                  hour12: false,
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
                 }),
               })),
             );
@@ -102,7 +108,8 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
         }
       } catch (err) {
         console.error("Error initializing CvBuilder:", err);
-        if (!isNetworkError(err)) toast.error(err.message || "Failed to create conversation");
+        if (!isNetworkError(err))
+          toast.error(err.message || "Failed to create conversation");
       }
     };
 
@@ -118,7 +125,10 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
         sender: m.role === "user" ? "user" : "ai",
         content: m.content,
         timestamp: new Date(m.createdAt).toLocaleTimeString("en-GB", {
-          hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit",
+          hour12: false,
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
         }),
       })),
     );
@@ -300,7 +310,9 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
       experience: (content.workExperience || []).map((job) => ({
         company: job.company || "",
         title: job.jobTitle || "",
-        dates: [job.startDate, job.endDate || "Present"].filter(Boolean).join(" – "),
+        dates: [job.startDate, job.endDate || "Present"]
+          .filter(Boolean)
+          .join(" – "),
         bullets: [
           ...(job.achievements || []),
           ...(job.responsibilities || []),
@@ -308,7 +320,9 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
         ],
       })),
       education: (content.education || []).map((edu) =>
-        [edu.degree, edu.institution, edu.graduationYear].filter(Boolean).join(" — ")
+        [edu.degree, edu.institution, edu.graduationYear]
+          .filter(Boolean)
+          .join(" — "),
       ),
       // Senior template: object of category → string[]
       toolsSkills: Object.fromEntries(
@@ -318,7 +332,7 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
           Tools: content.skills?.tools,
           "Soft Skills": content.skills?.soft,
           Languages: content.skills?.languages,
-        }).filter(([, v]) => Array.isArray(v) && v.length > 0)
+        }).filter(([, v]) => Array.isArray(v) && v.length > 0),
       ),
       // Junior template: flat array
       skills: [
@@ -328,7 +342,7 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
         ...(content.skills?.tools || []),
       ],
       achievements: (content.achievements || []).map((a) =>
-        [a.title, a.description].filter(Boolean).join(": ")
+        [a.title, a.description].filter(Boolean).join(": "),
       ),
       certifications: content.certifications || [],
       projects: content.projects || [],
@@ -394,13 +408,17 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
           sender: m.role === "user" ? "user" : "ai",
           content: m.content,
           timestamp: new Date(m.createdAt).toLocaleTimeString("en-GB", {
-            hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit",
+            hour12: false,
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
           }),
         })),
       );
       setResume(null);
     } catch (err) {
-      if (!isNetworkError(err)) toast.error(err.message || "Failed to create new chat");
+      if (!isNetworkError(err))
+        toast.error(err.message || "Failed to create new chat");
     } finally {
       setLoading(false);
     }
@@ -422,22 +440,22 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
         message.typing ? (
           <AiTypingIndicator />
         ) : (
-          <div className="w-max bg-[#efefef] dark:bg-[#2d2d2d] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-lg p-4">
-            <p className="max-w-[453px] w-full text-[20px] leading-relaxed">
+          <div className="w-fit max-w-[85%] md:max-w-[70%] bg-[#efefef] dark:bg-[#2d2d2d] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-lg p-3 md:p-4">
+            <p className="text-[14px] md:text-[18px] leading-relaxed break-words">
               {message.content}
             </p>
-            <p className="text-[#444] dark:text-[#bfb5b5] text-[16px] mt-2">
+            <p className="text-[#444] dark:text-[#bfb5b5] text-[11px] md:text-[14px] mt-2">
               {message.timestamp}
             </p>
           </div>
         )
       ) : (
-        <div className="flex justify-end my-5">
-          <div className="w-max bg-[#e2e2e2] dark:bg-[#151515] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-lg p-4">
-            <p className="max-w-[453px] w-full text-[20px] leading-relaxed">
+        <div className="flex justify-end my-4 md:my-5">
+          <div className="w-fit max-w-[85%] md:max-w-[70%] bg-[#e2e2e2] dark:bg-[#151515] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-lg p-3 md:p-4">
+            <p className="text-[14px] md:text-[18px] leading-relaxed break-words">
               {message.content}
             </p>
-            <p className="text-[#444] dark:text-[#bfb5b5] text-[16px] mt-2 text-right">
+            <p className="text-[#444] dark:text-[#bfb5b5] text-[11px] md:text-[14px] mt-2 text-right">
               {message.timestamp}
             </p>
           </div>
@@ -452,7 +470,9 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
     try {
       const raw = localStorage.getItem("latestResume");
       return raw ? !!JSON.parse(raw)?.content : false;
-    } catch { return false; }
+    } catch {
+      return false;
+    }
   })();
   const aiSignalledReady = messages.some(
     (m) => m.sender === "ai" && m.content.includes("Generate Resume"),
@@ -463,11 +483,14 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
 
   if (isInitializing)
     return (
-      <div className="px-[5%] pt-10 pb-5 animate-pulse">
-        <div className="h-16 bg-[#efefef] dark:bg-[#2d2d2d] rounded-xl mb-10" />
+      <div className="px-[5%] py-6 md:pt-10 md:pb-5 animate-pulse min-h-[60vh]">
+        <div className="h-12 md:h-16 bg-[#efefef] dark:bg-[#2d2d2d] rounded-xl mb-6 md:mb-10" />
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-20 bg-[#efefef] dark:bg-[#2d2d2d] rounded-xl" />
+            <div
+              key={i}
+              className="h-16 md:h-20 bg-[#efefef] dark:bg-[#2d2d2d] rounded-xl"
+            />
           ))}
         </div>
       </div>
@@ -475,19 +498,19 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
 
   if (resume)
     return (
-      <div className="mt-10 p-5 border rounded bg-gray-50 dark:bg-[#1a1a1a]">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold">Generated Resume</h3>
-          <div className="flex space-x-2">
+      <div className="mt-6 md:mt-10 p-4 md:p-5 border rounded bg-gray-50 dark:bg-[#1a1a1a] max-w-5xl mx-auto">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
+          <h3 className="text-base md:text-lg font-bold">Generated Resume</h3>
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <button
               onClick={() => setResume(null)}
-              className="px-4 py-2 bg-gray-200 dark:bg-[#2d2d2d] text-gray-800 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-[#3d3d3d]"
+              className="w-full sm:w-auto px-4 py-2 bg-gray-200 dark:bg-[#2d2d2d] text-gray-800 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-[#3d3d3d]"
             >
               ← Back to Chat
             </button>
             <button
               onClick={handleDeleteResume}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+              className="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
             >
               Delete Resume
             </button>
@@ -498,39 +521,48 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
     );
 
   return (
-    <div className="px-[5%] pt-10 pb-5">
-      <div className="flex items-center space-x-3 mb-10 p-5 border-b-[1.5px] dark:border-b border-[#eaecf0] dark:border-[#2d2d2d]">
-        <UserIcon className="h-6 w-6" />
-        <div>
-          <h2 className="text-[24px] font-extrabold">CV Builder</h2>
-          <p className="text-[20px]">
-            Let's have a conversation to build you the perfect CV
-          </p>
+    <div className="px-4 md:px-[5%] pt-6 md:pt-10 pb-5 h-full flex flex-col">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0 mb-8 md:mb-10 pb-5 border-b-[1.5px] dark:border-b border-[#eaecf0] dark:border-[#2d2d2d]">
+        <div className="flex items-center space-x-3">
+          <UserIcon className="h-6 w-6" />
+          <div>
+            <h2 className="text-[20px] md:text-[24px] font-extrabold">
+              CV Builder
+            </h2>
+            <p className="text-sm md:text-[18px] text-[#667085] dark:text-gray-400">
+              Let's have a conversation to build you the perfect CV
+            </p>
+          </div>
         </div>
       </div>
 
-      <ChatLayout
-        messages={displayMessages}
-        renderMessage={renderMessage}
-        inputProps={{
-          value: userInput,
-          handleChange,
-          handleKeyPress,
-          handleSendMessage,
-        }}
-      />
+      <div className="flex-1 min-h-0">
+        <ChatLayout
+          messages={displayMessages}
+          renderMessage={renderMessage}
+          inputProps={{
+            value: userInput,
+            handleChange,
+            handleKeyPress,
+            handleSendMessage,
+          }}
+        />
+      </div>
 
-      <div className="mt-4 flex flex-col items-center gap-2">
-        <button
-          onClick={handleGenerateResume}
-          disabled={loading || !conversationIdIsValid || !canGenerate}
-          className="px-8 py-3 bg-indigo-600 text-white text-[18px] font-semibold rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {loading ? "Generating…" : "Generate Resume"}
-        </button>
+      <div className="mt-2 md:mt-4 flex flex-col items-center gap-2">
+        {canGenerate && (
+          <button
+            onClick={handleGenerateResume}
+            disabled={loading || !conversationIdIsValid || !canGenerate}
+            className="px-4 md:px-8 py-2 md:py-3 bg-indigo-600 text-white text-[14px] md:text-[16px] lg:text-[18px] font-semibold rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {loading ? "Generating…" : "Generate Resume"}
+          </button>
+        )}
         {!canGenerate && (
           <p className="text-sm text-[#667085] dark:text-gray-400 text-center">
-            Continue the conversation — the AI will let you know when it has enough to build your resume.
+            Continue the conversation — the AI will let you know when it has
+            enough to build your resume.
           </p>
         )}
       </div>

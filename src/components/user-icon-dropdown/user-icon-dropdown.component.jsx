@@ -26,14 +26,29 @@ const UserIconDropdown = ({ active }) => {
     { key: "logout", label: "Sign out" },
   ];
 
+  const isMobile = window.innerWidth < 768;
+
+  const variants = {
+    desktop: {
+      initial: { opacity: 0, y: -20 },
+      animate: { opacity: 1, y: 0 },
+      exit: { opacity: 0, y: -20 },
+    },
+    mobile: {
+      initial: { opacity: 0, x: 300 },
+      animate: { opacity: 1, x: 0 },
+      exit: { opacity: 0, x: 300 },
+    },
+  };
+
   return (
     <div className="relative">
       {loading && <LoadingSpinner />}
       <div
-        className="flex items-center space-x-3 cursor-pointer"
-        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 cursor-pointer"
+        onClick={() => setOpen((prev) => !prev)}
       >
-        <div className="w-[40px] h-[40px] bg-gray-700 rounded-full overflow-hidden">
+        <div className="w-[30px] h-[30px] md:w-[40px] md:h-[40px] bg-gray-700 rounded-full overflow-hidden">
           <img
             src="https://res.cloudinary.com/dganx8kmn/image/upload/v1759449140/Hello%20dreams%20%20AI/26d3a9db798a4cc8725cb83dcbf5cf7966ae74dc_jifjis.png"
             alt="user-image"
@@ -41,7 +56,7 @@ const UserIconDropdown = ({ active }) => {
           />
         </div>
         <span
-          className="text-sm font-medium text-[#222] dark:text-[#fff]"
+          className="hidden md:inline text-sm font-medium text-[#222] dark:text-[#fff]"
           style={{ fontFamily: "Inter, sans-serif" }}
         >
           {user ? user.name : "Guest"}
@@ -49,93 +64,113 @@ const UserIconDropdown = ({ active }) => {
       </div>
       <AnimatePresence>
         {open && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="absolute right-0 mt-2 w-[333px] bg-[#f9f9f9] dark:bg-[#1c1c1c] border-[0.4px] border-[#eaecf0] dark:border-[#565757] rounded-lg shadow-md z-50 overflow-hidden px-4 py-2"
-          >
-            <div className="hidden xl:flex space-x-2 items-center px-2 py-3 border-b border-b-[#eaecf0] dark:border-b-[#272725] ">
-              <div className="bg-[#8aa1ff] dark:bg-gradient-to-b from-[#8aa1ff] via-[#becbff] to-[#ffffff] w-8 h-8 md:w-12 md:h-12 xl:w-[45.86px] xl:h-[45.86px] text-[#fff] uppercase text-[14px] md:text-[18px] xl:text-[32px] text-center font-bold flex justify-center items-center rounded-full cursor-pointer">
-                {user?.name?.[0]?.toUpperCase() || "U"}
-              </div>
-              <div>
-                <p className="text-[16px] md:text-[18px] xl:text-[20px] font-bold text-[#010413] dark:text-[#f7f7f7]">
-                  {user?.name ? `${user.name}'s Dream World` : "Dream World"}
-                </p>
-                <p className="text-[14px] text-[#010413] dark:text-[#f7f7f7]">
-                  {user?.email || ""}
-                </p>
-              </div>
-            </div>
+          <>
+            <motion.div
+              className="fixed inset-0 bg-black/20 md:hidden"
+              onClick={() => setOpen(false)}
+            />
 
-            <div className="bg-[#efefef] dark:bg-[#272725] rounded-lg px-3 py-2 my-5">
-              <div className="flex justify-between items-center mb-2">
-                <p className="text-[20px] text-[#010413] dark:text-[#f7f7f7] ">
-                  Credits
+            <motion.div
+              initial={
+                isMobile ? variants.mobile.initial : variants.desktop.initial
+              }
+              animate={
+                isMobile ? variants.mobile.animate : variants.desktop.animate
+              }
+              exit={isMobile ? variants.mobile.exit : variants.desktop.exit}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="
+  fixed md:absolute right-0 mr-2 md:mt-2 
+  top-0 md:top-auto
+  h-screen md:h-auto
+  w-[82%] max-w-[340px] sm:w-[333px]
+  bg-[#f9f9f9] dark:bg-[#1c1c1c]
+  border-[0.4px] border-[#eaecf0] dark:border-[#565757]
+  rounded-none md:rounded-lg
+  shadow-md z-50 overflow-y-auto px-4 py-4 md:py-2
+"
+            >
+              <div className="flex space-x-2 items-center px-2 py-3 border-b border-b-[#eaecf0] dark:border-b-[#272725] ">
+                <div className="bg-[#8aa1ff] dark:bg-gradient-to-b from-[#8aa1ff] via-[#becbff] to-[#ffffff] w-8 h-8 md:w-12 md:h-12 xl:w-[45.86px] xl:h-[45.86px] text-[#fff] uppercase text-[14px] md:text-[18px] xl:text-[32px] text-center font-bold flex justify-center items-center rounded-full cursor-pointer">
+                  {user?.name?.[0]?.toUpperCase() || "U"}
+                </div>
+                <div>
+                  <p className="text-[16px] md:text-[18px] xl:text-[20px] font-bold text-[#010413] dark:text-[#f7f7f7]">
+                    {user?.name ? `${user.name}'s Dream World` : "Dream World"}
+                  </p>
+                  <p className="text-[14px] text-[#010413] dark:text-[#f7f7f7]">
+                    {user?.email || ""}
+                  </p>
+                </div>
+              </div>
+
+              <div className="bg-[#efefef] dark:bg-[#272725] rounded-lg px-3 py-2 my-5">
+                <div className="flex justify-between items-center mb-2">
+                  <p className="text-[20px] text-[#010413] dark:text-[#f7f7f7] ">
+                    Credits
+                  </p>
+                  <button className="bg-[#fff] border-0 rounded-xl w-[32px] h-[20.27px] text-[#1342ff] text-[12px] text-center font-bold">
+                    {credits ? `${credits.used}/${credits.limit}` : "…/5"}
+                  </button>
+                </div>
+                <div className="w-full h-[10px] bg-[#e0e0e0] dark:bg-[#444] rounded-3xl mb-2 overflow-hidden">
+                  <div
+                    className="h-full bg-[#1342ff] rounded-3xl transition-all"
+                    style={{
+                      width: credits
+                        ? `${Math.min((credits.used / credits.limit) * 100, 100)}%`
+                        : "0%",
+                    }}
+                  />
+                </div>
+                <p className="text-[16px] text-[#010413] dark:text-[#f7f7f7] ">
+                  Daily credits, reset at midnight
                 </p>
-                <button className="bg-[#fff] border-0 rounded-xl w-[32px] h-[20.27px] text-[#1342ff] text-[12px] text-center font-bold">
-                  {credits ? `${credits.used}/${credits.limit}` : "…/5"}
+              </div>
+
+              <div
+                className="w-full flex flex-col justify-center items-center gap-1 py-5 border-b border-b-[#eaecf0] dark:border-b-[#272725]"
+                style={{ fontFamily: "Poppins, sans-serif" }}
+              >
+                <button className="w-[252px] bg-transparent border-[0.5px] border-transparent rounded-md py-2 px-4 text-center text-[12.35px] font-medium dark:font-bold cursor-pointer ">
+                  You are on Free plan
+                </button>
+                <button className="w-[252px] bg-[#6b88fa] dark:bg-[#1342ff] border-[0.5px] border-[#1342ff] dark:border-[#eaecf0] rounded-md py-2 px-4 text-center text-[12.35px] font-medium dark:font-bold cursor-pointer ">
+                  Upgrade now!
                 </button>
               </div>
-              <div className="w-full h-[10px] bg-[#e0e0e0] dark:bg-[#444] rounded-3xl mb-2 overflow-hidden">
-                <div
-                  className="h-full bg-[#1342ff] rounded-3xl transition-all"
-                  style={{
-                    width: credits
-                      ? `${Math.min((credits.used / credits.limit) * 100, 100)}%`
-                      : "0%",
-                  }}
-                />
-              </div>
-              <p className="text-[16px] text-[#010413] dark:text-[#f7f7f7] ">
-                Daily credits, reset at midnight
-              </p>
-            </div>
 
-            <div
-              className="w-full flex flex-col justify-center items-center gap-1 py-5 border-b border-b-[#eaecf0] dark:border-b-[#272725]"
-              style={{ fontFamily: "Poppins, sans-serif" }}
-            >
-              <button className="w-[252px] bg-transparent border-[0.5px] border-transparent rounded-md py-2 px-4 text-center text-[12.35px] font-medium dark:font-bold cursor-pointer ">
-                You are on Free plan
-              </button>
-              <button className="w-[252px] bg-[#6b88fa] dark:bg-[#1342ff] border-[0.5px] border-[#1342ff] dark:border-[#eaecf0] rounded-md py-2 px-4 text-center text-[12.35px] font-medium dark:font-bold cursor-pointer ">
-                Upgrade now!
-              </button>
-            </div>
-
-            <ul>
-              {menuItems.map((item) => (
-                <li key={item.key}>
-                  <button
-                    className={`w-full text-[14px] md:text-[16px] xl:text-[20px] font-medium text-[#010413] dark:text-[#f7f7f7] p-1 flex items-center gap-1 cursor-pointer ${
-                      active === item.key ? "bg-[#f0f4ff]" : ""
-                    } ${
-                      item.key === "logout" &&
-                      "text-[#ff0000] dark:text-[#ff0000] mt-2 border-t border-t-[#eaecf0] dark:border-t-[#272725]"
-                    } hover:bg-[#efefef] dark:hover:bg-[#212121]`}
-                    onClick={async () => {
-                      if (item.key === "logout") {
-                        await logout(navigate);
-                      } else {
-                        navigate("/userprofile", {
-                          state: { active: item.key },
-                        });
-                      }
-                      setOpen(false);
-                    }}
-                    disabled={item.key === "logout" && loading} // 👈 disable while logging out
-                  >
-                    {item.key === "logout" && loading
-                      ? "Signing out..."
-                      : item.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </motion.div>
+              <ul>
+                {menuItems.map((item) => (
+                  <li key={item.key}>
+                    <button
+                      className={`w-full text-[14px] md:text-[16px] xl:text-[20px] font-medium text-[#010413] dark:text-[#f7f7f7] p-1 flex items-center gap-1 cursor-pointer ${
+                        active === item.key ? "bg-[#f0f4ff]" : ""
+                      } ${
+                        item.key === "logout" &&
+                        "text-[#ff0000] dark:text-[#ff0000] mt-2 border-t border-t-[#eaecf0] dark:border-t-[#272725]"
+                      } hover:bg-[#efefef] dark:hover:bg-[#212121]`}
+                      onClick={async () => {
+                        if (item.key === "logout") {
+                          await logout(navigate);
+                        } else {
+                          navigate("/userprofile", {
+                            state: { active: item.key },
+                          });
+                        }
+                        setOpen(false);
+                      }}
+                      disabled={item.key === "logout" && loading} // 👈 disable while logging out
+                    >
+                      {item.key === "logout" && loading
+                        ? "Signing out..."
+                        : item.label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </div>
