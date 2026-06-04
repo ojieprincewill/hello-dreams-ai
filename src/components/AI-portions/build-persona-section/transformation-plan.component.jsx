@@ -56,12 +56,16 @@ const TransformationPlan = ({ onApply, onRestart, persona }) => {
   ];
 
   return (
-    <div className="min-h-screen px-[5%] py-10 ">
-      <div className="bg-[#efefef] dark:bg-[#181818] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-6 md:p-10 ">
-        <div className="bg-gradient-to-r from-[#8a2be2] to-[#ff00e6] py-1 px-2 w-max rounded-2xl text-[12px] text-[#fff] font-bold mb-1 ">
+    <div className="px-4 sm:px-[5%] py-6 md:py-10">
+      {/* CARD */}
+      <div className="bg-[#efefef] dark:bg-[#181818] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-4 sm:p-6 md:p-10 max-w-5xl mx-auto">
+        {/* Badge */}
+        <div className="bg-gradient-to-r from-[#8a2be2] to-[#ff00e6] py-1 px-3 w-max rounded-2xl text-[12px] text-white font-bold mb-2">
           Your Transformation Playbook
         </div>
-        <p className="text-[18px] md:text-[24px] mb-5 ">
+
+        {/* Subtitle */}
+        <p className="text-lg sm:text-xl md:text-2xl mb-5">
           From the{" "}
           <span className="font-bold capitalize">
             {persona?.currentPersona?.title ||
@@ -75,46 +79,59 @@ const TransformationPlan = ({ onApply, onRestart, persona }) => {
               "Executive Presence"}
           </span>
         </p>
-        <div className="grid grid-cols-2 gap-x-5 gap-y-4">
-          {transformData.map((data, index) => (
+
+        {/* GRID → STACK FIRST */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {transformData.map((data) => (
             <div
               key={data.id}
-              className={`border border-[#ccc] dark:border-[#494848] rounded-md p-2 ${
-                index === transformData.length - 1 ? "col-span-2" : ""
-              }`}
+              className="border border-[#ccc] dark:border-[#494848] rounded-md p-3 sm:p-4"
             >
-              <p className="text-[18px] md:text-[24px] font-bold capitalize mb-1 ">
+              <p className="text-lg sm:text-xl md:text-2xl font-bold mb-2">
                 {data.title}
               </p>
-              <ul className="list-disc pl-5 space-y-1 text-[16px] md:text-[20px]">
+
+              <ul className="list-disc pl-5 space-y-1 text-sm sm:text-base md:text-lg">
                 {data.actions.map((action, actionIndex) => (
-                  <li
-                    key={`${data.id}-${actionIndex}`}
-                    className="marker:text-sm"
-                  >
-                    {action}
-                  </li>
+                  <li key={`${data.id}-${actionIndex}`}>{action}</li>
                 ))}
               </ul>
             </div>
           ))}
         </div>
       </div>
-      <div className="flex flex-col items-center justify-center mt-8 space-y-4">
+
+      {/* ACTIONS */}
+      <div className="flex flex-col items-center mt-8 space-y-4">
         <button
           onClick={onApply}
-          className="w-[476px] text-center py-3 border border-[#eaecf0] bg-gradient-to-b from-[#1342ff] to-[#ff00e6] text-[#fff] text-[24px] font-bold rounded-xl tracking-tighter disabled:opacity-60 cursor-pointer"
-          style={{ fontFamily: "Poppins, sans-serif" }}
+          className="
+            w-full sm:w-auto sm:min-w-[280px]
+            px-6 py-3 sm:py-4
+            text-base sm:text-lg md:text-xl
+            font-bold text-white
+            bg-gradient-to-b from-[#1342ff] to-[#ff00e6]
+            rounded-xl
+            tracking-tight
+            disabled:opacity-60
+          "
         >
           Apply this persona to my profile
-          <span>
-            <ArrowRight size={24} strokeWidth={2.5} className="inline ml-2" />
-          </span>
+          <ArrowRight size={20} className="inline ml-2" />
         </button>
+
         <button
           onClick={onRestart}
-          className="w-[476px] text-center py-3 border border-[#eaecf0] bg-gradient-to-b from-[#1342ff] to-[#ff00e6] text-[#fff] text-[24px] font-bold rounded-xl tracking-tighter disabled:opacity-60 cursor-pointer"
-          style={{ fontFamily: "Poppins, sans-serif" }}
+          className="
+            w-full sm:w-auto sm:min-w-[280px]
+            px-6 py-3 sm:py-4
+            text-base sm:text-lg md:text-xl
+            font-bold text-white
+            bg-gradient-to-b from-[#1342ff] to-[#ff00e6]
+            rounded-xl
+            tracking-tight
+            disabled:opacity-60
+          "
         >
           Restart
         </button>

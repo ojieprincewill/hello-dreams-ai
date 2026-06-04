@@ -290,33 +290,35 @@ const BuildPersona = () => {
 
   if (!started) {
     return (
-      <div className="px-[5%] py-10">
-        <div className="flex items-center space-x-3 mb-6 p-5 border-b-[1.5px] dark:border-b border-[#eaecf0] dark:border-[#2d2d2d]">
-          <UserIcon className="h-6 w-6" />
-          <div>
-            <h2 className="text-[24px] font-extrabold ">
-              Build your persona & workplace identity
-            </h2>
-            <p className="text-[20px]">
-              Transform your photo into a professional headshot with AI
-            </p>
+      <div className="min-h-screen px-4 sm:px-[5%] py-6 md:py-10">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6 pb-4 sm:pb-5 border-b-[1.5px] dark:border-b border-[#eaecf0] dark:border-[#2d2d2d]">
+          <div className="flex items-center space-x-3">
+            <UserIcon className="h-5 w-5 md:h-6 md:w-6" />
+            <div>
+              <h2 className="text-[20px] md:text-[24px] font-extrabold leading-tight">
+                Build your persona & workplace identity
+              </h2>
+              <p className="text-sm md:text-[18px] text-[#667085] dark:text-gray-400">
+                Transform your photo into a professional headshot with AI
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="bg-[#efefef] dark:bg-[#2d2d2d] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-6 md:p-10 ">
-          <p className="text-[24px] font-bold ">
+        <div className="bg-[#efefef] dark:bg-[#2d2d2d] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-4 sm:p-6 md:p-10 ">
+          <p className="text-[20px] md:text-[24px] font-bold leading-tight ">
             Your Professional Headshot is Ready
           </p>
-          <p className="text-[20px] font-medium">
+          <p className="text-[16px] md:text-[20px] font-medium">
             Discover the professional version of yourself that will accelerate
             your career
           </p>
 
-          <div className="pl-5 my-5">
-            <p className="text-[20px] md:text-[32px] font-extrabold mb-4">
+          <div className="md:pl-5 my-5">
+            <p className="text-[20px] md:text-[32px] font-extrabold mb-4 leading-tight">
               Here's your transformation journey:
             </p>
-            <ul className="list-disc pl-5 space-y-6 text-[14px] md:text-[20px] marker:text-sm">
+            <ul className="list-disc pl-5 space-y-3 md:space-y-6 text-[14px] md:text-[20px] marker:text-sm">
               <li>
                 <span className="font-bold">
                   Mirror: See Your Curent Persona
@@ -342,14 +344,16 @@ const BuildPersona = () => {
           <div className="flex justify-center items-center">
             <button
               onClick={handleStart}
-              className="w-[476px] text-center py-3 border border-[#eaecf0] bg-gradient-to-b from-[#748ffc] to-[#1342ff]
-         text-[#fff] text-[24px] font-bold rounded-xl tracking-tighter dark:shadow-[0_30px_80px_-10px_rgba(255,215,0,0.5),_0_-30px_80px_-10px_rgba(255,215,0,0.5)] mt-6 mb-12 cursor-pointer"
+              className="w-full sm:w-auto sm:min-w-[320px]
+px-6 py-3 sm:py-4
+ text-center border border-[#eaecf0] bg-gradient-to-b from-[#748ffc] to-[#1342ff]
+         text-[#fff] text-[16px] md:text-[20px] lg:text-[24px] font-bold rounded-xl tracking-tighter dark:shadow-[0_30px_80px_-10px_rgba(255,215,0,0.5),_0_-30px_80px_-10px_rgba(255,215,0,0.5)] mt-6 mb-10 cursor-pointer"
               style={{ fontFamily: "Poppins, sans-serif" }}
             >
               Start your persona journey
               <span>
                 <ArrowRight
-                  size={24}
+                  size={20}
                   strokeWidth={2.5}
                   className="inline ml-2"
                 />
@@ -367,13 +371,13 @@ const BuildPersona = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen px-[5%] py-10 flex justify-center items-center">
-        <div className="bg-[#efefef] border-[#eaecf0] dark:bg-[#181818] border dark:border-[#2d2d2d] rounded-xl p-6 md:p-10 flex flex-col justify-center items-center space-y-3">
+      <div className="min-h-[100svh] px-4 sm:px-[5%] py-8 md:py-10 flex justify-center items-center">
+        <div className="bg-[#efefef] border border-[#eaecf0] dark:bg-[#181818] dark:border-[#2d2d2d] rounded-xl p-5 sm:p-6 md:p-10 flex flex-col items-center text-center space-y-3 max-w-md w-full">
           <GradientIcon />
-          <p className="text-[18px] md:text-[24px] font-bold">
+          <p className="text-[16px] md:text-[18px] lg:text-[24px] font-bold">
             Analysing your persona...
           </p>
-          <p className="text-[18px] md:text-[24px]">
+          <p className="text-[14px] md:text-[16px] lg:text-[24px]">
             Identifying your current workplace persona and career transformation
             path
           </p>
@@ -388,43 +392,51 @@ const BuildPersona = () => {
 
   if (persona) {
     return (
-      <div className="min-h-screen py-10 flex justify-center items-center">
+      <div className="min-h-[100svh] px-4 sm:px-[5%] py-6 md:py-10 flex flex-col items-center justify-center">
         {personaStep === "current" && (
-          <CurrentPersona
-            persona={persona}
-            onNext={() => setPersonaStep("ideal")}
-          />
+          <div className="w-full max-w-4xl">
+            <CurrentPersona
+              persona={persona}
+              onNext={() => setPersonaStep("ideal")}
+            />
+          </div>
         )}
 
         {personaStep === "ideal" && (
-          <IdealPersona
-            persona={persona}
-            onNext={() => setPersonaStep("transformation")}
-          />
+          <div className="w-full max-w-4xl">
+            <IdealPersona
+              persona={persona}
+              onNext={() => setPersonaStep("transformation")}
+            />
+          </div>
         )}
 
         {personaStep === "transformation" && (
-          <TransformationPlan
-            persona={persona}
-            onRestart={handleRestart}
-            onApply={handleApplyPersona}
-          />
+          <div className="w-full max-w-4xl">
+            <TransformationPlan
+              persona={persona}
+              onRestart={handleRestart}
+              onApply={handleApplyPersona}
+            />
+          </div>
         )}
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen px-[5%] py-10">
+    <div className="min-h-screen px-4 sm:px-[5%] py-6 md:py-10">
       {/* Header */}
-      <div className="flex items-center gap-3 mb-8 p-5 border-b-[1.5px] dark:border-b border-[#eaecf0] dark:border-[#2d2d2d]">
-        <UserIcon className="h-6 w-6" />
-        <p className="text-[24px] font-extrabold">{current.title}</p>
+      <div className="flex items-center gap-3 mb-6 md:mb-8 pb-4 md:pb-5 border-b-[1.5px] dark:border-b border-[#eaecf0] dark:border-[#2d2d2d]">
+        <UserIcon className="h-5 w-5 md:h-6 md:w-6" />
+        <p className="text-[20px] md:text-[24px] font-extrabold">
+          {current.title}
+        </p>
       </div>
 
       {/* Card Group */}
-      <div className="bg-[#f6f6f6] dark:bg-[#181818] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-6 md:p-10 ">
-        <p className="text-[18px] md:text-[24px] font-bold mb-5">
+      <div className="bg-[#f6f6f6] dark:bg-[#181818] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-4 md:p-6 lg:p-10">
+        <p className="text-[16px] md:text-[20px] md:text-[24px] font-bold mb-5 leading-tight">
           {current.question}
         </p>
 
@@ -438,25 +450,35 @@ const BuildPersona = () => {
               <div className="flex items-center space-x-3">
                 <GradientIcon />
                 <div className="flex-1">
-                  <p className="text-[20px] font-medium mt-1">{opt.label}</p>
+                  <p className="text-[16px] sm:text-[18px] md:text-[20px] font-medium">
+                    {opt.label}
+                  </p>
                 </div>
               </div>
             </SelectableCard>
           ))}
         </div>
 
-        <div className="flex items-center justify-between mt-6">
+        <div className="flex flex-col-reverse sm:flex-row gap-3 sm:justify-between sm:items-center mt-6">
           <button
             onClick={goPrev}
             disabled={stepIndex === 0}
-            className="px-5 py-2 text-[16px] font-medium rounded-md border border-[#ccc] dark:border-[#2d2d2d] disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+            className="w-full sm:w-auto
+px-5 py-2.5
+text-[15px] md:text-[16px]
+font-medium
+rounded-md border border-[#ccc] dark:border-[#2d2d2d] disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
           >
             Back
           </button>
           <button
             onClick={isLast ? handleFinish : goNext}
             disabled={!selections[current.id]?.optionId}
-            className="px-5 py-2 text-[16px] font-medium rounded-md text-[#fff] bg-gradient-to-b from-[#748ffc] to-[#1342ff] disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed "
+            className="w-full sm:w-auto
+px-5 py-2.5
+text-[15px] md:text-[16px]
+font-medium
+rounded-md text-[#fff] bg-gradient-to-b from-[#748ffc] to-[#1342ff] disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed "
           >
             {isLast ? "Finish" : "Continue"}
           </button>

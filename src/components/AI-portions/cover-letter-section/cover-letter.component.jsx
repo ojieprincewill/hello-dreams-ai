@@ -158,7 +158,7 @@ const CoverLetter = ({ requestedConversationId, onConversationLoaded }) => {
       {/* Header — no New Chat button here; it lives in the top navbar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-0 mb-8 md:mb-10 pb-5 border-b-[1.5px] dark:border-b border-[#eaecf0] dark:border-[#2d2d2d]">
         <div className="flex items-center space-x-3">
-          <UserIcon className="h-6 w-6" />
+          <UserIcon className="h-5 w-5 md:h-6 md:w-6" />
           <div>
             <h2 className="text-[20px] md:text-[24px] font-extrabold">
               Cover Letter & Professional Statement Builder
