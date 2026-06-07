@@ -3,42 +3,44 @@ import { ArrowRight } from "lucide-react";
 
 const WelcomeContent = ({ onStartAssessment }) => {
   return (
-    <div className="p-8 max-w-4xl mx-auto">
+    <div className="px-[5%] py-6 md:py-8 max-w-4xl mx-auto">
       {/* Welcome Message */}
       <div className="text-center mb-12">
-        <h1 className="text-[32px] font-extrabold mb-3">
+        <h1 className="text-[24px] md:text-[32px] font-extrabold mb-3 leading-tight">
           Welcome to your career transformation journey
         </h1>
-        <p className="text-[20px]">
+        <p className="text-[16px] md:text-[20px]">
           Let's build your dreams together. Start by selecting any section from
           the menu.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-8 mb-6 md:mb-12">
         {/* What We'll Help You With */}
         <div className="border border-[#ccc] dark:border-[#2d2d2d] p-6 rounded-lg">
-          <h3 className="text-[32px] font-extrabold mb-3 leading-[1.3]">
+          <h3 className="text-[24px] md:text-[32px] font-extrabold mb-3 leading-[1.3]">
             What We'll Help You With:
           </h3>
           <ul className="space-y-2 list-disc pl-3">
-            <li className="text-[20px] ">
+            <li className="text-[16px] md:text-[20px]">
               Understand your unique strengths and goals
             </li>
-            <li className="text-[20px] ">
+            <li className="text-[16px] md:text-[20px]">
               Build your professional persona and brand
             </li>
-            <li className="text-[20px] ">
+            <li className="text-[16px] md:text-[20px]">
               Create compelling, ATS-friendly resumes
             </li>
-            <li className="text-[20px] ">
+            <li className="text-[16px] md:text-[20px]">
               Optimize your LinkedIn for maximum visibility
             </li>
-            <li className="text-[20px] ">
+            <li className="text-[16px] md:text-[20px]">
               Generate professional AI-powered headshots
             </li>
-            <li className="text-[20px] ">Build a professional portfolio</li>
-            <li className="text-[20px] ">
+            <li className="text-[16px] md:text-[20px]">
+              Build a professional portfolio
+            </li>
+            <li className="text-[16px] md:text-[20px]">
               Find and apply to relevant job opportunities
             </li>
           </ul>
@@ -46,7 +48,7 @@ const WelcomeContent = ({ onStartAssessment }) => {
 
         {/* Quick Video Section */}
         <div className="border border-[#ccc] dark:border-[#2d2d2d] p-6 rounded-lg">
-          <h3 className="text-[32px] font-extrabold mb-3 leading-[1.3]">
+          <h3 className="text-[24px] md:text-[32px] font-extrabold mb-3 leading-[1.3]">
             Quick video to help you understand how it works
           </h3>
           <div className="relative bg-gray-800 rounded-lg aspect-video flex items-center justify-center">
@@ -68,11 +70,11 @@ const WelcomeContent = ({ onStartAssessment }) => {
       </div>
 
       {/* Quick Start Tip */}
-      <div className="text-center mb-8 w-[564px] mx-auto">
-        <h3 className="text-[32px] font-extrabold mb-3 leading-[1.3]">
+      <div className="text-center mb-8 w-full max-w-[564px] mx-auto">
+        <h3 className="text-[24px] md:text-[32px] font-extrabold mb-3 leading-[1.3]">
           Quick start tip
         </h3>
-        <p className=" text-[20px]">
+        <p className="text-[16px] md:text-[20px]">
           We recommend starting with 'Let's Get to Know You' to help our AI
           understand your background and career goals.
         </p>
@@ -82,8 +84,8 @@ const WelcomeContent = ({ onStartAssessment }) => {
       <div className="flex justify-center items-center">
         <button
           onClick={onStartAssessment}
-          className="w-[476px] text-center py-3 border border-[#eaecf0] bg-gradient-to-b from-[#748ffc] to-[#1342ff]
- text-[#fff] text-[24px] font-bold rounded-xl tracking-tighter dark:shadow-[0_30px_80px_-10px_rgba(255,215,0,0.5),_0_-30px_80px_-10px_rgba(255,215,0,0.5)] mt-6 mb-12 cursor-pointer"
+          className="w-full max-w-[476px] text-center py-3 px-4 border border-[#eaecf0] bg-gradient-to-b from-[#748ffc] to-[#1342ff]
+text-[#fff] text-[18px] md:text-[24px] font-bold rounded-xl tracking-tighter dark:shadow-[0_30px_80px_-10px_rgba(255,215,0,0.5),_0_-30px_80px_-10px_rgba(255,215,0,0.5)] mt-6 mb-12 cursor-pointer"
           style={{ fontFamily: "Poppins, sans-serif" }}
         >
           Start Assessment{" "}
