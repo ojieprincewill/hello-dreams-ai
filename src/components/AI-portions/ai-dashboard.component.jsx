@@ -10,7 +10,6 @@ import LinkedInOptimizer from "./linkedin-optimizer-section/linkedin-optimizer.c
 import JobApplication from "./job-application-section/job-application.component";
 import UserIconDropdown from "../user-icon-dropdown/user-icon-dropdown.component";
 import { careerModules } from "../../data/career-modules.data";
-import ThemeToggle from "./theme-toggle/theme-toggle.component";
 import ProgressIndicator from "./progress-indicator.component";
 import { DashboardActionsContext } from "../../context/DashboardActionsContext";
 import { ResumeProvider } from "../../context/ResumeContext";
@@ -128,7 +127,6 @@ const AiDashboardInner = () => {
                     </button>
                   )}
 
-                  <ThemeToggle />
                   <ProgressIndicator />
                   <UserIconDropdown />
                 </div>

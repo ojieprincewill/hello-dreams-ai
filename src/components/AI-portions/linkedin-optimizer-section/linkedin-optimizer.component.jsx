@@ -33,14 +33,14 @@ const EditableField = ({ value, onSave, multiline = false }) => {
           <textarea
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            rows={5}
+            rows={window.innerWidth < 768 ? 4 : 5}
             className="w-full border border-[#ccc] dark:border-[#3d3d3d] rounded-lg px-3 py-2 bg-white dark:bg-[#212121] text-[16px] resize-none focus:outline-none focus:ring-1 focus:ring-[#1342ff]"
           />
         ) : (
           <input
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            className="w-full border border-[#ccc] dark:border-[#3d3d3d] rounded-lg px-3 py-2 bg-white dark:bg-[#212121] text-[16px] focus:outline-none focus:ring-1 focus:ring-[#1342ff]"
+            className="w-full border border-[#ccc] dark:border-[#3d3d3d] rounded-lg px-3 py-2 bg-white dark:bg-[#212121] text-[14px] md:text-[16px] focus:outline-none focus:ring-1 focus:ring-[#1342ff]"
           />
         )}
         <div className="flex gap-2">
@@ -63,10 +63,15 @@ const EditableField = ({ value, onSave, multiline = false }) => {
 
   return (
     <div className="flex items-start justify-between gap-3 group">
-      <p className="text-[16px] leading-relaxed flex-1">{value || <span className="italic text-[#999]">Not set</span>}</p>
+      <p className="text-[16px] leading-relaxed flex-1">
+        {value || <span className="italic text-[#999]">Not set</span>}
+      </p>
       <button
-        onClick={() => { setDraft(value ?? ""); setEditing(true); }}
-        className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-md hover:bg-[#efefef] dark:hover:bg-[#2d2d2d] shrink-0"
+        onClick={() => {
+          setDraft(value ?? "");
+          setEditing(true);
+        }}
+        className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity p-1.5 rounded-md hover:bg-[#efefef] dark:hover:bg-[#2d2d2d] shrink-0"
         title="Edit"
       >
         <Pencil size={14} />
@@ -77,8 +82,10 @@ const EditableField = ({ value, onSave, multiline = false }) => {
 
 /* ─── Section card wrapper ─── */
 const SectionCard = ({ title, children }) => (
-  <div className="bg-[#f6f6f6] dark:bg-[#181818] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-6">
-    <h3 className="text-[18px] font-bold mb-4">{title}</h3>
+  <div className="bg-[#f6f6f6] dark:bg-[#181818] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-4 md:p-6 overflow-hidden">
+    <h3 className="text-[16px] md:text-[18px] font-bold mb-3 md:mb-4">
+      {title}
+    </h3>
     {children}
   </div>
 );
@@ -90,7 +97,11 @@ const LinkedInOptimizer = () => {
   const patchMutation = usePatchLinkedInProfile();
   const deleteMutation = useDeleteLinkedInProfile();
 
-  const { resume, isLoading: resumeLoading, refresh: refreshResume } = useResume();
+  const {
+    resume,
+    isLoading: resumeLoading,
+    refresh: refreshResume,
+  } = useResume();
   const { navigateToConversation } = useDashboardActions();
 
   // Try to load resume from server once on mount if not in context
@@ -104,10 +115,13 @@ const LinkedInOptimizer = () => {
     if (resumeLoading || resumeToastShown.current) return;
     if (!resume) {
       resumeToastShown.current = true;
-      toast("Complete your CV Builder first so we can generate a personalised LinkedIn profile from your resume.", {
-        icon: "ℹ️",
-        duration: 6000,
-      });
+      toast(
+        "Complete your CV Builder first so we can generate a personalised LinkedIn profile from your resume.",
+        {
+          icon: "ℹ️",
+          duration: 6000,
+        },
+      );
     }
   }, [resume, resumeLoading]);
 
@@ -116,21 +130,21 @@ const LinkedInOptimizer = () => {
   };
 
   const selectedHeadline =
-    profile?.headline?.selected ??
-    profile?.headline?.options?.[0] ??
-    null;
+    profile?.headline?.selected ?? profile?.headline?.options?.[0] ?? null;
 
   if (isLoading) return <LoadingSpinner />;
 
   return (
-    <div className="px-[5%] py-10">
+    <div className="px-[5%] py-6 md:py-10">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6 p-5 border-b-[1.5px] dark:border-b border-[#eaecf0] dark:border-[#2d2d2d]">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 p-4 md:p-5 border-b-[1.5px] dark:border-b border-[#eaecf0] dark:border-[#2d2d2d]">
         <div className="flex items-center space-x-3">
           <Sparkles className="h-6 w-6" />
           <div>
-            <h2 className="text-[24px] font-extrabold">LinkedIn Optimiser</h2>
-            <p className="text-[20px]">
+            <h2 className="text-[20px] md:text-[24px] font-extrabold">
+              LinkedIn Optimiser
+            </h2>
+            <p className="text-[14px] md:text-[18px]">
               AI-generated LinkedIn profile built from your resume
             </p>
           </div>
@@ -139,7 +153,7 @@ const LinkedInOptimizer = () => {
           <button
             onClick={() => deleteMutation.mutate()}
             disabled={deleteMutation.isPending}
-            className="flex items-center gap-2 px-4 py-2 border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 rounded-md hover:bg-red-50 dark:hover:bg-red-950 text-sm"
+            className="w-full md:w-auto flex items-center justify-center gap-2 px-4 py-2 border border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 rounded-md hover:bg-red-50 dark:hover:bg-red-950 text-sm"
           >
             <Trash2 size={14} />
             {deleteMutation.isPending ? "Deleting..." : "Delete Profile"}
@@ -149,13 +163,13 @@ const LinkedInOptimizer = () => {
 
       {/* No profile yet */}
       {!profile ? (
-        <div className="max-w-2xl mx-auto text-center py-16">
+        <div className="max-w-2xl mx-auto text-center py-10 md:py-16 px-[5%] space-y-6">
           <div className="bg-[#f6f6f6] dark:bg-[#181818] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-10 space-y-6">
             <Sparkles className="h-12 w-12 mx-auto text-[#1342ff]" />
-            <h3 className="text-[22px] font-bold">
+            <h3 className="text-[18px] md:text-[22px] font-bold">
               Generate Your LinkedIn Profile
             </h3>
-            <p className="text-[16px] text-[#555] dark:text-[#aaa] leading-relaxed">
+            <p className="text-[14px] md:text-[16px] text-[#555] dark:text-[#aaa] leading-relaxed">
               We'll use your resume data to craft an optimised LinkedIn profile
               — including a compelling headline, about section, experience
               bullets, and skills list.
@@ -177,7 +191,7 @@ const LinkedInOptimizer = () => {
             <button
               onClick={() => generateMutation.mutate()}
               disabled={generateMutation.isPending}
-              className="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-b from-[#1342ff] to-[#ff00e6] text-white font-bold rounded-xl text-[18px] disabled:opacity-60 cursor-pointer"
+              className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-6 md:px-8 py-3 bg-gradient-to-b from-[#1342ff] to-[#ff00e6] text-white font-bold rounded-xl text-[16px] md:text-[18px] disabled:opacity-60 cursor-pointer"
               style={{ fontFamily: "Poppins, sans-serif" }}
             >
               {generateMutation.isPending ? (
@@ -194,7 +208,7 @@ const LinkedInOptimizer = () => {
         </div>
       ) : (
         /* Profile sections */
-        <div className="space-y-4">
+        <div className="space-y-4 max-w-5xl mx-auto w-full">
           {/* Regenerate button */}
           <div className="flex justify-end">
             <button
@@ -203,9 +217,13 @@ const LinkedInOptimizer = () => {
               className="flex items-center gap-2 px-4 py-2 border border-[#eaecf0] dark:border-[#2d2d2d] rounded-lg text-sm hover:bg-[#f0f0f0] dark:hover:bg-[#252525]"
             >
               {generateMutation.isPending ? (
-                <><Loader2 className="animate-spin" size={14} /> Regenerating...</>
+                <>
+                  <Loader2 className="animate-spin" size={14} /> Regenerating...
+                </>
               ) : (
-                <><Sparkles size={14} /> Regenerate</>
+                <>
+                  <Sparkles size={14} /> Regenerate
+                </>
               )}
             </button>
           </div>
@@ -220,8 +238,9 @@ const LinkedInOptimizer = () => {
                 {profile.headline.options.map((opt, i) => (
                   <label
                     key={i}
-                    className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
-                      (profile.headline.selected ?? profile.headline.options[0]) === opt
+                    className={`flex items-start gap-3 p-3 md:p-4 rounded-lg border cursor-pointer transition-colors ${
+                      (profile.headline.selected ??
+                        profile.headline.options[0]) === opt
                         ? "border-[#1342ff] bg-blue-50 dark:bg-[#0a1033]"
                         : "border-[#eaecf0] dark:border-[#2d2d2d] hover:border-[#aaa]"
                     }`}
@@ -230,7 +249,10 @@ const LinkedInOptimizer = () => {
                       type="radio"
                       name="headline"
                       value={opt}
-                      checked={(profile.headline.selected ?? profile.headline.options[0]) === opt}
+                      checked={
+                        (profile.headline.selected ??
+                          profile.headline.options[0]) === opt
+                      }
                       onChange={() =>
                         handlePatch("headline", {
                           ...profile.headline,
@@ -239,7 +261,9 @@ const LinkedInOptimizer = () => {
                       }
                       className="mt-1 accent-[#1342ff]"
                     />
-                    <span className="text-[16px]">{opt}</span>
+                    <span className="text-[14px] md:text-[16px] leading-relaxed break-words">
+                      {opt}
+                    </span>
                   </label>
                 ))}
               </div>
@@ -275,7 +299,7 @@ const LinkedInOptimizer = () => {
                 {profile.topSkills.map((skill, i) => (
                   <span
                     key={i}
-                    className="px-3 py-1 bg-white dark:bg-[#212121] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-full text-[14px]"
+                    className="px-2.5 md:px-3 py-1 bg-white dark:bg-[#212121] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-full text-[14px]"
                   >
                     {skill}
                   </span>
@@ -287,11 +311,11 @@ const LinkedInOptimizer = () => {
           {/* Skills */}
           {profile.skills?.length > 0 && (
             <SectionCard title="Skills">
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5 md:gap-2">
                 {profile.skills.map((skill, i) => (
                   <span
                     key={i}
-                    className="px-3 py-1 bg-white dark:bg-[#212121] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-full text-[14px]"
+                    className="px-2.5 md:px-3 py-1 bg-white dark:bg-[#212121] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-full text-[14px]"
                   >
                     {skill}
                   </span>
@@ -303,19 +327,21 @@ const LinkedInOptimizer = () => {
           {/* Experience */}
           {profile.experience?.length > 0 && (
             <SectionCard title="Experience">
-              <div className="space-y-5">
+              <div className="space-y-1 md:space-y-2">
                 {profile.experience.map((exp, i) => (
                   <div
                     key={i}
-                    className="border-b border-[#eaecf0] dark:border-[#2d2d2d] pb-5 last:border-0 last:pb-0"
+                    className="border-b border-[#eaecf0] dark:border-[#2d2d2d] mb-4 md:mb-5 pb-5 last:border-0 last:pb-0"
                   >
-                    <p className="font-bold text-[17px]">{exp.jobTitle}</p>
-                    <p className="text-[15px] text-[#555] dark:text-[#aaa]">
+                    <p className="font-bold text-[15px] md:text-[17px] break-words">
+                      {exp.jobTitle}
+                    </p>
+                    <p className="text-[13px] md:text-[15px] text-[#555] dark:text-[#aaa]">
                       {exp.company}
                       {exp.dates ? ` · ${exp.dates}` : ""}
                     </p>
                     {exp.bullets?.length > 0 && (
-                      <ul className="mt-2 space-y-1 list-disc list-inside">
+                      <ul className="mt-2 space-y-1 list-disc list-inside text-[13px] md:text-[15px] leading-relaxed">
                         {exp.bullets.map((b, j) => (
                           <li key={j} className="text-[15px] leading-relaxed">
                             {b}
@@ -349,7 +375,7 @@ const LinkedInOptimizer = () => {
           {/* Certifications */}
           {profile.certifications?.length > 0 && (
             <SectionCard title="Certifications">
-              <div className="space-y-2">
+              <div className="space-y-3 md:space-y-4">
                 {profile.certifications.map((cert, i) => (
                   <div key={i}>
                     <p className="font-semibold text-[16px]">{cert.name}</p>
