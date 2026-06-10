@@ -1,14 +1,25 @@
 import { useEffect } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import toast from "react-hot-toast";
 import ProtectedRoute from "./auth/protectedRoute";
+import AdminRoute from "./auth/adminRoute";
+import SuperuserRoute from "./auth/superuserRoute";
 import ErrorBoundary from "./components/ErrorBoundary";
 
 import LandingPage from "./pages/landing-page/landing-page.component";
 import SigninForm from "./components/sign-in/sign-in.component";
 import SignUpFlow from "./components/sign-up/sign-up-flow.component";
 import AiDashboard from "./components/AI-portions/ai-dashboard.component";
+
+import AdminLayout from "./admin/layout/AdminLayout";
+import OverviewPage from "./admin/pages/OverviewPage";
+import UsersListPage from "./admin/pages/UsersListPage";
+import UserDetailPage from "./admin/pages/UserDetailPage";
+import RevenuePage from "./admin/pages/RevenuePage";
+import AdminManagementPage from "./admin/pages/AdminManagementPage";
+import AuditLogPage from "./admin/pages/AuditLogPage";
+import CostsPage from "./admin/pages/CostsPage";
 
 const OFFLINE_TOAST_ID = "app-offline";
 
@@ -28,7 +39,6 @@ function App() {
     window.addEventListener("offline", handleOffline);
     window.addEventListener("online", handleOnline);
 
-    // Show immediately if already offline when the app loads
     if (!navigator.onLine) handleOffline();
 
     return () => {
@@ -53,6 +63,32 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <ErrorBoundary>
+                <AdminLayout />
+              </ErrorBoundary>
+            </AdminRoute>
+          }
+        >
+          <Route index element={<Navigate to="/admin/overview" replace />} />
+          <Route path="overview" element={<OverviewPage />} />
+          <Route path="users" element={<UsersListPage />} />
+          <Route path="users/:id" element={<UserDetailPage />} />
+          <Route path="revenue" element={<RevenuePage />} />
+          <Route path="costs" element={<CostsPage />} />
+          <Route
+            path="admins"
+            element={
+              <SuperuserRoute>
+                <AdminManagementPage />
+              </SuperuserRoute>
+            }
+          />
+          <Route path="audit-log" element={<AuditLogPage />} />
+        </Route>
       </Routes>
       <Toaster position="top-right" />
     </>

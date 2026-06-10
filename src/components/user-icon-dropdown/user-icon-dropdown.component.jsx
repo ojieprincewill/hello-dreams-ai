@@ -7,6 +7,7 @@ import LoadingSpinner from "../loading-spinner/loading-spinner.component";
 import { getCredits } from "../../api/creditsService";
 import { useTheme } from "../AI-portions/theme-toggle/useTheme";
 import { ChevronDown } from "lucide-react";
+import { isAdmin } from "../../auth/roleUtils";
 
 const UserIconDropdown = () => {
   const [open, setOpen] = useState(false);
@@ -55,6 +56,15 @@ const UserIconDropdown = () => {
       exit: { opacity: 0, x: 300 },
     },
   };
+  const menuItems = [
+    ...(isAdmin(user)
+      ? [{ key: "admin", label: "Admin Panel" }]
+      : []),
+    { key: "settings", label: "Settings" },
+    { key: "appearance", label: "Appearance" },
+    { key: "subscription", label: "Subscriptions" },
+    { key: "logout", label: "Sign out" },
+  ];
 
   return (
     <div className="relative">
@@ -281,7 +291,15 @@ const UserIconDropdown = () => {
   mt-2 border-t border-[#eaecf0] dark:border-[#272725] pt-3
 "
                     onClick={async () => {
-                      await logout(navigate);
+                      if (item.key === "logout") {
+                        await logout(navigate);
+                      } else if (item.key === "admin") {
+                        navigate("/admin/overview");
+                      } else {
+                        navigate("/userprofile", {
+                          state: { active: item.key },
+                        });
+                      }
                       setOpen(false);
                     }}
                     disabled={loading}
