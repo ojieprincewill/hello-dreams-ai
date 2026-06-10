@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import AdminSelectableNavItem from "../components/primitives/AdminSelectableNavItem";
 import AdminButton from "../components/primitives/AdminButton";
-import ThemeToggle from "../../components/AI-portions/theme-toggle/theme-toggle.component";
 import UserIconDropdown from "../../components/user-icon-dropdown/user-icon-dropdown.component";
 import { useAuth } from "../../auth/authContext";
 import { isSuperuser } from "../../auth/roleUtils";
@@ -112,7 +111,6 @@ const AdminLayout = () => {
               </Link>
             </div>
             <div className="flex items-center gap-4">
-              <ThemeToggle />
               <UserIconDropdown />
             </div>
           </header>
