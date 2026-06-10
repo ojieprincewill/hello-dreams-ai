@@ -127,7 +127,7 @@ const TransformationPlan = ({ onApply, onRestart, persona }) => {
             px-6 py-3 sm:py-4
             text-base sm:text-lg md:text-xl
             font-bold text-white
-            bg-gradient-to-b from-[#1342ff] to-[#ff00e6]
+            bg-gradient-to-b from-[#748ffc] to-[#1342ff]
             rounded-xl
             tracking-tight
             disabled:opacity-60
