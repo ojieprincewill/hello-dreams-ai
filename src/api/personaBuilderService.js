@@ -54,6 +54,19 @@ export const normalizePersonaPayload = (raw) => {
     personalityTraits: asStringArray(
       pickFirst(source.personalityTraits, source.personality_traits),
     ),
+    personaData: pickFirst(raw.personaData, source.personaData),
+    currentPersonaDescription: pickFirst(
+      raw.currentPersonaDescription,
+      source.currentPersonaDescription,
+    ),
+    transformationPlan: pickFirst(
+      raw.transformationPlan,
+      raw.transformationPath,
+      source.transformationPlan,
+      source.transformationPath,
+    ),
+    currentPersona: pickFirst(raw.currentPersona, source.currentPersona),
+    idealPersona: pickFirst(raw.idealPersona, source.idealPersona),
   };
 
   const hasPersonaContent =
@@ -61,9 +74,18 @@ export const normalizePersonaPayload = (raw) => {
     Boolean(normalized.tone) ||
     Boolean(normalized.professionalVoice) ||
     Boolean(normalized.writingStyle) ||
-    normalized.personalityTraits.length > 0;
+    normalized.personalityTraits.length > 0 ||
+    isObject(normalized.personaData) ||
+    isObject(normalized.currentPersonaDescription);
 
-  return hasPersonaContent ? normalized : null;
+  return hasPersonaContent ? normalized : raw;
+};
+
+export const getPersonaQuestions = async () => {
+  const res = await apiFetch(`${API_BASE_URL}/persona-builder/questions`, {
+    method: "GET",
+  });
+  return parseResponseBody(res, []);
 };
 
 export const submitPersonaAnswers = async (answers) => {
@@ -88,5 +110,19 @@ export const fetchPersona = async () => {
   });
   const data = await parseResponseBody(res, null);
   return normalizePersonaPayload(data);
+};
+
+export const applyPersona = async () => {
+  const res = await apiFetch(`${API_BASE_URL}/persona-builder/apply`, {
+    method: "POST",
+  });
+  return parseResponseBody(res, {});
+};
+
+export const restartPersona = async () => {
+  const res = await apiFetch(`${API_BASE_URL}/persona-builder/restart`, {
+    method: "POST",
+  });
+  return parseResponseBody(res, {});
 };
 
