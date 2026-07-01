@@ -11,6 +11,11 @@ import LandingPage from "./pages/landing-page/landing-page.component";
 import SigninForm from "./components/sign-in/sign-in.component";
 import SignUpFlow from "./components/sign-up/sign-up-flow.component";
 import AiDashboard from "./components/AI-portions/ai-dashboard.component";
+import UserProfilePage from "./pages/user-profile/user-profile.page";
+import PaymentsCallbackPage from "./pages/payments-callback/payments-callback.page";
+import AuthCallbackPage from "./pages/auth-callback/auth-callback.page";
+import ResetPasswordPage from "./pages/reset-password/reset-password.page";
+import VerifyEmailPage from "./pages/verify-email/verify-email.page";
 
 import AdminLayout from "./admin/layout/AdminLayout";
 import OverviewPage from "./admin/pages/OverviewPage";
@@ -53,12 +58,33 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/signin" element={<SigninForm />} />
         <Route path="/signup" element={<SignUpFlow />} />
+        <Route path="/auth/callback" element={<AuthCallbackPage />} />
+        <Route path="/auth/verify-email" element={<VerifyEmailPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route
+          path="/payments/callback"
+          element={
+            <ProtectedRoute>
+              <PaymentsCallbackPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/ai-dashboard"
           element={
             <ProtectedRoute>
               <ErrorBoundary>
                 <AiDashboard />
+              </ErrorBoundary>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/userprofile"
+          element={
+            <ProtectedRoute>
+              <ErrorBoundary>
+                <UserProfilePage />
               </ErrorBoundary>
             </ProtectedRoute>
           }

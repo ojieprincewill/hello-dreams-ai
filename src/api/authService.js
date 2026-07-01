@@ -88,3 +88,45 @@ export const login = async (credentials) => {
 
 export const getStoredAccessToken = () => getAccessToken();
 
+export const forgotPassword = async (email) => {
+  const res = await apiFetch(`${API_BASE_URL}/auth/forgot-password`, {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+  const data = await readJsonSafely(res);
+  if (!res.ok) throwApiError("Request failed", res.status, data);
+  return data;
+};
+
+export const resetPassword = async (token, password) => {
+  const res = await apiFetch(`${API_BASE_URL}/auth/reset-password`, {
+    method: "POST",
+    body: JSON.stringify({ token, password }),
+  });
+  const data = await readJsonSafely(res);
+  if (!res.ok) throwApiError("Reset failed", res.status, data);
+  return data;
+};
+
+export const resendVerification = async (email) => {
+  const res = await apiFetch(`${API_BASE_URL}/auth/resend-verification`, {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+  const data = await readJsonSafely(res);
+  if (!res.ok) throwApiError("Resend failed", res.status, data);
+  return data;
+};
+
+export const getGoogleAuthUrl = () => `${API_BASE_URL}/auth/google`;
+
+export const verifyEmail = async (token) => {
+  const res = await apiFetch(
+    `${API_BASE_URL}/auth/verify-email?token=${encodeURIComponent(token)}`,
+    { method: "GET" },
+  );
+  const data = await readJsonSafely(res);
+  if (!res.ok) throwApiError("Verification failed", res.status, data);
+  return data;
+};
+
