@@ -20,10 +20,14 @@ const formatDate = (dateStr) => {
   const date = new Date(dateStr);
   const now = new Date();
   const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return "Today";
-  if (diffDays === 1) return "Yesterday";
-  if (diffDays < 7) return `${diffDays}d ago`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`;
+  const timeStr = date.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  if (diffDays === 0) return timeStr;
+  if (diffDays === 1) return `Yesterday · ${timeStr}`;
+  if (diffDays < 7)
+    return `${date.toLocaleDateString("en-GB", { weekday: "short" })} · ${timeStr}`;
   return date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 };
 

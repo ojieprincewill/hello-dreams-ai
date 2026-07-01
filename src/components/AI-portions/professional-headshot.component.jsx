@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { UserIcon } from "@heroicons/react/24/outline";
 import { Download, Loader2, RefreshCcw } from "lucide-react";
 import toast from "react-hot-toast";
@@ -193,11 +193,6 @@ const ProfessionalHeadshot = () => {
                 persona
               </p>
 
-              {autoPersona && (
-                <p className="text-sm text-green-500 mt-1">
-                  Persona auto-selected by AI
-                </p>
-              )}
             </div>
             <div className="flex items-center gap-3">
               {resultUrls.length === 1 && (
@@ -209,7 +204,7 @@ const ProfessionalHeadshot = () => {
                 </button>
               )}
               <button
-                onClick={reset}
+                onClick={resetForAnother}
                 className="px-4 py-2 rounded-md border border-[#2d2d2d] flex items-center gap-2 cursor-pointer"
               >
                 <RefreshCcw size={16} /> Generate another
@@ -315,19 +310,8 @@ const ProfessionalHeadshot = () => {
               type="file"
               accept="image/*"
               className="hidden"
-              onChange={(e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-
-                handleFileChange(file);
-                uploadImage(file);
-              }}
+              onChange={onFileChange}
             />
-
-            {/* Optional progress */}
-            {uploading && (
-              <p className="text-sm mt-2">Uploading... {uploadProgress}%</p>
-            )}
           </div>
 
           {/* Choose Style */}

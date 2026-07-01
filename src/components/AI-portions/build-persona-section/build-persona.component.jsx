@@ -12,124 +12,46 @@ import {
   usePersona,
   useSubmitPersonaAnswers,
 } from "../../../hooks/ai/usePersonaBuilder";
-import { usePersonaBuilder } from "../custom-hooks/usePersonaBuilder";
+import {
+  getPersonaQuestions,
+  applyPersona,
+  restartPersona,
+} from "../../../api/personaBuilderService";
 
-const STEPS = [
-  {
-    id: "question-1",
-    title: "Question 1 of 6",
-    question: "When presenting ideas in meetings, you typically...",
-    options: [
-      { optionId: "q1-a", label: "Wait to be asked your opinion" },
-      { optionId: "q1-b", label: "Build on others ideas supportively" },
-      { optionId: "q1-c", label: "Present your ideas clearly and concisely" },
-      {
-        optionId: "q1-d",
-        label: "Challenge assumptions and build for better solutions",
-      },
-    ],
-  },
-  {
-    id: "question-2",
-    title: "Question 2 of 6",
-    question: "Your colleagues would describe your work approach as...",
-    options: [
-      { optionId: "q2-a", label: "Steady, reliable and detail-oriented" },
-      { optionId: "q2-b", label: "Creative, innovative and flexible" },
-      { optionId: "q2-c", label: "Results-driven and goal-focused" },
-      {
-        optionId: "q2-d",
-        label: "People-focused and relationship-building",
-      },
-    ],
-  },
-  {
-    id: "question-3",
-    title: "Question 3 of 6",
-    question: "Your colleagues would describe your work approach as...",
-    options: [
-      { optionId: "q3-a", label: "Focus on executing tasks efficiently" },
-      { optionId: "q3-b", label: "Bring people together to find solutions" },
-      {
-        optionId: "q3-c",
-        label: "Step back and develop a strategic approach",
-      },
-      {
-        optionId: "q3-d",
-        label: "Look for creative, unconventional solutions",
-      },
-    ],
-  },
-  {
-    id: "question-4",
-    title: "Question 4 of 6",
-    question: "At work, you prefer to...",
-    options: [
-      {
-        optionId: "q4-a",
-        label: "Work behind the scenes and let results speak",
-      },
-      {
-        optionId: "q4-b",
-        label: "Share credit with the team and celebrate together",
-      },
-      {
-        optionId: "q4-c",
-        label: "Present your work to stakeholders when appropriate",
-      },
-      {
-        optionId: "q4-d",
-        label: "Take the spotlight and lead high-profile initiatives",
-      },
-    ],
-  },
-  {
-    id: "question-5",
-    title: "Question 5 of 6",
-    question: "Your primary career aspiration is...",
-    options: [
-      {
-        optionId: "q5-a",
-        label: "Become a recognized expert in your field",
-      },
-      {
-        optionId: "q5-b",
-        label: "Lead teams and drive organizational change",
-      },
-      {
-        optionId: "q5-c",
-        label: "Create innovative solutions and lead projects",
-      },
-      {
-        optionId: "q5-d",
-        label: "Build influence and shape strategic decisions",
-      },
-    ],
-  },
-  {
-    id: "question-6",
-    title: "Question 6 of 6",
-    question: "The area you most want to develop is...",
-    options: [
-      {
-        optionId: "q6-a",
-        label: "Speaking up with more confidence and authority",
-      },
-      {
-        optionId: "q6-b",
-        label: "Building stronger professional relationships",
-      },
-      {
-        optionId: "q6-c",
-        label: "Thinking and communicating more strategically",
-      },
-      {
-        optionId: "q6-d",
-        label: "Commanding more respect and executive presence",
-      },
-    ],
-  },
-];
+const PersonaSuccessScreen = ({ onRestart }) => (
+  <div className="min-h-[100svh] px-4 sm:px-[5%] py-8 md:py-10 flex justify-center items-center">
+    <div className="bg-[#efefef] dark:bg-[#181818] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-6 sm:p-10 max-w-lg w-full text-center space-y-5">
+      <div className="w-16 h-16 bg-gradient-to-b from-[#1342ff] to-[#ff00e6] rounded-full flex items-center justify-center mx-auto">
+        <svg viewBox="0 0 24 24" fill="none" className="w-8 h-8 text-white">
+          <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </div>
+      <h2 className="text-[22px] md:text-[28px] font-extrabold">Persona Applied!</h2>
+      <p className="text-[15px] md:text-[18px] text-[#667085] dark:text-gray-400">
+        Your professional persona has been saved to your profile.
+        It will power your CV, cover letters, and LinkedIn optimisation.
+      </p>
+      <button
+        onClick={onRestart}
+        className="w-full px-6 py-3 text-base font-bold text-white bg-gradient-to-b from-[#748ffc] to-[#1342ff] rounded-xl tracking-tight cursor-pointer"
+        style={{ fontFamily: "Poppins, sans-serif" }}
+      >
+        Redo my persona journey
+      </button>
+    </div>
+  </div>
+);
+
+const mapApiQuestionsToSteps = (questions) =>
+  (questions || []).map((q, index) => ({
+    id: q.id,
+    title: `Question ${index + 1} of ${questions.length}`,
+    question: q.question,
+    options: (q.options || []).map((opt) => ({
+      optionId: opt.id,
+      label: opt.text,
+    })),
+  }));
 
 /** Map legacy localStorage values (plain label strings) to { optionId, label }. */
 const normalizeStepSelection = (step, raw) => {
@@ -159,6 +81,9 @@ const BuildPersona = () => {
   const [persona, setPersona] = useState(null);
   const [personaStep, setPersonaStep] = useState("current");
   const [loading, setLoading] = useState(false);
+  const [steps, setSteps] = useState([]);
+  const [loadingQuestions, setLoadingQuestions] = useState(true);
+  const [applied, setApplied] = useState(false);
 
   const personaQuery = usePersona(false);
   const submitAnswersMutation = useSubmitPersonaAnswers();
@@ -171,7 +96,7 @@ const BuildPersona = () => {
       setLoading(true);
 
       // Backend expects optionId (non-empty string) per answer; keep text fields for context.
-      const formattedAnswers = STEPS.map((step) => {
+      const formattedAnswers = steps.map((step) => {
         const sel = selections[step.id];
         if (!sel?.optionId) return null;
         return {
@@ -228,8 +153,16 @@ const BuildPersona = () => {
     }
   };
 
+  useEffect(() => {
+    getPersonaQuestions()
+      .then((questions) => setSteps(mapApiQuestionsToSteps(questions)))
+      .catch(() => toast.error("Failed to load persona questions"))
+      .finally(() => setLoadingQuestions(false));
+  }, []);
+
   // load persisted
   useEffect(() => {
+    if (!steps.length) return;
     try {
       const startedRaw = localStorage.getItem(STARTED_KEY);
       if (startedRaw) setStarted(startedRaw === "true");
@@ -238,7 +171,7 @@ const BuildPersona = () => {
         const parsed = JSON.parse(raw);
         const rawSelections = parsed.selections || {};
         const migrated = {};
-        for (const step of STEPS) {
+        for (const step of steps) {
           migrated[step.id] = normalizeStepSelection(
             step,
             rawSelections[step.id],
@@ -248,13 +181,12 @@ const BuildPersona = () => {
         if (parsed.stepIndex != null) setStepIndex(parsed.stepIndex);
       }
     } catch (error) {
-      // Persisted state might be malformed or inaccessible; reset gracefully
       console.error("Failed to load persona state from storage:", error);
       setStarted(false);
       setSelections({});
       setStepIndex(0);
     }
-  }, []);
+  }, [steps]);
 
   // persist on change
   useEffect(() => {
@@ -268,8 +200,8 @@ const BuildPersona = () => {
     localStorage.setItem(STARTED_KEY, String(started));
   }, [started]);
 
-  const current = useMemo(() => STEPS[stepIndex], [stepIndex]);
-  const isLast = stepIndex === STEPS.length - 1;
+  const current = useMemo(() => steps[stepIndex], [steps, stepIndex]);
+  const isLast = steps.length > 0 && stepIndex === steps.length - 1;
 
   const selectOption = (option) => {
     setSelections((prev) => ({
@@ -286,7 +218,31 @@ const BuildPersona = () => {
     if (stepIndex > 0) setStepIndex((i) => i - 1);
   };
 
-  const { handleRestart, handleApplyPersona } = usePersonaBuilder();
+  const handleApplyPersona = async () => {
+    try {
+      await applyPersona();
+      toast.success("Persona applied to your profile");
+      setApplied(true);
+    } catch (err) {
+      toast.error(err?.message || "Failed to apply persona");
+    }
+  };
+
+  const handleRestart = async () => {
+    try {
+      await restartPersona();
+      setPersona(null);
+      setSelections({});
+      setStepIndex(0);
+      setStarted(false);
+      setPersonaStep("current");
+      setApplied(false);
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(STARTED_KEY);
+    } catch (err) {
+      toast.error(err?.message || "Failed to restart");
+    }
+  };
 
   if (!started) {
     return (
@@ -391,6 +347,10 @@ px-6 py-3 sm:py-4
   // =====================
 
   if (persona) {
+    if (applied) {
+      return <PersonaSuccessScreen onRestart={handleRestart} />;
+    }
+
     return (
       <div className="min-h-[100svh] px-4 sm:px-[5%] py-6 md:py-10 flex flex-col items-center justify-center">
         {personaStep === "current" && (
