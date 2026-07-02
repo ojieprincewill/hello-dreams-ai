@@ -23,3 +23,16 @@ export const getMyProfile = async () => {
   });
   return parseResponseBody(res, null);
 };
+
+/**
+ * Partially update the professional profile. Accepts any subset of fields
+ * (basicInfo, careerGoals, extractedData, targetJob, cvMetadata, personaData, etc.).
+ * Each top-level field replaces the existing value for that field only.
+ */
+export const updateMyProfile = async (updates) => {
+  const res = await apiFetch(`${API_BASE_URL}/professional-profile/me`, {
+    method: "PATCH",
+    body: JSON.stringify(updates),
+  });
+  return parseResponseBody(res, null);
+};
