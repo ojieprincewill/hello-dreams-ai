@@ -384,6 +384,20 @@ px-6 py-3 sm:py-4
     );
   }
 
+  if (loadingQuestions || !current) {
+    return (
+      <div className="min-h-[100svh] px-4 sm:px-[5%] py-8 md:py-10 flex justify-center items-center">
+        <div className="bg-[#efefef] dark:bg-[#181818] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-xl p-6 sm:p-10 max-w-md w-full flex flex-col items-center text-center space-y-3">
+          <GradientIcon />
+          <p className="text-[16px] md:text-[18px] font-bold">Loading your questions...</p>
+          <p className="text-[14px] md:text-[16px] text-[#667085] dark:text-gray-400">
+            Just a moment while we prepare your journey.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen px-4 sm:px-[5%] py-6 md:py-10">
       {/* Header */}

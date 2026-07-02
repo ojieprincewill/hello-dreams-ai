@@ -20,15 +20,12 @@ const formatDate = (dateStr) => {
   const date = new Date(dateStr);
   const now = new Date();
   const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
-  const timeStr = date.toLocaleTimeString("en-GB", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-  if (diffDays === 0) return timeStr;
-  if (diffDays === 1) return `Yesterday · ${timeStr}`;
+  const timeStr = date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  if (diffDays === 0) return `Today at ${timeStr}`;
+  if (diffDays === 1) return `Yesterday at ${timeStr}`;
   if (diffDays < 7)
-    return `${date.toLocaleDateString("en-GB", { weekday: "short" })} · ${timeStr}`;
-  return date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+    return `${date.toLocaleDateString("en-GB", { weekday: "long" })} at ${timeStr}`;
+  return date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
 };
 
 /* ─── History view ─── */
@@ -70,23 +67,19 @@ const HistoryView = ({ activeModule, onSelect }) => {
               : "border-[#eaecf0] dark:border-[#2d2d2d] hover:bg-[#f0f0f0] dark:hover:bg-[#252525]"
           }`}
         >
-          <div className="flex items-center justify-between mb-1">
-            <span
-              className={`text-[10px] md:text-xs px-2 py-0.5 rounded-full font-medium ${
-                MODULE_BADGE_COLORS[conv.moduleId] ??
-                "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
-              }`}
-            >
-              {conv.moduleLabel}
-            </span>
-
-            <span className="text-[10px] md:text-xs text-[#999]">
-              {formatDate(conv.updatedAt)}
-            </span>
-          </div>
-
-          <p className="text-xs md:text-sm font-medium truncate">
+          <span
+            className={`inline-block text-[10px] md:text-xs px-2 py-0.5 rounded-full font-medium mb-1.5 ${
+              MODULE_BADGE_COLORS[conv.moduleId] ??
+              "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+            }`}
+          >
+            {conv.moduleLabel}
+          </span>
+          <p className="text-xs md:text-sm font-medium truncate text-[#010413] dark:text-[#f7f7f7]">
             {conv.title || "Untitled"}
+          </p>
+          <p className="text-[11px] md:text-xs text-[#667085] dark:text-[#aaa] mt-0.5">
+            {formatDate(conv.updatedAt)}
           </p>
         </button>
       ))}
