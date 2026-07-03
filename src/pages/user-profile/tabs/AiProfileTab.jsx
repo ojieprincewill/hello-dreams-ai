@@ -1,9 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { getMyProfile, updateMyProfile } from "../../../api/professionalProfileService";
-import { CheckCircleIcon, PencilIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { AuthContext } from "../../../auth/authContext";
+import { CheckCircleIcon, PencilIcon, XMarkIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 
-/* ── tiny helpers ── */
+/* ── System prompt detection ── */
+
+const isLikelySystemPrompt = (text) =>
+  typeof text === "string" &&
+  text.length > 800 &&
+  /^(You are|As an AI|Your role is|You will|I am an AI)/i.test(text.trim());
+
+/* ── Tiny helpers ── */
 
 const Chip = ({ label, onRemove }) => (
   <span className="inline-flex items-center gap-1 bg-[#e8edff] dark:bg-[#1a2040] text-[#1342ff] dark:text-[#7b96ff] text-xs font-semibold px-2.5 py-1 rounded-full">
@@ -80,9 +89,33 @@ const textareaInput = (val, setVal, placeholder = "", rows = 3) => (
   />
 );
 
+/* ── Corrupted data warning ── */
+
+const CorruptedDataWarning = ({ onClear }) => (
+  <div className="flex items-start gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/40 rounded-lg px-4 py-3">
+    <ExclamationTriangleIcon className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+    <div className="flex-1 min-w-0">
+      <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+        Unexpected content detected
+      </p>
+      <p className="text-xs text-amber-700 dark:text-amber-400 mt-0.5">
+        This field contains system data rather than your personal goals. Clear it, then complete a
+        new &ldquo;Get to Know You&rdquo; conversation to regenerate your career goals.
+      </p>
+      <button
+        type="button"
+        onClick={onClear}
+        className="mt-2 text-xs font-bold text-amber-700 dark:text-amber-300 underline underline-offset-2 hover:opacity-70 cursor-pointer"
+      >
+        Clear field
+      </button>
+    </div>
+  </div>
+);
+
 /* ── Section card ── */
 
-const SectionCard = ({ title, hasData, children, editContent, sectionKey, onSave }) => {
+const SectionCard = ({ title, hasData, editContent, onSave, children }) => {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -118,7 +151,7 @@ const SectionCard = ({ title, hasData, children, editContent, sectionKey, onSave
             Edit
           </button>
         ) : (
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <button
               type="button"
               onClick={() => setEditing(false)}
@@ -165,10 +198,16 @@ const ReadText = ({ value }) =>
 /* ── Main component ── */
 
 const AiProfileTab = () => {
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { user } = useContext(AuthContext);
+  const queryClient = useQueryClient();
 
-  /* edit state for each section */
+  const { data: profile, isLoading } = useQuery({
+    queryKey: ["professionalProfile", "me"],
+    queryFn: getMyProfile,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  /* section edit state — synced from profile cache */
   const [basic, setBasic] = useState({});
   const [goals, setGoals] = useState({});
   const [extracted, setExtracted] = useState({});
@@ -177,28 +216,21 @@ const AiProfileTab = () => {
   const [persona, setPersona] = useState({});
 
   useEffect(() => {
-    (async () => {
-      try {
-        const p = await getMyProfile();
-        setProfile(p);
-        setBasic(p?.basicInfo ?? {});
-        setGoals(p?.careerGoals ?? {});
-        setExtracted(p?.extractedData ?? {});
-        setCv(p?.cvMetadata ?? {});
-        setTarget(p?.targetJob ?? {});
-        setPersona(p?.personaData ?? {});
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+    if (!profile) return;
+    setBasic(profile.basicInfo ?? {});
+    setGoals(profile.careerGoals ?? {});
+    setExtracted(profile.extractedData ?? {});
+    setCv(profile.cvMetadata ?? {});
+    setTarget(profile.targetJob ?? {});
+    setPersona(profile.personaData ?? {});
+  }, [profile]);
 
   const save = (sectionKey, data) => async () => {
-    const updated = await updateMyProfile({ [sectionKey]: data });
-    setProfile(updated);
+    await updateMyProfile({ [sectionKey]: data });
+    queryClient.invalidateQueries({ queryKey: ["professionalProfile", "me"] });
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="space-y-3 animate-pulse">
         {[1, 2, 3].map((i) => (
@@ -210,6 +242,10 @@ const AiProfileTab = () => {
 
   const cs = profile?.completedSections ?? {};
 
+  /* Merge auth user data with basicInfo for display */
+  const displayName = basic.name || user?.name || "";
+  const displayEmail = basic.email || user?.email || "";
+
   return (
     <div className="space-y-4">
       <p className="text-sm text-[#667085] dark:text-gray-400">
@@ -219,10 +255,12 @@ const AiProfileTab = () => {
       {/* Basic Info */}
       <SectionCard
         title="Basic Info"
-        hasData={!!(basic.phone || basic.country || basic.linkedIn)}
-        onSave={save("basicInfo", basic)}
+        hasData={!!(displayName || displayEmail || basic.phone || basic.country || basic.linkedIn)}
+        onSave={save("basicInfo", { ...basic, name: basic.name || user?.name, email: basic.email || user?.email })}
         editContent={
           <div className="space-y-3">
+            <Field label="Full name">{textInput(basic.name || user?.name, (v) => setBasic({ ...basic, name: v }), user?.name || "Your full name")}</Field>
+            <Field label="Email">{textInput(basic.email || user?.email, (v) => setBasic({ ...basic, email: v }), user?.email || "Your email")}</Field>
             <Field label="Phone">{textInput(basic.phone, (v) => setBasic({ ...basic, phone: v }), "+1 555 000 0000")}</Field>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Country">{textInput(basic.country, (v) => setBasic({ ...basic, country: v }), "Nigeria")}</Field>
@@ -234,6 +272,8 @@ const AiProfileTab = () => {
       >
         <div className="grid grid-cols-2 gap-y-3 gap-x-6 text-sm">
           {[
+            ["Name", displayName],
+            ["Email", displayEmail],
             ["Phone", basic.phone],
             ["Location", [basic.city, basic.country].filter(Boolean).join(", ")],
             ["LinkedIn", basic.linkedIn],
@@ -244,12 +284,15 @@ const AiProfileTab = () => {
             </div>
           ))}
         </div>
+        <p className="text-xs text-[#667085] dark:text-gray-500 mt-3 border-t border-[#eaecf0] dark:border-[#2d2d2d] pt-3">
+          Phone, city, and LinkedIn URL must be added manually — the AI doesn't extract these from conversations.
+        </p>
       </SectionCard>
 
       {/* Career Goals */}
       <SectionCard
         title="Career Goals"
-        hasData={!!(goals.targetRoles?.length || goals.careerAspirations)}
+        hasData={!!(goals.targetRoles?.length || (goals.careerAspirations && !isLikelySystemPrompt(goals.careerAspirations)))}
         onSave={save("careerGoals", goals)}
         editContent={
           <div className="space-y-3">
@@ -277,7 +320,17 @@ const AiProfileTab = () => {
           {goals.careerAspirations && (
             <div>
               <p className="text-xs text-[#667085] dark:text-gray-400 mb-1">Aspirations</p>
-              <ReadText value={goals.careerAspirations} />
+              {isLikelySystemPrompt(goals.careerAspirations) ? (
+                <CorruptedDataWarning
+                  onClear={() =>
+                    save("careerGoals", { ...goals, careerAspirations: "" })().catch(() =>
+                      toast.error("Failed to clear field")
+                    )
+                  }
+                />
+              ) : (
+                <ReadText value={goals.careerAspirations} />
+              )}
             </div>
           )}
         </div>

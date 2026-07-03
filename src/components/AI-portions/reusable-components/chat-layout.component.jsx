@@ -15,13 +15,15 @@ const ChatLayout = ({ messages, renderMessage, inputProps }) => {
 
   return (
     <div className="relative flex flex-col h-full min-h-0 overflow-x-hidden">
-      {/* Scrollable messages area */}
-      <div className="flex-1 overflow-y-auto py-4 md:py-6 scrollbar-hide">
-        {messages.map((msg) => (
-          <div key={msg.id} ref={(el) => (messageRefs.current[msg.id] = el)}>
-            {renderMessage(msg)}
-          </div>
-        ))}
+      {/* Scrollable messages area — centered column (Claude-style) */}
+      <div className="flex-1 overflow-y-auto py-4 md:py-6 pb-6 scrollbar-hide">
+        <div className="mx-auto w-full max-w-3xl px-4 sm:px-6">
+          {messages.map((msg) => (
+            <div key={msg.id} ref={(el) => (messageRefs.current[msg.id] = el)}>
+              {renderMessage(msg)}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Fixed input pinned at bottom */}

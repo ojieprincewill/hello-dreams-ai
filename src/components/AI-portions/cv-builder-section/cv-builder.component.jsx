@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { isNetworkError } from "../../../utils/networkError";
+import { isCreditLimitError } from "../../../utils/creditErrors";
 import { UserIcon } from "@heroicons/react/24/outline";
 import { useResume } from "../../../context/ResumeContext";
 import {
@@ -13,10 +14,23 @@ import {
   useSendResumeMessage,
 } from "../../../hooks/ai/useResumeBuilder";
 import ChatLayout from "../reusable-components/chat-layout.component";
-import AnimatedMessage from "../reusable-components/animated-message.component";
-import AiTypingIndicator from "../reusable-customs/ai-typing-indicator.component";
+import ChatMessageRenderer from "../reusable-components/chat-message-renderer.component";
 import CVPreview from "./cv-preview.component";
 import { useDashboardActions } from "../../../context/DashboardActionsContext";
+import { getResumeConversation } from "../../../api/resumeBuilderService";
+
+const mapApiMessages = (apiMessages) =>
+  apiMessages.map((m, i) => ({
+    id: i + 1,
+    sender: m.role === "user" ? "user" : "ai",
+    content: m.content,
+    timestamp: new Date(m.createdAt).toLocaleTimeString("en-GB", {
+      hour12: false,
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    }),
+  }));
 
 const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
   const [userInput, setUserInput] = useState("");
@@ -26,6 +40,7 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
   const [resume, setResume] = useState(null);
 
   const initializedRef = useRef(false);
+  const recoveringEmptyRef = useRef(false);
   const { registerNewChat } = useDashboardActions();
   const { refresh: refreshResume } = useResume();
 
@@ -91,19 +106,7 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
           });
           setConversationId(newConv.id);
           if (newConv.messages?.length) {
-            setMessages(
-              newConv.messages.map((m, i) => ({
-                id: i + 1,
-                sender: m.role === "user" ? "user" : "ai",
-                content: m.content,
-                timestamp: new Date(m.createdAt).toLocaleTimeString("en-GB", {
-                  hour12: false,
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  second: "2-digit",
-                }),
-              })),
-            );
+            setMessages(mapApiMessages(newConv.messages));
           }
         }
       } catch (err) {
@@ -116,23 +119,44 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
     run();
   }, [conversationsQuery.isSuccess, conversationsQuery.data]); // eslint-disable-line
 
-  // Sync messages when a conversation loads
+  // Sync messages when a conversation loads; recover empty conversations
   useEffect(() => {
-    if (!conversationQuery.data?.messages) return;
-    setMessages(
-      conversationQuery.data.messages.map((m, i) => ({
-        id: i + 1,
-        sender: m.role === "user" ? "user" : "ai",
-        content: m.content,
-        timestamp: new Date(m.createdAt).toLocaleTimeString("en-GB", {
-          hour12: false,
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        }),
-      })),
-    );
-  }, [conversationQuery.data]);
+    const run = async () => {
+      if (!conversationQuery.data || conversationQuery.isLoading) return;
+      const apiMessages = conversationQuery.data.messages;
+      if (apiMessages?.length) {
+        setMessages(mapApiMessages(apiMessages));
+        return;
+      }
+      if (recoveringEmptyRef.current || !conversationId) return;
+      recoveringEmptyRef.current = true;
+      localStorage.removeItem("cvConversationId");
+      try {
+        const newConv = await createConversationMutation.mutateAsync({
+          payload: {
+            title: "My Resume",
+            targetJobTitle: "Software Engineer",
+            targetIndustry: "Technology",
+          },
+        });
+        setConversationId(newConv.id);
+        if (newConv.messages?.length) {
+          setMessages(mapApiMessages(newConv.messages));
+          return;
+        }
+        const loaded = await getResumeConversation(newConv.id);
+        if (loaded.messages?.length) {
+          setMessages(mapApiMessages(loaded.messages));
+        }
+      } catch (err) {
+        if (!isNetworkError(err))
+          toast.error(err.message || "Failed to start a new conversation");
+      } finally {
+        recoveringEmptyRef.current = false;
+      }
+    };
+    run();
+  }, [conversationQuery.data, conversationQuery.isLoading, conversationId]); // eslint-disable-line
 
   // Send message (same as before, but using apiFetch)
   const handleSendMessage = async () => {
@@ -192,7 +216,7 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
       ]);
     } catch (err) {
       console.error("Error sending message:", err);
-      if (!isNetworkError(err)) toast.error("Error sending message");
+      if (!isNetworkError(err) && !isCreditLimitError(err)) toast.error("Error sending message");
     } finally {
       setLoading(false);
     }
@@ -402,19 +426,12 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
         },
       });
       setConversationId(newConv.id);
-      setMessages(
-        (newConv.messages || []).map((m, i) => ({
-          id: i + 1,
-          sender: m.role === "user" ? "user" : "ai",
-          content: m.content,
-          timestamp: new Date(m.createdAt).toLocaleTimeString("en-GB", {
-            hour12: false,
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-          }),
-        })),
-      );
+      if (newConv.messages?.length) {
+        setMessages(mapApiMessages(newConv.messages));
+      } else {
+        const loaded = await getResumeConversation(newConv.id);
+        setMessages(mapApiMessages(loaded.messages || []));
+      }
       setResume(null);
     } catch (err) {
       if (!isNetworkError(err))
@@ -434,35 +451,7 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
     ? [...messages, { id: "typing", sender: "ai", typing: true, content: "" }]
     : messages;
 
-  const renderMessage = (message) => (
-    <AnimatedMessage key={message.id}>
-      {message.sender === "ai" ? (
-        message.typing ? (
-          <AiTypingIndicator />
-        ) : (
-          <div className="w-fit max-w-[85%] md:max-w-[70%] bg-[#efefef] dark:bg-[#2d2d2d] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-lg p-3 md:p-4">
-            <p className="text-[14px] md:text-[18px] leading-relaxed break-words">
-              {message.content}
-            </p>
-            <p className="text-[#444] dark:text-[#bfb5b5] text-[11px] md:text-[14px] mt-2">
-              {message.timestamp}
-            </p>
-          </div>
-        )
-      ) : (
-        <div className="flex justify-end my-4 md:my-5">
-          <div className="w-fit max-w-[85%] md:max-w-[70%] bg-[#e2e2e2] dark:bg-[#151515] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-lg p-3 md:p-4">
-            <p className="text-[14px] md:text-[18px] leading-relaxed break-words">
-              {message.content}
-            </p>
-            <p className="text-[#444] dark:text-[#bfb5b5] text-[11px] md:text-[14px] mt-2 text-right">
-              {message.timestamp}
-            </p>
-          </div>
-        </div>
-      )}
-    </AnimatedMessage>
-  );
+  const renderMessage = (message) => <ChatMessageRenderer message={message} />;
 
   // Allow generate if the AI has signalled readiness OR the user already has a
   // stored resume from a previous session (so returning users can view it).
@@ -485,13 +474,12 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
     return (
       <div className="px-[5%] py-6 md:pt-10 md:pb-5 animate-pulse min-h-[60vh]">
         <div className="h-12 md:h-16 bg-[#efefef] dark:bg-[#2d2d2d] rounded-xl mb-6 md:mb-10" />
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="h-16 md:h-20 bg-[#efefef] dark:bg-[#2d2d2d] rounded-xl"
-            />
-          ))}
+        <div className="mx-auto w-full max-w-3xl space-y-6">
+          <div className="h-24 md:h-32 bg-[#efefef] dark:bg-[#2d2d2d] rounded-xl" />
+          <div className="flex justify-end">
+            <div className="w-[60%] h-14 md:h-16 bg-[#e2e2e2] dark:bg-[#151515] rounded-2xl" />
+          </div>
+          <div className="h-20 md:h-24 bg-[#efefef] dark:bg-[#2d2d2d] rounded-xl" />
         </div>
       </div>
     );

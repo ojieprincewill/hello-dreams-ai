@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { useQueries } from "@tanstack/react-query";
 import {
   DocumentTextIcon,
   ArrowDownTrayIcon,
@@ -70,6 +71,17 @@ const downloadAsText = (content, filename) => {
   a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
+};
+
+/* ── Safe fetch wrappers ── */
+const safeListResumeConversations = async () => {
+  try { return await listResumeConversations(); } catch { return null; }
+};
+const safeListDocumentConversations = async () => {
+  try { return await listDocumentConversations(); } catch { return null; }
+};
+const safeGetLinkedInProfile = async () => {
+  try { return await getLinkedInProfile(); } catch { return null; }
 };
 
 /* ── View panel (slide-over) ── */
@@ -213,62 +225,84 @@ const EmptyState = ({ filter }) => {
 const DocumentsTab = () => {
   const [filter, setFilter] = useState("all");
   const [viewItem, setViewItem] = useState(null);
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const [resumeConvs, docConvs, li] = await Promise.all([
-          listResumeConversations().catch(() => []),
-          listDocumentConversations().catch(() => []),
-          getLinkedInProfile().catch(() => null),
-        ]);
+  /* Use the same query keys as useProgressTracker — cache hit is guaranteed
+     if the navbar has already loaded (staleTime: 60s means no extra requests). */
+  const [resumeConvsQuery, docConvsQuery, linkedInQuery] = useQueries({
+    queries: [
+      {
+        queryKey: ["resumeBuilder", "conversations"],
+        queryFn: safeListResumeConversations,
+        staleTime: 60_000,
+      },
+      {
+        queryKey: ["documentConversations"],
+        queryFn: safeListDocumentConversations,
+        staleTime: 60_000,
+      },
+      {
+        queryKey: ["linkedInProfile"],
+        queryFn: safeGetLinkedInProfile,
+        staleTime: 60_000,
+      },
+    ],
+  });
 
-        const allItems = [];
+  const loading =
+    resumeConvsQuery.isLoading || docConvsQuery.isLoading || linkedInQuery.isLoading;
 
-        for (const conv of resumeConvs) {
-          allItems.push({
-            id: `resume-${conv.id}`,
-            type: "resume",
-            title: conv.title || "My Resume",
-            date: conv.updatedAt ?? conv.createdAt,
-            conversationId: conv.id,
-          });
-        }
+  const items = useMemo(() => {
+    const rawResume = resumeConvsQuery.data;
+    const resumeConvs = Array.isArray(rawResume)
+      ? rawResume
+      : Array.isArray(rawResume?.data)
+      ? rawResume.data
+      : [];
 
-        for (const conv of docConvs) {
-          const docType = conv.documentType === "cover_letter"
-            ? "cover-letter"
-            : conv.documentType === "personal_statement"
-            ? "personal-statement"
-            : "cover-letter";
-          allItems.push({
-            id: `doc-${conv.id}`,
-            type: docType,
-            title: conv.title || (docType === "cover-letter" ? "Cover Letter" : "Personal Statement"),
-            date: conv.updatedAt ?? conv.createdAt,
-            conversationId: conv.id,
-          });
-        }
+    const docConvs = Array.isArray(docConvsQuery.data) ? docConvsQuery.data : [];
+    const li = linkedInQuery.data ?? null;
 
-        if (li && (li.headline || li.summary || li.sections)) {
-          allItems.push({
-            id: "linkedin-profile",
-            type: "linkedin",
-            title: "LinkedIn Profile",
-            date: li.updatedAt ?? li.createdAt,
-            _rawData: li,
-          });
-        }
+    const allItems = [];
 
-        allItems.sort((a, b) => new Date(b.date) - new Date(a.date));
-        setItems(allItems);
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+    for (const conv of resumeConvs) {
+      allItems.push({
+        id: `resume-${conv.id}`,
+        type: "resume",
+        title: conv.title || "My Resume",
+        date: conv.updatedAt ?? conv.createdAt,
+        conversationId: conv.id,
+      });
+    }
+
+    for (const conv of docConvs) {
+      const docType =
+        conv.documentType === "cover_letter"
+          ? "cover-letter"
+          : conv.documentType === "personal_statement"
+          ? "personal-statement"
+          : "cover-letter";
+      allItems.push({
+        id: `doc-${conv.id}`,
+        type: docType,
+        title:
+          conv.title || (docType === "cover-letter" ? "Cover Letter" : "Personal Statement"),
+        date: conv.updatedAt ?? conv.createdAt,
+        conversationId: conv.id,
+      });
+    }
+
+    if (li && (li.headline || li.summary || li.sections)) {
+      allItems.push({
+        id: "linkedin-profile",
+        type: "linkedin",
+        title: "LinkedIn Profile",
+        date: li.updatedAt ?? li.createdAt,
+        _rawData: li,
+      });
+    }
+
+    return allItems.sort((a, b) => new Date(b.date) - new Date(a.date));
+  }, [resumeConvsQuery.data, docConvsQuery.data, linkedInQuery.data]);
 
   const filtered = useMemo(
     () => (filter === "all" ? items : items.filter((i) => i.type === filter)),

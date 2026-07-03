@@ -7,9 +7,9 @@ import {
   ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 import { isNetworkError } from "../../../utils/networkError";
+import { isCreditLimitError } from "../../../utils/creditErrors";
 import ChatLayout from "../reusable-components/chat-layout.component";
-import AnimatedMessage from "../reusable-components/animated-message.component";
-import AiTypingIndicator from "../reusable-customs/ai-typing-indicator.component";
+import ChatMessageRenderer from "../reusable-components/chat-message-renderer.component";
 import {
   useCareerConversations,
   useCareerConversation,
@@ -18,6 +18,20 @@ import {
   useGenerateCareerSummary,
   useCompleteCareerConversation,
 } from "../custom-hooks/useCareerProfile";
+import * as careerProfileService from "../module-services/careerProfileService";
+
+const mapApiMessages = (apiMessages) =>
+  apiMessages.map((m, i) => ({
+    id: i + 1,
+    sender: m.role === "user" ? "user" : "ai",
+    content: m.content,
+    timestamp: new Date(m.createdAt).toLocaleTimeString("en-GB", {
+      hour12: false,
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    }),
+  }));
 
 // ── Profile summary card ──────────────────────────────────────────────────────
 
@@ -187,6 +201,7 @@ const GetToKnowYou = ({ requestedConversationId, onConversationLoaded }) => {
   const [completed, setCompleted] = useState(false);
 
   const initializedRef = useRef(false);
+  const recoveringEmptyRef = useRef(false);
 
   const conversationsQuery = useCareerConversations();
   const conversationQuery = useCareerConversation(conversationId);
@@ -241,19 +256,7 @@ const GetToKnowYou = ({ requestedConversationId, onConversationLoaded }) => {
           });
           setConversationId(newConv.id);
           if (newConv.messages?.length) {
-            setMessages(
-              newConv.messages.map((m, i) => ({
-                id: i + 1,
-                sender: m.role === "user" ? "user" : "ai",
-                content: m.content,
-                timestamp: new Date(m.createdAt).toLocaleTimeString("en-GB", {
-                  hour12: false,
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  second: "2-digit",
-                }),
-              })),
-            );
+            setMessages(mapApiMessages(newConv.messages));
           }
         }
       } catch (err) {
@@ -266,23 +269,40 @@ const GetToKnowYou = ({ requestedConversationId, onConversationLoaded }) => {
     run();
   }, [conversationsQuery.isSuccess, conversationsQuery.data]); // eslint-disable-line
 
-  // Sync messages when conversation data loads
+  // Sync messages when conversation data loads; recover empty conversations
   useEffect(() => {
-    if (!conversationQuery.data?.messages) return;
-    setMessages(
-      conversationQuery.data.messages.map((m, i) => ({
-        id: i + 1,
-        sender: m.role === "user" ? "user" : "ai",
-        content: m.content,
-        timestamp: new Date(m.createdAt).toLocaleTimeString("en-GB", {
-          hour12: false,
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        }),
-      })),
-    );
-  }, [conversationQuery.data]);
+    const run = async () => {
+      if (!conversationQuery.data || conversationQuery.isLoading) return;
+      const apiMessages = conversationQuery.data.messages;
+      if (apiMessages?.length) {
+        setMessages(mapApiMessages(apiMessages));
+        return;
+      }
+      if (recoveringEmptyRef.current || !conversationId) return;
+      recoveringEmptyRef.current = true;
+      localStorage.removeItem("careerConversationId");
+      try {
+        const newConv = await createConversationMutation.mutateAsync({
+          title: "Career Profile",
+        });
+        setConversationId(newConv.id);
+        if (newConv.messages?.length) {
+          setMessages(mapApiMessages(newConv.messages));
+          return;
+        }
+        const loaded = await careerProfileService.getConversation(newConv.id);
+        if (loaded.messages?.length) {
+          setMessages(mapApiMessages(loaded.messages));
+        }
+      } catch (err) {
+        if (!isNetworkError(err))
+          toast.error(err.message || "Failed to start a new conversation");
+      } finally {
+        recoveringEmptyRef.current = false;
+      }
+    };
+    run();
+  }, [conversationQuery.data, conversationQuery.isLoading, conversationId]); // eslint-disable-line
 
   const handleSendMessage = async () => {
     if (!userInput.trim()) return;
@@ -329,9 +349,96 @@ const GetToKnowYou = ({ requestedConversationId, onConversationLoaded }) => {
       ]);
     } catch (err) {
       console.error("Error sending message:", err);
-      if (!isNetworkError(err)) toast.error("Failed to send message");
+      if (!isNetworkError(err) && !isCreditLimitError(err)) toast.error("Failed to send message");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleVoiceMessage = async () => {
+    if (!conversationIdIsValid) {
+      toast.error("Please wait for the conversation to initialize.");
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      const chunks = [];
+
+      recorder.ondataavailable = (e) => chunks.push(e.data);
+      recorder.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(chunks, { type: "audio/webm" });
+        try {
+          setLoading(true);
+          const data = await careerProfileService.sendVoiceMessage(
+            conversationId,
+            blob,
+          );
+          const userText = data?.userMessage?.content || data?.transcription;
+          if (userText) {
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: prev.length + 1,
+                sender: "user",
+                content: userText,
+                timestamp: new Date().toLocaleTimeString("en-GB", {
+                  hour12: false,
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+                }),
+              },
+            ]);
+          }
+          if (data?.content) {
+            setMessages((prev) => [
+              ...prev,
+              {
+                id: prev.length + 2,
+                sender: "ai",
+                content: data.content,
+                timestamp: new Date().toLocaleTimeString("en-GB", {
+                  hour12: false,
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  second: "2-digit",
+                }),
+              },
+            ]);
+          }
+        } catch (err) {
+          if (!isNetworkError(err))
+            toast.error(err.message || "Voice message failed");
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      recorder.start();
+      toast.success("Recording… speak now (auto-stops in 15s)");
+      setTimeout(() => {
+        if (recorder.state === "recording") recorder.stop();
+      }, 15000);
+    } catch {
+      toast.error("Microphone access denied or unavailable.");
+    }
+  };
+
+  const handleCvUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !conversationIdIsValid) return;
+    try {
+      setLoading(true);
+      await careerProfileService.uploadCV(conversationId, file);
+      toast.success("CV uploaded successfully");
+    } catch (err) {
+      if (!isNetworkError(err))
+        toast.error(err.message || "CV upload failed");
+    } finally {
+      setLoading(false);
+      e.target.value = "";
     }
   };
 
@@ -378,35 +485,7 @@ const GetToKnowYou = ({ requestedConversationId, onConversationLoaded }) => {
     ? [...messages, { id: "typing", sender: "ai", typing: true, content: "" }]
     : messages;
 
-  const renderMessage = (message) => (
-    <AnimatedMessage key={message.id}>
-      {message.sender === "ai" ? (
-        message.typing ? (
-          <AiTypingIndicator />
-        ) : (
-          <div className="w-fit max-w-[85%] md:max-w-[70%] bg-[#efefef] dark:bg-[#2d2d2d] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-lg p-3 md:p-4">
-            <p className="text-sm md:text-[18px] leading-relaxed break-words">
-              {message.content}
-            </p>
-            <p className="text-[#444] dark:text-[#bfb5b5] text-[11px] md:text-[14px] mt-2">
-              {message.timestamp}
-            </p>
-          </div>
-        )
-      ) : (
-        <div className="flex justify-end my-4 md:my-5">
-          <div className="w-fit max-w-[85%] md:max-w-[70%] bg-[#e2e2e2] dark:bg-[#151515] border border-[#eaecf0] dark:border-[#2d2d2d] rounded-lg p-3 md:p-4">
-            <p className="text-sm md:text-[18px] leading-relaxed break-words">
-              {message.content}
-            </p>
-            <p className="text-[#444] dark:text-[#bfb5b5] text-[11px] md:text-[14px] mt-2 text-right">
-              {message.timestamp}
-            </p>
-          </div>
-        </div>
-      )}
-    </AnimatedMessage>
-  );
+  const renderMessage = (message) => <ChatMessageRenderer message={message} />;
 
   // ── Completed state ──────────────────────────────────────────────────────────
   if (completed) {
@@ -446,13 +525,12 @@ const GetToKnowYou = ({ requestedConversationId, onConversationLoaded }) => {
     return (
       <div className="px-[5%] py-6 md:pt-10 md:pb-5 animate-pulse min-h-[60vh]">
         <div className="h-12 md:h-16 bg-[#efefef] dark:bg-[#2d2d2d] rounded-xl mb-6 md:mb-10" />
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="h-16 md:h-20 bg-[#efefef] dark:bg-[#2d2d2d] rounded-xl"
-            />
-          ))}
+        <div className="mx-auto w-full max-w-3xl space-y-6">
+          <div className="h-24 md:h-32 bg-[#efefef] dark:bg-[#2d2d2d] rounded-xl" />
+          <div className="flex justify-end">
+            <div className="w-[60%] h-14 md:h-16 bg-[#e2e2e2] dark:bg-[#151515] rounded-2xl" />
+          </div>
+          <div className="h-20 md:h-24 bg-[#efefef] dark:bg-[#2d2d2d] rounded-xl" />
         </div>
       </div>
     );
@@ -486,6 +564,15 @@ const GetToKnowYou = ({ requestedConversationId, onConversationLoaded }) => {
             {loading ? "Generating…" : "Generate Profile Summary"}
           </button>
         )}
+        <label className="flex justify-center items-center gap-2 px-3 md:px-5 py-2 rounded-xl border border-[#eaecf0] dark:border-[#2d2d2d] text-xs md:text-sm font-semibold cursor-pointer shrink-0">
+          Upload CV
+          <input
+            type="file"
+            accept=".pdf,.doc,.docx"
+            className="hidden"
+            onChange={handleCvUpload}
+          />
+        </label>
       </div>
 
       {/* Chat */}
@@ -498,6 +585,7 @@ const GetToKnowYou = ({ requestedConversationId, onConversationLoaded }) => {
             handleChange,
             handleKeyPress,
             handleSendMessage,
+            handleVoiceMessage,
             placeholder: "Tell me about yourself…",
           }}
         />
