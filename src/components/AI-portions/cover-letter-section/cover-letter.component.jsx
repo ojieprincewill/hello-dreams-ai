@@ -168,6 +168,13 @@ const CoverLetter = ({ requestedConversationId, onConversationLoaded }) => {
             </p>
           </div>
         </div>
+        <button
+          onClick={handleGenerateDocument}
+          disabled={isGenerating || !aiSignalledReady}
+          className="px-3 md:px-5 py-2 bg-[#1342ff] text-white text-[18px] font-semibold rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {isGenerating ? "Generating…" : "Generate Document"}
+        </button>
       </div>
 
       <div className="flex-1 min-h-0">
@@ -184,13 +191,6 @@ const CoverLetter = ({ requestedConversationId, onConversationLoaded }) => {
       </div>
 
       <div className="mt-2 md:mt-4 flex flex-col items-center gap-2">
-        <button
-          onClick={handleGenerateDocument}
-          disabled={isGenerating || !aiSignalledReady}
-          className="px-4 md:px-8 py-2 md:py-3 bg-indigo-600 text-white text-[18px] font-semibold rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-        >
-          {isGenerating ? "Generating…" : "Generate Document"}
-        </button>
         {!aiSignalledReady && (
           <p className="text-sm text-[#667085] dark:text-gray-400 text-center">
             Continue the conversation — the AI will let you know when it has

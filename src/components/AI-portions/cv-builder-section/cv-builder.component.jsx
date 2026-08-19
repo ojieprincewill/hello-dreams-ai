@@ -7,7 +7,7 @@ import { useResume } from "../../../context/ResumeContext";
 import {
   useCreateResumeConversation,
   useDeleteResume,
-  useFetchGeneratedResume,
+  // useFetchGeneratedResume,
   useGenerateResume,
   useResumeConversations,
   useResumeConversation,
@@ -50,7 +50,7 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
   const createConversationMutation = useCreateResumeConversation();
   const sendMessageMutation = useSendResumeMessage();
   const generateResumeMutation = useGenerateResume();
-  const fetchGeneratedResumeMutation = useFetchGeneratedResume();
+  // const fetchGeneratedResumeMutation = useFetchGeneratedResume();
   const deleteResumeMutation = useDeleteResume();
 
   const isUuid = (value) => {
@@ -216,7 +216,8 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
       ]);
     } catch (err) {
       console.error("Error sending message:", err);
-      if (!isNetworkError(err) && !isCreditLimitError(err)) toast.error("Error sending message");
+      if (!isNetworkError(err) && !isCreditLimitError(err))
+        toast.error("Error sending message");
     } finally {
       setLoading(false);
     }
@@ -250,31 +251,31 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
   };
 
   // Get generated resume for a conversation
-  const getGeneratedResume = async (id) => {
-    try {
-      setLoading(true);
-      if (!isUuid(id)) {
-        toast.error("Please wait for the CV conversation to initialize.");
-        return null;
-      }
+  // const getGeneratedResume = async (id) => {
+  //   try {
+  //     setLoading(true);
+  //     if (!isUuid(id)) {
+  //       toast.error("Please wait for the CV conversation to initialize.");
+  //       return null;
+  //     }
 
-      const resumeData = await fetchGeneratedResumeMutation.mutateAsync({
-        conversationId: id,
-      });
-      toast.success("Resume fetched successfully");
+  //     const resumeData = await fetchGeneratedResumeMutation.mutateAsync({
+  //       conversationId: id,
+  //     });
+  //     toast.success("Resume fetched successfully");
 
-      // ✅ Store mapped resume so the template receives the right shape
-      setResume(mapResumeToTemplateData(resumeData));
+  //     // ✅ Store mapped resume so the template receives the right shape
+  //     setResume(mapResumeToTemplateData(resumeData));
 
-      return resumeData;
-    } catch (err) {
-      console.error("Error fetching resume:", err);
-      if (!isNetworkError(err)) toast.error("Error fetching resume");
-      return null;
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     return resumeData;
+  //   } catch (err) {
+  //     console.error("Error fetching resume:", err);
+  //     if (!isNetworkError(err)) toast.error("Error fetching resume");
+  //     return null;
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   // Delete resume for a conversation
   const deleteResume = async (id) => {
@@ -389,7 +390,9 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
             return;
           }
         }
-      } catch {}
+      } catch (err) {
+        console.error(err);
+      }
 
       // No stored resume — prompt the user to chat first
       setMessages((prev) => [
@@ -412,7 +415,7 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
 
     generateResume(conversationId);
   };
-  const handleGetResume = () => getGeneratedResume(conversationId);
+  // const handleGetResume = () => getGeneratedResume(conversationId);
   const handleDeleteResume = () => deleteResume(conversationId);
 
   const handleNewChat = async () => {
@@ -522,6 +525,15 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
             </p>
           </div>
         </div>
+        {canGenerate && (
+          <button
+            onClick={handleGenerateResume}
+            disabled={loading || !conversationIdIsValid || !canGenerate}
+            className="px-3 md:px-5 py-2 bg-[#1342ff] text-white text-[14px] md:text-[16px] lg:text-[18px] font-semibold rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {loading ? "Generating…" : "Generate Resume"}
+          </button>
+        )}
       </div>
 
       <div className="flex-1 min-h-0">
@@ -538,15 +550,6 @@ const CvBuilder = ({ requestedConversationId, onConversationLoaded }) => {
       </div>
 
       <div className="mt-2 md:mt-4 flex flex-col items-center gap-2">
-        {canGenerate && (
-          <button
-            onClick={handleGenerateResume}
-            disabled={loading || !conversationIdIsValid || !canGenerate}
-            className="px-4 md:px-8 py-2 md:py-3 bg-indigo-600 text-white text-[14px] md:text-[16px] lg:text-[18px] font-semibold rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {loading ? "Generating…" : "Generate Resume"}
-          </button>
-        )}
         {!canGenerate && (
           <p className="text-sm text-[#667085] dark:text-gray-400 text-center">
             Continue the conversation — the AI will let you know when it has

@@ -26,6 +26,11 @@
   color: white;
 }
 
+button,
+a {
+  cursor: pointer;
+}
+
 /* body {
   background: white;
   color: #101828;

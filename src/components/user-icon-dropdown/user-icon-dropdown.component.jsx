@@ -113,7 +113,11 @@ const UserIconDropdown = () => {
       {loading && <LoadingSpinner />}
 
       {/* Trigger */}
-      <div ref={triggerRef} className="flex items-center gap-2 cursor-pointer" onClick={handleToggle}>
+      <div
+        ref={triggerRef}
+        className="flex items-center gap-2 cursor-pointer"
+        onClick={handleToggle}
+      >
         <div className="w-[30px] h-[30px] md:w-[40px] md:h-[40px] bg-gray-700 rounded-full overflow-hidden">
           <img
             src="https://res.cloudinary.com/dganx8kmn/image/upload/v1759449140/Hello%20dreams%20%20AI/26d3a9db798a4cc8725cb83dcbf5cf7966ae74dc_jifjis.png"
@@ -156,6 +160,7 @@ const UserIconDropdown = () => {
                 transition={{ duration: 0.3, ease: "easeInOut" }}
                 style={{
                   zIndex: 9999,
+                  fontFamily: "Darker Grotesque, sans-serif",
                   ...(isMobile
                     ? { top: 0, right: 0 }
                     : { top: dropdownPos.top, right: dropdownPos.right }),
@@ -185,7 +190,9 @@ const UserIconDropdown = () => {
 
                   <div className="min-w-0">
                     <p className="text-sm sm:text-base font-bold text-[#010413] dark:text-[#f7f7f7] truncate">
-                      {user?.name ? `${user.name}'s Dream World` : "Dream World"}
+                      {user?.name
+                        ? `${user.name}'s Dream World`
+                        : "Dream World"}
                     </p>
                     <p className="text-xs sm:text-sm text-[#010413] dark:text-[#f7f7f7] truncate">
                       {user?.email || ""}
@@ -196,7 +203,7 @@ const UserIconDropdown = () => {
                 {/* Credits */}
                 <div className="bg-[#efefef] dark:bg-[#272725] rounded-lg px-3 sm:px-4 py-3 my-5">
                   <div className="flex justify-between items-center mb-2">
-                    <p className="text-base sm:text-lg font-semibold text-[#010413] dark:text-[#f7f7f7]">
+                    <p className="text-base font-semibold text-[#010413] dark:text-[#f7f7f7]">
                       Credits
                     </p>
                     <span className="bg-[#fff] dark:bg-[#1c1c1c] rounded-lg px-2 py-0.5 text-xs font-bold text-[#1342ff]">
@@ -216,7 +223,8 @@ const UserIconDropdown = () => {
                   </div>
 
                   <p className="text-xs sm:text-sm text-[#010413] dark:text-[#f7f7f7]">
-                    1 credit = {credits?.tokensPerCredit ?? 800} tokens · Resets at midnight UTC
+                    1 credit = {credits?.tokensPerCredit ?? 800} tokens · Resets
+                    at midnight UTC
                   </p>
                 </div>
 
@@ -227,7 +235,7 @@ const UserIconDropdown = () => {
                 >
                   <button
                     type="button"
-                    className="w-full sm:w-[90%] bg-transparent border border-transparent rounded-md py-2 text-xs sm:text-sm font-medium"
+                    className="w-full text-[#222] dark:text-[#fff] sm:w-[90%] bg-transparent border border-transparent rounded-md py-2 text-xs sm:text-sm font-medium"
                   >
                     You are on {credits?.plan === "pro" ? "Pro" : "Free"} plan
                   </button>
@@ -291,7 +299,7 @@ const UserIconDropdown = () => {
                           : "max-h-0 opacity-0 mt-0"
                       }`}
                     >
-                      <div className="ml-2 space-y-1 pt-1">
+                      <div className="ml-2 space-y-1 pt-1 text-[#222] dark:text-[#fff]">
                         <button
                           type="button"
                           onClick={() => handleThemeChange("light")}
